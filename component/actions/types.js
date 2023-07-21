@@ -1,0 +1,106 @@
+export const SET_STARTINGPOINT = 'SET_STARTINGPOINT';
+export const SET_ENDPOINT = 'SET_ENDPOINT';
+export const SET_CALIBRATION_DISTANCE = 'SET_CALIBRATION_DISTANCE';
+export const SET_SELLA = 'SET_SELLA';
+export const SET_NASION = 'SET_NASION';
+export const SET_POINTA = 'SET_POINTA';
+export const SET_POINTB = 'SET_POINTB';
+export const SET_U6 = 'SET_U6';
+export const SET_U4 = 'SET_U4';
+export const SET_GONION = 'SET_GONION';
+export const SET_GNATHION = 'SET_GNATHION';
+export const SET_ISA = 'SET_ISA';
+export const SET_ISI = 'SET_ISI';
+export const SET_IIA = 'SET_IIA';
+export const SET_III = 'SET_III';
+export const SET_MS = 'SET_MS';
+export const SET_POGS = 'SET_POGS';
+export const SET_LS = 'SET_LS';
+export const SET_LI = 'SET_LI';
+export const SET_POG = 'SET_POG';
+// Wendell - Wylie
+export const SET_ANS = 'SET_ANS';
+export const SET_MENTON = 'SET_MENTON';
+//=== REMOVE
+export const REMOVE_STARTINGPOINT = 'REMOVE_STARTINGPOINT';
+export const REMOVE_ENDPOINT = 'REMOVE_ENDPOINT';
+export const REMOVE_SELLA = 'REMOVE_SELLA';
+export const REMOVE_NASION = 'REMOVE_NASION';
+export const REMOVE_POINTA = 'REMOVE_POINTA';
+export const REMOVE_POINTB = 'REMOVE_POINTB';
+export const REMOVE_U6 = 'REMOVE_U6';
+export const REMOVE_U4 = 'REMOVE_U4';
+export const REMOVE_GONION = 'REMOVE_GONION';
+export const REMOVE_GNATHION = 'REMOVE_GNATHION';
+export const REMOVE_ISA = 'REMOVE_ISA';
+export const REMOVE_ISI = 'REMOVE_ISI';
+export const REMOVE_IIA = 'REMOVE_IIA';
+export const REMOVE_III = 'REMOVE_III';
+export const REMOVE_MS = 'REMOVE_MS';
+export const REMOVE_POGS = 'REMOVE_POGS';
+export const REMOVE_LS = 'REMOVE_LS';
+export const REMOVE_LI = 'REMOVE_LI';
+export const REMOVE_POG = 'REMOVE_POG';
+export const REMOVE_ANS = 'REMOVE_ANS';
+export const REMOVE_MENTON = 'REMOVE_MENTON';
+
+export const SET_PRESS_ANALYSIS = 'SET_PRESS_ANALYSIS';
+export const SET_PRESS_SAVE_ANALYSIS = 'SET_PRESS_SAVE_ANALYSIS';
+export const SET_DISABLE_POINTER = 'SET_DISABLE_POINTER';
+export const SET_OPACITY_POINTER = 'SET_OPACITY_POINTER';
+
+export const SET_BANTUMARKER = 'SET_BANTUMARKER';
+export const SET_MARKING_DOT = 'SET_MARKING_DOT';
+export const SET_RESULT_ANALYSIS = 'SET_RESULT_ANALYSIS';
+export const SET_DETAIL_RESULT = 'SET_DETAIL_RESULT';
+export const SET_HEADERTEXT = 'SET_HEADERTEXT';
+export const SET_SUBHEADERTEXT = 'SET_SUBHEADERTEXT';
+export const SET_LOADING = 'SET_LOADING';
+export const SET_LOADING_GLOBAL = 'SET_LOADING_GLOBAL';
+
+//RESULT Analysis
+export const SET_SNA = 'SET_SNA';
+export const SET_SNB = 'SET_SNB';
+export const SET_ANB = 'SET_ANB';
+export const SET_PogNB = 'SET_PogNB';
+export const SET_SNOP = 'SET_SNOP';
+export const SET_SNMP = 'SET_SNMP';
+export const SET_UINA_Angular = 'SET_UINA_Angular';
+export const SET_UINA_Linear = 'SET_UINA_Linear';
+export const SET_LINB_Angular = 'SET_LINB_Angular';
+export const SET_LINB_Linear = 'SET_LINB_Linear';
+export const SET__IIA = 'SET__IIA';
+export const SET_Upper_Lip = 'SET_Upper_Lip';
+export const SET_Lower_Lip = 'SET_Lower_Lip';
+export const SET_WendellWylie = 'SET_WendellWylie';
+//REMOVE
+export const REMOVE_SNA = 'REMOVE_SNA';
+export const REMOVE_SNB = 'REMOVE_SNB';
+export const REMOVE_ANB = 'REMOVE_ANB';
+export const REMOVE_PogNB = 'REMOVE_PogNB';
+export const REMOVE_SNOP = 'REMOVE_SNOP';
+export const REMOVE_SNMP = 'REMOVE_SNMP';
+export const REMOVE_UINA_Angular = 'REMOVE_UINA_Angular';
+export const REMOVE_UINA_Linear = 'REMOVE_UINA_Linear';
+export const REMOVE_LINB_Angular = 'REMOVE_LINB_Angular';
+export const REMOVE_LINB_Linear = 'REMOVE_LINB_Linear';
+export const REMOVE__IIA = 'REMOVE__IIA';
+export const REMOVE_Upper_Lip = 'REMOVE_Upper_Lip';
+export const REMOVE_Lower_Lip = 'REMOVE_Lower_Lip';
+export const REMOVE_WendellWylie = 'REMOVE_WendellWylie';
+
+//PATIENT
+export const SET_PATIENTID = 'SET_PATIENTID';
+export const SET_DOCTORID = 'SET_DOCTORID';
+export const SET_FULLNAME = 'SET_FULLNAME';
+export const SET_GENDER = 'SET_GENDER';
+export const SET_BIRTHDATE = 'SET_BIRTHDATE';
+export const SET_AGEINYEARS = 'SET_AGEINYEARS';
+export const SET_RACE = 'SET_RACE';
+export const SET_PHOTO = 'SET_PHOTO';
+export const SET_STEP = 'SET_STEP';
+export const SET_TEMPGAMBAR = 'SET_TEMPGAMBAR';
+export const SET_IMAGEURI = 'SET_IMAGEURI';
+export const SET_IMAGETYPE = 'SET_IMAGETYPE';
+export const SET_IMAGEFILENAME = 'SET_IMAGEFILENAME';
+export const SET_ENABLESAVE = 'SET_ENABLESAVE';

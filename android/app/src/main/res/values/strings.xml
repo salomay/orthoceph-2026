@@ -1,0 +1,6 @@
+<resources>    
+<string name="app_name">Orthoceph</string>
+<string name="facebook_app_id">930797074785858</string>
+<string name="fb_login_protocol_scheme">fb1234</string>
+<string name="facebook_client_token">d9f1a11e412d6c7a8f1d4be1d55ba94c</string>
+</resources>

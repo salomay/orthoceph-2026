@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "986260111827",
+    "project_id": "orthoceph-7d9bc",
+    "storage_bucket": "orthoceph-7d9bc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986260111827:android:12a256293cad02a69d2f26",
+        "android_client_info": {
+          "package_name": "com.orthoceph"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "986260111827-7vs0190c1e57fbsoln9c0ic5q534cdc4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.orthoceph",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "986260111827-4ndq4rv4qu2l6rva1l5rtgr8fuc37j4e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAonPfX-b1su3dMuAtMZxAJx0eQe4nAPOE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "986260111827-4ndq4rv4qu2l6rva1l5rtgr8fuc37j4e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
