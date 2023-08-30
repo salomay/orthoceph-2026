@@ -33,6 +33,7 @@ import {
   ToastAndroid,
   Linking,
   Alert,
+  Dimensions,
 } from 'react-native';
 import 'react-native-gesture-handler';
 import FormCephalometric from './component/FormCephalometric';
@@ -72,6 +73,8 @@ import {
   IIA,
   WendellWylie,
   distanceBetween,
+  getMarkDetailsByID,
+  getAnalysisDetailsByID,
 } from './component/common/Utils';
 
 import {COLORS} from './component/common/Constants';
@@ -171,6 +174,7 @@ import {
   set_headerText,
   set_loading,
   set_loading_global,
+  set_select_id,
 } from './component/actions/variabel';
 
 import Geolocation from '@react-native-community/geolocation';
@@ -188,9 +192,12 @@ import Permissions, {
   PERMISSIONS,
   RESULTS,
 } from 'react-native-permissions';
+import {useEffect} from 'react';
+
+const {width, height} = Dimensions.get('screen');
 
 // import LocationEnabler from 'react-native-location-enabler';
-
+let number = 0;
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
@@ -210,6 +217,14 @@ function sideBarNavigation(props) {
 }
 
 function CustomDrawerContent(props) {
+  const [contentTitle, setContentTitle] = React.useState(null);
+  const [contentTitleValue, setContentTitleValue] = React.useState(null);
+  const [normalValue, setNormalValue] = React.useState(null);
+  const [consideration, setConsideration] = React.useState(null);
+  const [contentDescription, setContentDescription] = React.useState([]);
+  const [iconName, setIconName] = React.useState(null);
+  const [iconColor, setIconColor] = React.useState(null);
+
   let _SNA = null;
   let _SNB = null;
   let _ANB = null;
@@ -225,22 +240,24 @@ function CustomDrawerContent(props) {
   let _Lower_Lip = null;
   let _WendellWylie = null;
 
-  async function _analysis() {
+  function _analysis() {
     // props.navigation.closeDrawer();
 
     props.set_markingdot(false);
     props.set_resultanalysis(true);
     props.set_detailresult(false);
-    props.set_bantuMarker(22);
+    props.set_bantuMarker(23);
 
-    // setTimeout(() => {
-    //   props.navigation.openDrawer();
-    // }, 1000);
+    process_analysis();
 
+    return null;
+  }
+
+  async function process_analysis() {
     const _calibrationDistance = Number(props.calibrationDistance);
     const _calibrationPointDistance = await distanceBetween(
-      props.startingPoint[0],
-      props.endPoint[0],
+      props?.startingPoint[0],
+      props?.endPoint[0],
     );
 
     // console.log('calibration distance : ' + _calibrationDistance);
@@ -343,19 +360,252 @@ function CustomDrawerContent(props) {
     props.set_wendellwylie(_WendellWylie);
 
     props.set_enablesave(true);
-
-    return null;
+    props.navigation.openDrawer();
   }
 
   function _markAgain() {
     props.set_markingdot(true);
     props.set_resultanalysis(false);
-    props.set_detailresult(true);
+    props.set_detailresult(false);
     props.set_enablesave(false);
   }
 
   function _exportPDF() {
     props.set_press_analysis(true);
+  }
+
+  function pressDetailAnalysis(IDS) {
+    console.log('PRESSED :' + IDS);
+
+    props.set_resultanalysis(false);
+    props.set_detailresult(true);
+    props.set_select_id(IDS);
+
+    number = 0;
+
+    setContentTitle(getAnalysisDetailsByID(IDS).TITLE);
+    setNormalValue(
+      getAnalysisDetailsByID(IDS).NORM + getAnalysisDetailsByID(IDS).UNIT,
+    );
+    if (getAnalysisDetailsByID(IDS)?.CONS?.MIN) {
+      setConsideration(
+        getAnalysisDetailsByID(IDS)?.CONS?.MIN +
+          ' - ' +
+          getAnalysisDetailsByID(IDS)?.CONS?.MAX +
+          getAnalysisDetailsByID(IDS)?.UNIT,
+      );
+    } else {
+      setConsideration('-');
+    }
+
+    setContentDescription(getAnalysisDetailsByID(IDS).DESC);
+
+    if (IDS == 'IDS/ANALYSIS/SNA') {
+      setContentTitleValue(props.sna.value + getAnalysisDetailsByID(IDS).UNIT);
+      setIconName(checkStatusAnalysis(props.sna.status).iconName);
+      setIconColor(checkStatusAnalysis(props.sna.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.sna.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/SNB') {
+      setContentTitleValue(props.snb.value + getAnalysisDetailsByID(IDS).UNIT);
+      setIconName(checkStatusAnalysis(props.snb.status).iconName);
+      setIconColor(checkStatusAnalysis(props.snb.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.snb.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/ANB') {
+      setContentTitleValue(props.anb.value + getAnalysisDetailsByID(IDS).UNIT);
+      setIconName(checkStatusAnalysis(props.anb.status).iconName);
+      setIconColor(checkStatusAnalysis(props.anb.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.anb.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/POGNB') {
+      setContentTitleValue(
+        props.pogNB.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.pogNB.status).iconName);
+      setIconColor(checkStatusAnalysis(props.pogNB.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.pogNB.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/SNOP') {
+      setContentTitleValue(props.snop.value + getAnalysisDetailsByID(IDS).UNIT);
+      setIconName(checkStatusAnalysis(props.snop.status).iconName);
+      setIconColor(checkStatusAnalysis(props.snop.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.snop.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/SNMP') {
+      setContentTitleValue(props.snmp.value + getAnalysisDetailsByID(IDS).UNIT);
+      setIconName(checkStatusAnalysis(props.snmp.status).iconName);
+      setIconColor(checkStatusAnalysis(props.snmp.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.snmp.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/UINA_ANGULAR') {
+      setContentTitleValue(
+        props.uina_angular.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.uina_angular.status).iconName);
+      setIconColor(checkStatusAnalysis(props.uina_angular.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.uina_angular.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/UINA_LINEAR') {
+      setContentTitleValue(
+        props.uina_linear.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.uina_linear.status).iconName);
+      setIconColor(checkStatusAnalysis(props.uina_linear.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.uina_linear.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/LINB_ANGULAR') {
+      setContentTitleValue(
+        props.linb_angular.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.linb_angular.status).iconName);
+      setIconColor(checkStatusAnalysis(props.linb_angular.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.linb_angular.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/LINB_LINEAR') {
+      setContentTitleValue(
+        props.linb_linear.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.linb_linear.status).iconName);
+      setIconColor(checkStatusAnalysis(props.linb_linear.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.linb_linear.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/IIA') {
+      setContentTitleValue(props._iia.value + getAnalysisDetailsByID(IDS).UNIT);
+      setIconName(checkStatusAnalysis(props._iia.status).iconName);
+      setIconColor(checkStatusAnalysis(props._iia.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props._iia.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/UPPER_LIP') {
+      setContentTitleValue(
+        props.upper_lip.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.upper_lip.status).iconName);
+      setIconColor(checkStatusAnalysis(props.upper_lip.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.upper_lip.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/LOWER_LIP') {
+      setContentTitleValue(
+        props.lower_lip.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(checkStatusAnalysis(props.lower_lip.status).iconName);
+      setIconColor(checkStatusAnalysis(props.lower_lip.status).iconColor);
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.lower_lip.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/MIDFACE') {
+      setContentTitleValue(
+        props.wendellWylie.MIDFACE.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(
+        checkStatusAnalysis(props.wendellWylie.MIDFACE.status).iconName,
+      );
+      setIconColor(
+        checkStatusAnalysis(props.wendellWylie.MIDFACE.status).iconColor,
+      );
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.wendellWylie.MIDFACE.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    } else if (IDS == 'IDS/ANALYSIS/LOWERFACE') {
+      setContentTitleValue(
+        props.wendellWylie.LOWERFACE.value + getAnalysisDetailsByID(IDS).UNIT,
+      );
+      setIconName(
+        checkStatusAnalysis(props.wendellWylie.LOWERFACE.status).iconName,
+      );
+      setIconColor(
+        checkStatusAnalysis(props.wendellWylie.LOWERFACE.status).iconColor,
+      );
+      props.set_headerText(
+        getAnalysisDetailsByID(IDS).TITLE +
+          ' ' +
+          props.wendellWylie.LOWERFACE.value +
+          getAnalysisDetailsByID(IDS).UNIT,
+      );
+    }
+  }
+
+  function checkStatusAnalysis(analysisStatus) {
+    let _iconName = 'check-circle';
+    let _iconColor = COLORS.ANALYSIS_NORMAL;
+
+    if (analysisStatus === ANALYSIS_STATE.CONS) {
+      _iconName = 'check-underline-circle';
+      _iconColor = COLORS.ANALYSIS_CONS;
+    } else if (analysisStatus === ANALYSIS_STATE.NEED_CORRECTION) {
+      _iconName = 'alert-circle';
+      _iconColor = COLORS.ANALYSIS_NEED_CORRECTION;
+    }
+
+    return {
+      iconName: _iconName,
+      iconColor: _iconColor,
+    };
+  }
+
+  function _goBack() {
+    props.set_resultanalysis(true);
+    props.set_detailresult(false);
+    props.set_select_id(null);
+    props.set_headerText('Cephalometric ' + props.step);
+  }
+
+  function _showOnCeph() {
+    props.navigation.closeDrawer();
   }
 
   return (
@@ -368,42 +618,284 @@ function CustomDrawerContent(props) {
             headerText={'Cephalometric One'}
             headerIcon={'help-circle-outline'}
           />
-          <CalibrationContent props={props} />
-          <CephalometricLandMarkContent props={props} />
-          <TouchableOpacity
-            onPress={() => _analysis()}
+
+          {props.detailResult !== true ? (
+            <>
+              <CalibrationContent props={props} />
+              <CephalometricLandMarkContent props={props} />
+              <TouchableOpacity
+                onPress={() => _analysis()}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: '#637363',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 10,
+                }}>
+                <MaterialCommunityIcons
+                  name="cogs"
+                  size={wp(5)}
+                  color="white"
+                />
+                <Text
+                  style={{
+                    fontWeight: 'bold',
+                    color: 'white',
+                    paddingVertical: 20,
+                    fontSize: wp(3.5),
+                    marginLeft: wp(5),
+                  }}>
+                  Analyze Measurements
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
+        </>
+      ) : null}
+      {/* ==================== DETAIL RESULT ========================= */}
+
+      {props.detailResult ? (
+        <>
+          <View
+            style={{
+              flexDirection: 'column',
+            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                margin: wp(3),
+              }}>
+              <MaterialCommunityIcons
+                name={iconName}
+                size={wp(5)}
+                color={iconColor}
+              />
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={{
+                    fontWeight: 'bold',
+                    color: 'black',
+                    paddingVertical: wp(2),
+                    fontSize: wp(3),
+                    marginLeft: wp(3),
+                  }}>
+                  {contentTitle}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: 'bold',
+                    color: 'black',
+                    paddingVertical: wp(2),
+                    fontSize: wp(3),
+                    marginLeft: wp(3),
+                  }}>
+                  {contentTitleValue}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                borderTopWidth: 1,
+              }}
+            />
+            <View
+              style={{
+                flexDirection: 'column',
+                margin: wp(3),
+              }}>
+              {contentDescription.map((data) => {
+                number = number + 1;
+                return (
+                  <>
+                    <Text
+                      style={{
+                        flexBasis: 'auto',
+                        color: 'black',
+                        paddingVertical: wp(2),
+                        fontSize: wp(2.8),
+                      }}>
+                      {number + '. ' + data}
+                    </Text>
+                  </>
+                );
+              })}
+            </View>
+          </View>
+        </>
+      ) : null}
+
+      {props.detailResult ? (
+        <>
+          <View
             style={{
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 0,
-              backgroundColor: '#637363',
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 10,
+              bottom: wp(40),
+              borderTopWidth: 1,
+              zIndex: 0,
+            }}
+          />
+          <View
+            style={{
+              flexDirection: 'column',
+              position: 'absolute',
+              left: wp(3),
+              right: 0,
+              bottom: wp(15),
             }}>
-            <MaterialCommunityIcons name="cogs" size={wp(5)} color="white" />
-            <Text
+            <View
               style={{
-                fontWeight: 'bold',
-                color: 'white',
-                paddingVertical: 20,
-                fontSize: wp(3.5),
-                marginLeft: wp(5),
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
               }}>
-              Analyze Measurements
-            </Text>
-          </TouchableOpacity>
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={wp(5)}
+                color="#008000"
+              />
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  color: 'black',
+                  paddingVertical: wp(2),
+                  fontSize: wp(3),
+                  marginLeft: wp(3),
+                }}>
+                {'Normal : ' + normalValue}
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons
+                name="check-underline-circle"
+                size={wp(5)}
+                color="#FDA50F"
+              />
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  color: 'black',
+                  paddingVertical: wp(2),
+                  fontSize: wp(3),
+                  marginLeft: wp(3),
+                }}>
+                {'Consideration Range : ' + consideration}
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons
+                name="alert-circle"
+                size={wp(5)}
+                color="#B22222"
+              />
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  color: 'black',
+                  paddingVertical: wp(2),
+                  fontSize: wp(3),
+                  marginLeft: wp(3),
+                }}>
+                Need Correction
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}>
+            <TouchableOpacity
+              onPress={() => _goBack()}
+              style={{
+                flex: 1,
+                backgroundColor: '#637363',
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 10,
+              }}>
+              <MaterialCommunityIcons
+                name="arrow-left-thick"
+                size={wp(5)}
+                color="white"
+              />
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  color: 'white',
+                  paddingVertical: 20,
+                  fontSize: wp(3.5),
+                  marginLeft: wp(5),
+                }}>
+                Go Back
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => _showOnCeph()}
+              style={{
+                flex: 1,
+                backgroundColor: '#637363',
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 10,
+                borderLeftWidth: 0.5,
+                borderLeftColor: 'white',
+              }}>
+              <MaterialCommunityIcons
+                name="file-search-outline"
+                size={wp(5)}
+                color="white"
+              />
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  color: 'white',
+                  paddingVertical: 20,
+                  fontSize: wp(3.5),
+                  marginLeft: wp(5),
+                }}>
+                Show On Ceph
+              </Text>
+            </TouchableOpacity>
+          </View>
         </>
       ) : null}
 
+      {/* ==================== RESULT ========================= */}
       {props.resultAnalysis ? (
         <>
           <HeaderResult
             headerText={'Analysis Result'}
             headerIcon={'format-list-bulleted'}
           />
-          <ResultContent props={props} />
+          <ResultContent
+            props={props}
+            pressDetailAnalysis={pressDetailAnalysis}
+          />
 
           <View
             style={{
@@ -468,20 +960,21 @@ function CustomDrawerContent(props) {
           </View>
         </>
       ) : null}
-
-      {/* {props.detailResult ? <DetailResultContent props={props} /> : null} */}
     </View>
   );
 }
 
 function HeaderTop(props) {
+  // console.log('width :' + width);
+  // console.log('height :' + height);
+
   return (
     <View
       style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
         backgroundColor: '#637363',
-        marginTop: Platform.OS == 'ios' ? wp(10) : 0,
+        // marginTop: Platform.OS == 'ios' ? wp(10) : 0,
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 10,
@@ -716,7 +1209,7 @@ const CalibrationContent = ({props}) => {
   );
 };
 
-function ResultContent({props}) {
+function ResultContent({props, pressDetailAnalysis}) {
   function checkStatusAnalysis(analysisStatus) {
     let _iconName = 'check-circle';
     let _iconColor = COLORS.ANALYSIS_NORMAL;
@@ -762,7 +1255,8 @@ function ResultContent({props}) {
           justifyContent: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.sna.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -802,7 +1296,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.snb.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -842,7 +1337,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.anb.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -882,7 +1378,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.pogNB.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -942,7 +1439,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.snop.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -982,14 +1480,16 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.snmp.id)}>
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             width: '100%',
             justifyContent: 'space-between',
-          }}>
+          }}
+          onPress={() => pressDetailAnalysis('SNMP')}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <MaterialCommunityIcons
               name={checkStatusAnalysis(props.snmp.status).iconName}
@@ -1041,7 +1541,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.uina_angular.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1081,7 +1582,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.uina_linear.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1121,7 +1623,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.linb_angular.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1161,7 +1664,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.linb_linear.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1201,7 +1705,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props._iia.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1260,7 +1765,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.upper_lip.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1300,7 +1806,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.lower_lip.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1360,7 +1867,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.wendellWylie.MIDFACE.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1410,7 +1918,8 @@ function ResultContent({props}) {
           alignItems: 'center',
           paddingVertical: 10,
           borderBottomWidth: 0.5,
-        }}>
+        }}
+        onPress={() => pressDetailAnalysis(props.wendellWylie.LOWERFACE.id)}>
         <View
           style={{
             flexDirection: 'row',
@@ -1843,6 +2352,11 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
+    this.getPermission();
+    this.props.set_loading_global(false);
+    this.props.set_detailresult(false);
+    this.props.set_select_id(null);
+
     // const config = {
     //   priority: HIGH_ACCURACY, // default BALANCED_POWER_ACCURACY
     //   alwaysShow: true, // default false
@@ -1909,7 +2423,13 @@ class App extends React.Component {
 
   getPermission = () => {
     request(PERMISSIONS.IOS.LOCATION_ALWAYS).then((result) => {
-      console.log('##Request : ' + result);
+      if (result == 'blocked') {
+        Geolocation.requestAuthorization();
+        Geolocation.setRNConfiguration({
+          skipPermissionRequests: false,
+          authorizationLevel: 'always',
+        });
+      }
     });
   };
 
@@ -2256,6 +2776,7 @@ class App extends React.Component {
 
 const mapStateToProps = (state) => {
   return {
+    bantuMarker: state.variabelReducer.bantuMarker,
     disablePointer: state.variabelReducer.disablePointer,
     opacityPointer: state.variabelReducer.opacityPointer,
     startingPoint: state.variabelReducer.startingPoint,
@@ -2283,6 +2804,7 @@ const mapStateToProps = (state) => {
     markingDot: state.variabelReducer.markingDot,
     resultAnalysis: state.variabelReducer.resultAnalysis,
     detailResult: state.variabelReducer.detailResult,
+    selectid: state.variabelReducer.selectid,
     sna: state.resultReducer.sna,
     snb: state.resultReducer.snb,
     anb: state.resultReducer.anb,
@@ -2412,6 +2934,7 @@ const mapDispatchToProps = (dispatch) => {
     set_headerText: (val) => dispatch(set_headerText(val)),
     set_loading: (val) => dispatch(set_loading(val)),
     set_loading_global: (val) => dispatch(set_loading_global(val)),
+    set_select_id: (val) => dispatch(set_select_id(val)),
   };
 };
 

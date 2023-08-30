@@ -90,7 +90,7 @@ export default class FormRegistrasi extends React.Component {
         authorizationLevel: 'always',
       });
 
-      request(PERMISSIONS.IOS.LOCATION_ALWAYS).then((result) => {
+      request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then((result) => {
         console.log(result);
         if (result == 'granted') {
           Geolocation.getCurrentPosition((info) => {
@@ -161,6 +161,9 @@ export default class FormRegistrasi extends React.Component {
           ? ToastAndroid.show('Require Full Name', ToastAndroid.SHORT)
           : Alert.alert('Information', 'Require Full Name');
       }
+      this.setState({
+        loading: false,
+      });
 
       return false;
     } else if (this.state.email == '' || this.state.email == null) {
@@ -169,6 +172,9 @@ export default class FormRegistrasi extends React.Component {
           ? ToastAndroid.show('Require Email', ToastAndroid.SHORT)
           : Alert.alert('Information', 'Require Email');
       }
+      this.setState({
+        loading: false,
+      });
 
       return false;
     } else if (this.state.password == '' || this.state.password == null) {
@@ -177,6 +183,10 @@ export default class FormRegistrasi extends React.Component {
           ? ToastAndroid.show('Require Password', ToastAndroid.SHORT)
           : Alert.alert('Information', 'Require Password');
       }
+
+      this.setState({
+        loading: false,
+      });
 
       return false;
     } else {
@@ -328,7 +338,6 @@ export default class FormRegistrasi extends React.Component {
         });
     } else {
       this.getPermission();
-      Alert.alert('Please Turn On your GPS!!');
     }
   };
 
@@ -352,7 +361,7 @@ export default class FormRegistrasi extends React.Component {
               subtitle=""
               color="white"
               titleStyle={{
-                fontSize: wp(5),
+                fontSize: wp(3.4),
                 fontWeight: 'bold',
                 textAlign: 'center',
                 // marginLeft: Platform.OS == 'ios' ? 0 : -60,
@@ -369,6 +378,10 @@ export default class FormRegistrasi extends React.Component {
               marginHorizontal: 15,
               marginTop: wp(10),
             }}>
+            <Text
+              style={{alignSelf: 'flex-end', color: 'white', fontSize: wp(3)}}>
+              {'(required)'}
+            </Text>
             <TextInput
               placeholder="Full Name"
               placeholderTextColor={'white'}
@@ -384,17 +397,20 @@ export default class FormRegistrasi extends React.Component {
             />
 
             <View style={{marginVertical: 5}} />
-
+            <Text
+              style={{alignSelf: 'flex-end', color: 'white', fontSize: wp(3)}}>
+              {'(optional)'}
+            </Text>
             <DropDownPicker
               containerStyle={{
-                height: 40,
+                height: wp(8),
                 borderRadius: 15,
                 backgroundColor: '#224957',
                 zIndex: 999,
               }}
               style={{
                 backgroundColor: '#224957',
-                minHeight: 40,
+                minHeight: wp(8),
               }}
               listItemContainerStyle={{
                 backgroundColor: '#088A85',
@@ -431,17 +447,20 @@ export default class FormRegistrasi extends React.Component {
             />
 
             <View style={{marginVertical: 5}} />
-
+            <Text
+              style={{alignSelf: 'flex-end', color: 'white', fontSize: wp(3)}}>
+              {'(optional)'}
+            </Text>
             <DropDownPicker
               containerStyle={{
-                height: 40,
+                height: wp(8),
                 borderRadius: 15,
                 backgroundColor: '#224957',
                 zIndex: 99,
               }}
               style={{
                 backgroundColor: '#224957',
-                minHeight: 40,
+                minHeight: wp(8),
               }}
               listItemContainerStyle={{
                 backgroundColor: '#088A85',
@@ -457,11 +476,11 @@ export default class FormRegistrasi extends React.Component {
               open={this.state.openCountry}
               value={this.state.valueCountry}
               items={this.state.dataCountry}
-              onPress={() =>
-                this.state.openGender
+              onPress={() => {
+                this.state.openCountry
                   ? this.setState({openCountry: false})
-                  : this.setState({openCountry: true})
-              }
+                  : this.setState({openCountry: true});
+              }}
               setItems={(e) => this.setState({dataGender: e})}
               onSelectItem={(e) => {
                 this.setCountry(e);
@@ -472,7 +491,10 @@ export default class FormRegistrasi extends React.Component {
             />
 
             <View style={{marginVertical: 5}} />
-
+            <Text
+              style={{alignSelf: 'flex-end', color: 'white', fontSize: wp(3)}}>
+              {'(required)'}
+            </Text>
             <TextInput
               placeholder="Email"
               placeholderTextColor={'white'}
@@ -490,7 +512,10 @@ export default class FormRegistrasi extends React.Component {
             />
 
             <View style={{marginVertical: 5}} />
-
+            <Text
+              style={{alignSelf: 'flex-end', color: 'white', fontSize: wp(3)}}>
+              {'(required)'}
+            </Text>
             <TextInput
               placeholder="Password"
               placeholderTextColor={'white'}
@@ -564,7 +589,7 @@ const styles = StyleSheet.create({
     color: 'white',
     paddingLeft: 10,
     height: hp(6),
-    fontSize: hp(2),
+    fontSize: wp(3.5),
     borderWidth: 0.5,
     backgroundColor: '#224957',
     borderColor: 'black',

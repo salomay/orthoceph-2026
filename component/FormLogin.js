@@ -13,13 +13,7 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
-// import {
-//   AccessToken,
-//   GraphRequest,
-//   GraphRequestManager,
-//   LoginButton,
-//   Settings,
-// } from 'react-native-fbsdk-next';
+import jwt_decode from 'jwt-decode';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -163,8 +157,6 @@ export default class FormLogin extends React.Component {
   };
 
   AuthFunctionSosmed = async (email, fullName) => {
-    console.log('#######' + email);
-
     var data = {
       email: email,
     };
@@ -199,8 +191,8 @@ export default class FormLogin extends React.Component {
                   },
                   () => {
                     let data = {
-                      fullname: fullName,
                       email: email,
+                      fullname: fullName,
                       latitude: this.state.latitude,
                       longitude: this.state.longitude,
                       address: this.state.address,
@@ -214,7 +206,6 @@ export default class FormLogin extends React.Component {
                             'doctorId',
                             '' + result.insertId + '',
                           );
-                          AsyncStorage.setItem('fullName', '' + fullName + '');
 
                           AsyncStorage.setItem('email', '' + email + '');
                           AsyncStorage.setItem(
@@ -348,14 +339,20 @@ export default class FormLogin extends React.Component {
   onAppleButtonPress = async () => {
     if (Platform.OS == 'ios') {
       // performs login request
-      return appleAuth
+      return await appleAuth
         .performRequest({
           requestedOperation: appleAuth.Operation.LOGIN,
           requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
         })
         .then((appleAuthRequestResponse) => {
-          let {identityToken, email, fullName} = appleAuthRequestResponse;
-          this.AuthFunctionSosmed(email, fullName);
+          if (appleAuthRequestResponse) {
+            const {identityToken, fullName} = appleAuthRequestResponse;
+            const {email} = jwt_decode(identityToken);
+            console.log('identityToken : ' + identityToken);
+            console.log('fullName : ' + JSON.stringify(fullName.givenName));
+            console.log('email : ' + email);
+            this.AuthFunctionSosmed(email, fullName.givenName);
+          }
         });
     } else {
       // Generate secure, random values for state and nonce
@@ -433,7 +430,7 @@ export default class FormLogin extends React.Component {
         authorizationLevel: 'always',
       });
 
-      request(PERMISSIONS.IOS.LOCATION_ALWAYS).then((result) => {
+      request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then((result) => {
         console.log(result);
         if (result == 'granted') {
           Geolocation.getCurrentPosition((info) => {
@@ -492,7 +489,7 @@ export default class FormLogin extends React.Component {
             style={{
               resizeMode: 'cover',
               width: wp(100),
-              height: hp(6),
+              height: wp(15),
             }}></Image>
 
           <Image
@@ -501,7 +498,7 @@ export default class FormLogin extends React.Component {
               resizeMode: 'contain',
               marginVertical: 20,
               width: wp(20),
-              height: hp(12),
+              height: wp(15),
             }}></Image>
 
           <View
@@ -566,9 +563,14 @@ export default class FormLogin extends React.Component {
             <TouchableOpacity
               onPress={() => this.props.navigation.navigate('FormRegistrasi')}>
               <Text
-                style={{color: 'white', marginTop: 10, alignSelf: 'center'}}>
+                style={{
+                  color: 'white',
+                  marginTop: 10,
+                  alignSelf: 'center',
+                  fontSize: wp(2.5),
+                }}>
                 Don't have account please
-                <Text style={{fontWeight: 'bold', fontSize: wp(4)}} oncl>
+                <Text style={{fontWeight: 'bold', fontSize: wp(3)}} oncl>
                   {' '}
                   SignUp
                 </Text>
@@ -661,7 +663,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     color: 'white',
-    paddingLeft: 10,
+    paddingLeft: wp(3),
     height: wp(12),
     fontSize: hp(2),
     borderWidth: 0.5,
@@ -681,7 +683,7 @@ const styles = StyleSheet.create({
   },
 
   txtMasuk: {
-    fontSize: hp(2),
+    fontSize: wp(3.2),
 
     color: '#fff',
   },

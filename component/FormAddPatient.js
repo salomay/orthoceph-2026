@@ -13,6 +13,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import {Appbar, TextInput} from 'react-native-paper';
 import {
@@ -304,12 +305,13 @@ class FormProfile extends React.Component {
                 <TextInput
                   value={this.state.fullName}
                   style={{
-                    height: hp(7),
+                    // height: wp(),
                     backgroundColor: '#224957',
                     borderTopRightRadius: 10,
                     borderTopLeftRadius: 10,
                     borderBottomLeftRadius: 10,
                     borderBottomRightRadius: 10,
+                    fontSize: wp(3),
                   }}
                   theme={{colors: {text: 'white'}}}
                   activeUnderlineColor="transparent"
@@ -319,19 +321,17 @@ class FormProfile extends React.Component {
                   maxLength={100}
                   onChangeText={(e) => this.setState({fullName: e})}
                 />
-
                 <View style={{margin: hp(1)}} />
-
                 <DropDownPicker
                   containerStyle={{
-                    height: 50,
+                    height: wp(8),
                     borderRadius: 15,
                     backgroundColor: '#224957',
                     zIndex: 999,
                   }}
                   style={{
                     backgroundColor: '#224957',
-                    minHeight: 50,
+                    minHeight: wp(8),
                   }}
                   listItemContainerStyle={{
                     backgroundColor: '#088A85',
@@ -366,19 +366,17 @@ class FormProfile extends React.Component {
                     this.setGender(e);
                   }}
                 />
-
                 <View style={{margin: hp(1)}} />
-
                 <DropDownPicker
                   containerStyle={{
-                    height: 50,
+                    height: wp(8),
                     borderRadius: 15,
                     backgroundColor: '#224957',
                     zIndex: 998,
                   }}
                   style={{
                     backgroundColor: '#224957',
-                    minHeight: 50,
+                    minHeight: wp(8),
                   }}
                   listItemContainerStyle={{
                     backgroundColor: '#088A85',
@@ -420,13 +418,13 @@ class FormProfile extends React.Component {
                     this.setRace(e);
                   }}
                 />
-
                 <View style={{margin: hp(1)}} />
 
                 <TextInput
                   value={this.formatDate(this.state.birthDate)}
                   style={{
-                    height: hp(7),
+                    fontSize: wp(3),
+                    height: wp(8),
                     backgroundColor: '#224957',
                     borderTopRightRadius: 10,
                     borderTopLeftRadius: 10,
@@ -442,14 +440,30 @@ class FormProfile extends React.Component {
                   onTouchStart={() => this.setState({showBirthDate: true})}
                 />
 
-                {this.state.showBirthDate && (
-                  <DateTimePicker
-                    testID="dateTimePicker"
-                    value={this.state.birthDate}
-                    mode={'date'}
-                    onChange={(x, y) => this.changeBirthdate(x, y)}
-                  />
-                )}
+                {this.state.showBirthDate && Platform.OS == 'android' ? (
+                  <>
+                    <DateTimePicker
+                      testID="dateTimePicker"
+                      value={this.state.birthDate}
+                      mode={'date'}
+                      onChange={(x, y) => this.changeBirthdate(x, y)}
+                    />
+                  </>
+                ) : null}
+
+                {this.state.showBirthDate && Platform.OS == 'ios' ? (
+                  <Modal visible={this.state.showBirthDate}>
+                    <DateTimePicker
+                      testID="dateTimePicker"
+                      value={this.state.birthDate}
+                      display={Platform.OS == 'android' ? 'calendar' : 'inline'}
+                      textColor="white"
+                      mode={'date'}
+                      style={{backgroundColor: 'white'}}
+                      onChange={(x, y) => this.changeBirthdate(x, y)}
+                    />
+                  </Modal>
+                ) : null}
               </View>
             </View>
 
@@ -459,6 +473,7 @@ class FormProfile extends React.Component {
                   margin: 15,
                   backgroundColor: '#34A853',
                   borderRadius: 10,
+                  zIndex: 1,
                 }}>
                 <ActivityIndicator
                   animating={this.state.loading}
@@ -470,13 +485,15 @@ class FormProfile extends React.Component {
             ) : (
               <TouchableOpacity
                 style={{
-                  margin: 15,
+                  margin: wp(4),
                   backgroundColor: '#34A853',
                   borderRadius: 10,
+                  zIndex: -2,
                 }}
                 onPress={() => this.savePatient()}>
                 <Text
                   style={{
+                    fontSize: wp(3),
                     padding: 10,
                     color: 'white',
                     fontWeight: '700',

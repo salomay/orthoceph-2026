@@ -516,7 +516,7 @@ class FormCephalometric extends React.Component {
             <View style={{flexDirection: 'column', marginHorizontal: wp(4)}}>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: wp(3),
                   fontWeight: 'bold',
                   color: 'white',
                   paddingVertical: 2,
@@ -525,7 +525,7 @@ class FormCephalometric extends React.Component {
               </Text>
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp(2),
                   fontWeight: '600',
                   color: '#FFD7A3',
                   paddingVertical: 2,
@@ -537,7 +537,7 @@ class FormCephalometric extends React.Component {
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: wp(2),
                   fontWeight: '600',
                   color: '#9C9C9C',
                   paddingVertical: 2,
@@ -556,7 +556,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: 22,
+                fontSize: wp(3),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>
@@ -575,7 +575,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: 22,
+                fontSize: wp(3),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>
@@ -594,7 +594,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: 22,
+                fontSize: wp(3),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>
@@ -610,7 +610,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: 22,
+                fontSize: wp(3),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>

@@ -96,6 +96,7 @@ import {
   SET_SUBHEADERTEXT,
   SET_LOADING,
   SET_LOADING_GLOBAL,
+  SET_SELECT_ID,
 } from './types';
 
 export const set_press_analysis = (value) => ({
@@ -575,5 +576,10 @@ export const set_loading = (value) => ({
 
 export const set_loading_global = (value) => ({
   type: SET_LOADING_GLOBAL,
+  data: value,
+});
+
+export const set_select_id = (value) => ({
+  type: SET_SELECT_ID,
   data: value,
 });

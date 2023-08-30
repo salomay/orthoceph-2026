@@ -1,5 +1,7 @@
+import {Platform} from 'react-native';
+
 const apiurl = 'http://orthoceph.furnabel.com/';
-// const apiurl = 'http://10.0.2.2:3000/';
+// const apiurl = Platform.OS == 'ios' ? 'http://localhost:3000/' : 'http://10.0.2.2:3000/';
 
 //loginAuth
 const _loginAuth = async (params) => {
@@ -123,6 +125,28 @@ const _addDoctorSosmed = async (params) => {
 
     let responJson = await respon.json();
     return responJson.values;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const _deleteDoctor = async (params) => {
+  try {
+    let respon = null;
+
+    if (params) {
+      respon = await fetch(apiurl + 'deleteDoctor', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+    }
+
+    let responJson = await respon.json();
+    return responJson.status;
   } catch (err) {
     console.log(err);
   }
@@ -260,6 +284,28 @@ const _addAnalysisPatient = async (params) => {
   }
 };
 
+const _addPdfReport = async (params) => {
+  try {
+    let respon = null;
+
+    if (params) {
+      respon = await fetch(apiurl + 'addPdfReport', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: params,
+      });
+    }
+
+    let responJson = await respon.json();
+    return responJson.status;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const _viewExistingAnalysis = async (params) => {
   try {
     let respon = null;
@@ -337,11 +383,13 @@ export {
   _viewCountries,
   _addDoctor,
   _addDoctorSosmed,
+  _deleteDoctor,
   _addPatient,
   _addPatientNoImage,
   _viewPatient,
   _delPatient,
   _addAnalysisPatient,
+  _addPdfReport,
   _openImage,
   _viewPatientPagination,
   _viewExistingAnalysis,

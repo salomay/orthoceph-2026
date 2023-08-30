@@ -54,6 +54,7 @@ import {
   SET_SUBHEADERTEXT,
   SET_LOADING,
   SET_LOADING_GLOBAL,
+  SET_SELECT_ID,
 } from '../actions/types';
 
 const initialState = {
@@ -90,6 +91,7 @@ const initialState = {
   subHeaderText: '',
   loading: false,
   loadingGlobal: false,
+  selectid: null,
 };
 
 const variabelReducer = (state = initialState, action) => {
@@ -379,6 +381,12 @@ const variabelReducer = (state = initialState, action) => {
       return {
         ...state,
         loadingGlobal: action.data,
+      };
+
+    case SET_SELECT_ID:
+      return {
+        ...state,
+        selectid: action.data,
       };
 
     default:

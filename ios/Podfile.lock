@@ -247,6 +247,8 @@ PODS:
   - React-jsinspector (0.68.0)
   - React-logger (0.68.0):
     - glog
+  - react-native-aes-gcm-crypto (0.2.2):
+    - React-Core
   - react-native-blob-util (0.17.3):
     - React-Core
   - react-native-fbsdk-next (11.2.1):
@@ -425,6 +427,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
+  - react-native-aes-gcm-crypto (from `../node_modules/react-native-aes-gcm-crypto`)
   - react-native-blob-util (from `../node_modules/react-native-blob-util`)
   - react-native-fbsdk-next (from `../node_modules/react-native-fbsdk-next`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
@@ -516,6 +519,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   React-logger:
     :path: "../node_modules/react-native/ReactCommon/logger"
+  react-native-aes-gcm-crypto:
+    :path: "../node_modules/react-native-aes-gcm-crypto"
   react-native-blob-util:
     :path: "../node_modules/react-native-blob-util"
   react-native-fbsdk-next:
@@ -624,6 +629,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 010a66edf644339f6da72b34208b070089680415
   React-jsinspector: 90f0bfd5d04e0b066c29216a110ffb9a6c34f23f
   React-logger: 8474fefa09d05f573a13c044cb0dfd751d4e52e3
+  react-native-aes-gcm-crypto: aede020a167cf3f2d24cf8d398f5ed75fca33ef2
   react-native-blob-util: 99f4d79189252f597fe0d810c57a3733b1b1dea6
   react-native-fbsdk-next: 5291a5d67aab4e649d072c50988033ff0d05b915
   react-native-geolocation: 936ffb0eea5d32a0e4f4d36a6d04d2e6eee8ebe0

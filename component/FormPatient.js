@@ -244,7 +244,7 @@ class FormPatient extends React.Component {
             subtitle=""
             color="white"
             titleStyle={{
-              fontSize: wp(5),
+              fontSize: wp(3.5),
               fontWeight: 'bold',
               textAlign: 'center',
               // marginLeft: Platform.OS == 'ios' ? 0 : -60,
@@ -378,7 +378,7 @@ class FormPatient extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: 22,
+                fontSize: wp(5),
                 marginLeft: 20,
                 paddingTop: hp(5),
                 fontWeight: 'bold',
@@ -389,7 +389,7 @@ class FormPatient extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: 18,
+                fontSize: wp(4),
                 marginLeft: 20,
                 paddingTop: 10,
                 paddingBottom: hp(5),
