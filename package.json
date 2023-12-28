@@ -27,6 +27,7 @@
     "react": "^16.11.0",
     "react-native": "^0.68.0",
     "react-native-aes-gcm-crypto": "^0.2.2",
+    "react-native-base64": "^0.2.1",
     "react-native-blob-util": "^0.17.3",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-fbsdk-next": "^11.2.1",

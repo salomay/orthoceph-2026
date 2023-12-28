@@ -81,6 +81,7 @@ export default class FormCompareResult extends React.Component {
         <View style={styles.container}>
           <Pdf
             source={source}
+            horizontal={true}
             onLoadComplete={(numberOfPages, filePath) => {
               console.log(`Number of pages: ${numberOfPages}`);
             }}
@@ -103,14 +104,14 @@ export default class FormCompareResult extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'flex-start',
+    // flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 25,
+    marginTop: '-20%',
   },
   pdf: {
-    flex: 1,
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    // flex: 1,
+    width: '100%',
+    height: '100%',
   },
 });

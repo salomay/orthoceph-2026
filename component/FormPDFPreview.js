@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Dimensions, View} from 'react-native';
+import {StyleSheet, Dimensions, View, BackHandler} from 'react-native';
 import Pdf from 'react-native-pdf';
 import {Appbar, TextInput} from 'react-native-paper';
 import {
@@ -9,6 +9,30 @@ import {
 import Share from 'react-native-share';
 
 export default class FormPdfPreview extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  handleBackButtonClick() {
+    this.props.navigation.goBack(null);
+    return true;
+  }
+
   _onShareReport = async () => {
     const _pdf = this.props.route.params.fileBase64;
     if (_pdf) {
@@ -81,6 +105,9 @@ export default class FormPdfPreview extends React.Component {
         <View style={styles.container}>
           <Pdf
             source={source}
+            fitWidth={true}
+            // fitPolicy={100}
+            horizontal={true}
             onLoadComplete={(numberOfPages, filePath) => {
               console.log(`Number of pages: ${numberOfPages}`);
             }}
@@ -103,14 +130,14 @@ export default class FormPdfPreview extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'flex-start',
+    // flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 25,
+    marginTop: '-20%',
   },
   pdf: {
-    flex: 1,
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    // flex: 1,
+    width: '100%',
+    height: '100%',
   },
 });

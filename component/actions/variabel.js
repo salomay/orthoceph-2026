@@ -97,6 +97,8 @@ import {
   SET_LOADING,
   SET_LOADING_GLOBAL,
   SET_SELECT_ID,
+  SET_WIDTH_IMAGE,
+  SET_HEIGHT_IMAGE,
 } from './types';
 
 export const set_press_analysis = (value) => ({
@@ -581,5 +583,15 @@ export const set_loading_global = (value) => ({
 
 export const set_select_id = (value) => ({
   type: SET_SELECT_ID,
+  data: value,
+});
+
+export const set_width_last_device = (value) => ({
+  type: SET_WIDTH_IMAGE,
+  data: value,
+});
+
+export const set_height_last_device = (value) => ({
+  type: SET_HEIGHT_IMAGE,
   data: value,
 });

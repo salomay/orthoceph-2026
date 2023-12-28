@@ -21,10 +21,13 @@ import {
   View,
   ToastAndroid,
   ActivityIndicator,
+  StatusBar,
+  BackHandler,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import ImageZoom from 'react-native-image-pan-zoom';
 import ImageViewer from 'react-native-image-pan-zoom/built/image-zoom/image-zoom.component';
-import {Appbar, TextInput, CardTitle} from 'react-native-paper';
+import {Appbar, TextInput, CardTitle, Button} from 'react-native-paper';
 import {
   useFocusEffect,
   useNavigation,
@@ -38,11 +41,11 @@ import Modal from 'react-native-modal';
 import ViewShot, {captureRef} from 'react-native-view-shot';
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import Svg, {Circle, Line, G, Rect} from 'react-native-svg';
+import Svg, {Circle, Line, G, Rect, SvgXml} from 'react-native-svg';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
-import {connect} from 'react-redux';
+import {connect, useDispatch} from 'react-redux';
 
 import {
   set_markingdot,
@@ -141,6 +144,8 @@ import {
   set_loading,
   set_loading_global,
   set_select_id,
+  set_width_last_device,
+  set_height_last_device,
 } from './actions/variabel';
 import {CALIBRATION_DETAILS, MARK_DETAILS} from './common/Constants';
 import {generateCephHtml} from './common/Utils';
@@ -177,6 +182,11 @@ const spacing = 16;
 const {width, height} = Dimensions.get('screen');
 const dashes = new Array(Math.floor(100 / spacing)).fill(null);
 
+var touch_count = 0;
+var point_speed = 0.3;
+var marker = [21];
+var bantuClick = true;
+
 export const newAnalysis = (props) => {
   props.props.set_loading(true);
   props.props.navigation.closeDrawer();
@@ -207,11 +217,12 @@ export const newAnalysis = (props) => {
     } else {
       let source = {uri: response.assets[0].uri};
 
+      marker = [];
+
       props.props.set_tempgambar(source);
       props.props.set_imageuri(response.assets[0].uri);
       props.props.set_imagetype(response.assets[0].type);
       props.props.set_imagefilename(response.assets[0].fileName);
-      props.props.navigation.closeDrawer();
 
       props.props.remove_startingPoint([]);
       props.props.remove_endPoint([]);
@@ -273,7 +284,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   const refImageZoom = useRef();
   const click_imageZoom = useRef(null);
 
-  const [marker, setMarker] = useState([21]);
+  // const [marker, setMarker] = useState([21]);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageModal, setImageModal] = useState(null);
   const [textModal, setTextModal] = useState('');
@@ -284,15 +295,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   const [correctionPoint, setcorrectionPoint] = useState(null);
 
   const fadeAnim = useRef(new Animated.Value(3)).current;
+  const strokeBorderAnim = useRef(new Animated.Value(0.8)).current;
+  //BACK HANDLER
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert(
+        'Do you want to save before exiting?',
+        'Unsaved work will be lost.',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => null,
+            style: 'cancel',
+          },
+          {
+            text: 'DONT SAVE',
+            onPress: () => props.navigation.goBack(),
+            style: 'cancel',
+          },
+          {text: 'SAVE', onPress: () => props.set_press_save_analysis(true)},
+        ],
+      );
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
 
-  // const [patientId, setPatientId] = useState(null);
-  // const [doctorId, setDoctorId] = useState(null);
-  // const [fullName, setFullName] = useState(null);
-  // const [gender, setGender] = useState(null);
-  // const [birthDate, setBirthDate] = useState(null);
-  // const [photo, setPhoto] = useState(null);
-  // const [race, setRace] = useState(null);
-  // const [ageInYears, setAgeInYears] = useState(null);
+    return () => backHandler.remove();
+  }, []);
 
   useEffect(() => {
     setTitleText('');
@@ -356,7 +388,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   useEffect(() => {
     console.log('bantumarker : ' + props.bantuMarker);
-    if (props.bantuMarker > 0 && props.tempGambar) {
+    if (props.bantuMarker > 0 && props.tempGambar && props.bantuMarker < 23) {
       props.set_disable_pointer('auto');
       props.set_opacity_pointer(1);
 
@@ -365,10 +397,18 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         duration: 500,
         useNativeDriver: true,
       }).reset();
-    } else {
+      console.log('###masuk edit point###' + props.bantuMarker);
+    } else if (props.bantuMarker === 23) {
+      props.navigation.openDrawer();
+
+      // props.set_resultanalysis(false);
+      // props.set_detailresult(false);
+    } else if (props.bantuMarker === 24) {
       props.set_disable_pointer('none');
       props.set_opacity_pointer(0.5);
       props.set_enablesave(false);
+      props.set_detailresult(false);
+      _analysis();
     }
 
     setTitle();
@@ -388,8 +428,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   //existing load all data after loading
   useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1.3,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+    Animated.timing(strokeBorderAnim, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
     if (props.bantuMarker == 23 && props.loading == false) {
-      _analysis();
     }
   }, [props.loading]);
 
@@ -405,15 +454,6 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }
     };
   }, [pinchToZoom]);
-
-  useEffect(() => {
-    if (props.startingPoint[0]) {
-    } else {
-      setMarker([]);
-    }
-
-    return () => {};
-  }, [props.startingPoint]);
 
   useLayoutEffect(() => {
     return () => {
@@ -477,120 +517,41 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     checkData();
   };
 
-  checkData = () => {
-    setMarker([]);
+  useEffect(() => {
+    if (props.widthLastDevice && props.heightLastDevice) {
+      console.log('width Last : ' + props.widthLastDevice);
+      console.log('height Last : ' + props.heightLastDevice);
+      load_point();
+    }
+  }, [props.widthLastDevice, props.heightLastDevice]);
+
+  checkData = async () => {
+    marker = [];
 
     var data = {
       patientid: props.patientid,
       step: props.step,
     };
 
-    _viewExistingAnalysis(data)
+    await _viewExistingAnalysis(data)
       .then((result) => {
         if (result[0].jumlah > 0) {
-          console.log('width :' + width);
-          console.log('height :' + height);
-          if (height >= 700 && height <= 750) {
-            setScaleScreen({
-              x: 0,
-              y: 20,
-              scale: 1,
-              duration: 100,
-            });
-            setcorrectionPoint(0.0);
-          } else if (height > 750 && height <= 895) {
-            setScaleScreen({
-              x: 0,
-              y: 80,
-              scale: 1.3,
-              duration: 100,
-            });
-            setcorrectionPoint(0.06);
-          } else if (height > 895 && height <= 950) {
-            setScaleScreen({
-              x: 0,
-              y: 10,
-              scale: 1.2,
-              duration: 100,
-            });
-            setcorrectionPoint(0.001);
-          } else if (height > 950 && height <= 1133) {
-            setScaleScreen({
-              x: 0,
-              y: 10,
-              scale: 0.9,
-              duration: 100,
-            });
-            setcorrectionPoint(0.8);
-          } else if (height > 1133 && height <= 1194) {
-            setScaleScreen({
-              x: 0,
-              y: 10,
-              scale: 0.9,
-              duration: 100,
-            });
-            setcorrectionPoint(1.02);
-          } else if (height > 1194 && height <= 1366) {
-            setScaleScreen({
-              x: 0,
-              y: -100,
-              scale: 0.9,
-              duration: 100,
-            });
-            setcorrectionPoint(1.48);
-          } else {
-            setScaleScreen({
-              x: 0,
-              y: 0,
-              scale: 0.9,
-              duration: 100,
-            });
-            setcorrectionPoint(0.8);
-          }
-
-          props.set_bantuMarker(23);
+          props.set_width_last_device(result[0].width);
+          props.set_height_last_device(result[0].height);
 
           let gambarnya = _openImage(result[0].images);
+
           let source = {uri: gambarnya};
 
-          if (gambarnya) {
-            props.navigation.closeDrawer();
+          if (source) {
+            console.log('load Source Image');
             props.set_tempgambar(source);
 
-            props.set_startingPoint(JSON.parse(result[0].startingPoint));
-            props.set_endPoint(JSON.parse(result[0].endPoint));
-            props.set_calibrationDistance(
-              '' + result[0].calibrationDistance + '',
-            );
-            props.set_sella(JSON.parse(result[0].sella));
-            props.set_nasion(JSON.parse(result[0].nasion));
-            props.set_pointa(JSON.parse(result[0].pointA));
-            props.set_pointb(JSON.parse(result[0].pointB));
-            props.set_u6(JSON.parse(result[0].u6));
-            props.set_u4(JSON.parse(result[0].u4));
-            props.set_gonion(JSON.parse(result[0].gonion));
-            props.set_gnathion(JSON.parse(result[0].gnathion));
-            props.set_isa(JSON.parse(result[0].isa));
-            props.set_isi(JSON.parse(result[0].isi));
-            props.set_iia(JSON.parse(result[0].iia));
-            props.set_iii(JSON.parse(result[0].iii));
-            props.set_ms(JSON.parse(result[0].ms));
-            props.set_pogs(JSON.parse(result[0].pogs));
-            props.set_li(JSON.parse(result[0].li));
-            props.set_ls(JSON.parse(result[0].ls));
-            props.set_pog(JSON.parse(result[0].pog));
-            props.set_ans(JSON.parse(result[0].ans));
-            props.set_menton(JSON.parse(result[0].menton));
-
-            // setTimeout(() => {
-
-            loadExistingMarker();
-            props.set_loading(false);
-            // }, 5000);
+            setTitleText('Load Image');
           }
         } else {
           props.set_bantuMarker(0);
-          setMarker([]);
+          marker = [];
           props.set_loading(false);
           return false;
         }
@@ -601,192 +562,136 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       });
   };
 
-  function correction_XY(x_y_point) {
+  load_point = () => {
+    var data = {
+      patientid: props.patientid,
+      step: props.step,
+    };
+
+    _viewExistingAnalysis(data)
+      .then((result) => {
+        console.log('####' + JSON.stringify(result));
+        if (result[0].jumlah > 0) {
+          props.set_startingPoint(
+            load_correction_X_Y(JSON.parse(result[0].startingPoint)),
+          );
+
+          props.set_endPoint(
+            load_correction_X_Y(JSON.parse(result[0].endPoint)),
+          );
+          props.set_calibrationDistance(
+            '' + result[0].calibrationDistance + '',
+          );
+          props.set_sella(load_correction_X_Y(JSON.parse(result[0].sella)));
+          props.set_nasion(load_correction_X_Y(JSON.parse(result[0].nasion)));
+          props.set_pointa(load_correction_X_Y(JSON.parse(result[0].pointA)));
+          props.set_pointb(load_correction_X_Y(JSON.parse(result[0].pointB)));
+          props.set_u6(load_correction_X_Y(JSON.parse(result[0].u6)));
+          props.set_u4(load_correction_X_Y(JSON.parse(result[0].u4)));
+          props.set_gonion(load_correction_X_Y(JSON.parse(result[0].gonion)));
+          props.set_gnathion(
+            load_correction_X_Y(JSON.parse(result[0].gnathion)),
+          );
+          props.set_isa(load_correction_X_Y(JSON.parse(result[0].isa)));
+          props.set_isi(load_correction_X_Y(JSON.parse(result[0].isi)));
+          props.set_iia(load_correction_X_Y(JSON.parse(result[0].iia)));
+          props.set_iii(load_correction_X_Y(JSON.parse(result[0].iii)));
+          props.set_ms(load_correction_X_Y(JSON.parse(result[0].ms)));
+          props.set_pogs(load_correction_X_Y(JSON.parse(result[0].pogs)));
+          props.set_li(load_correction_X_Y(JSON.parse(result[0].li)));
+          props.set_ls(load_correction_X_Y(JSON.parse(result[0].ls)));
+          props.set_pog(load_correction_X_Y(JSON.parse(result[0].pog)));
+          props.set_ans(load_correction_X_Y(JSON.parse(result[0].ans)));
+          props.set_menton(load_correction_X_Y(JSON.parse(result[0].menton)));
+
+          loadExistingMarker(JSON.parse(result[0].startingPoint));
+          loadExistingMarker(JSON.parse(result[0].endPoint));
+          loadExistingMarker(JSON.parse(result[0].sella));
+          loadExistingMarker(JSON.parse(result[0].nasion));
+          loadExistingMarker(JSON.parse(result[0].pointA));
+          loadExistingMarker(JSON.parse(result[0].pointB));
+          loadExistingMarker(JSON.parse(result[0].u6));
+          loadExistingMarker(JSON.parse(result[0].u4));
+          loadExistingMarker(JSON.parse(result[0].gonion));
+          loadExistingMarker(JSON.parse(result[0].gnathion));
+          loadExistingMarker(JSON.parse(result[0].isa));
+          loadExistingMarker(JSON.parse(result[0].isi));
+          loadExistingMarker(JSON.parse(result[0].iia));
+          loadExistingMarker(JSON.parse(result[0].iii));
+          loadExistingMarker(JSON.parse(result[0].ms));
+          loadExistingMarker(JSON.parse(result[0].pogs));
+          loadExistingMarker(JSON.parse(result[0].li));
+          loadExistingMarker(JSON.parse(result[0].ls));
+          loadExistingMarker(JSON.parse(result[0].pog));
+          loadExistingMarker(JSON.parse(result[0].ans));
+          loadExistingMarker(JSON.parse(result[0].menton));
+          props.set_bantuMarker(24);
+        } else {
+          props.set_bantuMarker(0);
+          marker = [];
+          props.set_loading(false);
+          return false;
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+      });
+  };
+
+  function load_correction_X(x_point) {
     let data = null;
 
-    data =
-      height > 950
-        ? x_y_point + x_y_point * correctionPoint
-        : x_y_point - x_y_point * correctionPoint;
+    // if (Number(width).toFixed(0) > props.widthLastDevice) {
+    //   data = x_point ;
+    // + (width - props.widthLastDevice - 1);
+    // } else if (Number(width).toFixed(0) < props.widthLastDevice) {
+    //   data = x_point - (props.widthLastDevice - width + 1);
+    // } else {
+    data = x_point;
+    // }
 
     return data;
   }
 
-  loadExistingMarker = () => {
-    props.set_markingdot(true);
-    props.set_resultanalysis(false);
+  function load_correction_Y(y_point) {
+    let data = null;
 
-    if (props.startingPoint[0]?.x && props.startingPoint[0]?.y) {
+    // if (Number(height).toFixed(0) > props.heightLastDevice) {
+    //   console.log(Number(height).toFixed(0) + ' > ' + props.heightLastDevice);
+    //   data = y_point + (height - props.heightLastDevice - 10);
+    // } else if (Number(height).toFixed(0) < props.heightLastDevice) {
+    //   console.log(Number(height).toFixed(0) + ' < ' + props.heightLastDevice);
+    //   data = y_point - (props.heightLastDevice - height + 10);
+    // } else {
+    data = y_point;
+    // }
+
+    return data;
+  }
+
+  function load_correction_X_Y(x_y_point) {
+    let data = null;
+
+    data = {
+      x: load_correction_X(x_y_point.x),
+      y: load_correction_Y(x_y_point.y),
+    };
+
+    return data;
+  }
+
+  function loadExistingMarker(point) {
+    if (point.x && point.y) {
       let newMarker = {
-        x: correction_XY(props.startingPoint[0].x),
-        y: correction_XY(props.startingPoint[0].y),
+        x: point.x,
+        y: point.y,
       };
 
-      setMarker((prevState) => [...prevState, newMarker]);
+      marker.push(newMarker);
+      // setMarker((prevState) => [...prevState, newMarker]);
     }
-    if (props.endPoint[0]?.x && props.endPoint[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.endPoint[0].x),
-        y: correction_XY(props.endPoint[0].y),
-      };
-
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.sella[0]?.x && props.sella[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.sella[0].x),
-        y: correction_XY(props.sella[0].y),
-      };
-
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-    if (props.nasion[0]?.x && props.nasion[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.nasion[0].x),
-        y: correction_XY(props.nasion[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.pointa[0]?.x && props.pointa[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.pointa[0].x),
-        y: correction_XY(props.pointa[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.pointb[0]?.x && props.pointb[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.pointb[0].x),
-        y: correction_XY(props.pointb[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.u6[0]?.x && props.u6[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.u6[0].x),
-        y: correction_XY(props.u6[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.u4[0]?.x && props.u4[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.u4[0].x),
-        y: correction_XY(props.u4[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.gonion[0]?.x && props.gonion[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.gonion[0].x),
-        y: correction_XY(props.gonion[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.gnathion[0]?.x && props.gnathion[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.gnathion[0].x),
-        y: correction_XY(props.gnathion[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.isa[0]?.x && props.isa[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.isa[0].x),
-        y: correction_XY(props.isa[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.isi[0]?.x && props.isi[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.isi[0].x),
-        y: correction_XY(props.isi[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.iia[0]?.x && props.iia[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.iia[0].x),
-        y: correction_XY(props.iia[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.iii[0]?.x && props.iii[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.iii[0].x),
-        y: correction_XY(props.iii[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.ms[0]?.x && props.ms[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.ms[0].x),
-        y: correction_XY(props.ms[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.pogs[0]?.x && props.pogs[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.pogs[0].x),
-        y: correction_XY(props.pogs[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.ls[0]?.x && props.ls[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.ls[0].x),
-        y: correction_XY(props.ls[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.li[0]?.x && props.li[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.li[0].x),
-        y: correction_XY(props.li[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.pog[0]?.x && props.pog[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.pog[0].x),
-        y: correction_XY(props.pog[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.ans[0]?.x && props.ans[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.ans[0].x),
-        y: correction_XY(props.ans[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    if (props.menton[0]?.x && props.menton[0]?.y) {
-      let newMarker = {
-        x: correction_XY(props.menton[0].x),
-        y: correction_XY(props.menton[0].y),
-      };
-      setMarker((prevState) => [...prevState, newMarker]);
-    }
-
-    setTitle();
-  };
+  }
 
   function _clickImage(
     event = null,
@@ -801,7 +706,9 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       newMarker = {
         x: event.locationX,
         y: event.locationY,
+        edit: true,
       };
+      console.log('#### Marker Point ###' + newMarker);
     }
 
     //  Starting Point
@@ -811,42 +718,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.startingPoint[0].x,
-          y: props.startingPoint[0].y - 2,
+          y: props.startingPoint[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.startingPoint[0].x,
-          y: props.startingPoint[0].y + 2,
+          y: props.startingPoint[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.startingPoint[0].x + 2,
+          x: props.startingPoint[0].x + point_speed,
           y: props.startingPoint[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.startingPoint[0].x - 2,
+          x: props.startingPoint[0].x - point_speed,
           y: props.startingPoint[0].y,
+          edit: true,
         };
       }
 
-      if (props.startingPoint[0]?.x && props.startingPoint[0]?.y) {
-        let newArr = [...marker];
-        newArr[0] = newMarker;
-        setMarker(newArr);
-        marker.splice(0, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[0] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[0] = newMarker;
 
       props.set_startingPoint(newMarker);
     }
@@ -857,42 +758,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.endPoint[0].x,
-          y: props.endPoint[0].y - 2,
+          y: props.endPoint[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.endPoint[0].x,
-          y: props.endPoint[0].y + 2,
+          y: props.endPoint[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.endPoint[0].x + 2,
+          x: props.endPoint[0].x + point_speed,
           y: props.endPoint[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.endPoint[0].x - 2,
+          x: props.endPoint[0].x - point_speed,
           y: props.endPoint[0].y,
+          edit: true,
         };
       }
 
-      if (props.endPoint[0]?.x && props.endPoint[0]?.y) {
-        let newArr = [...marker];
-        newArr[1] = newMarker;
-        setMarker(newArr);
-        marker.splice(1, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[1] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[1] = newMarker;
 
       props.set_endPoint(newMarker);
     }
@@ -909,41 +804,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.sella[0].x,
-          y: props.sella[0].y - 2,
+          y: props.sella[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.sella[0].x,
-          y: props.sella[0].y + 2,
+          y: props.sella[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.sella[0].x + 2,
+          x: props.sella[0].x + point_speed,
           y: props.sella[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.sella[0].x - 2,
+          x: props.sella[0].x - point_speed,
           y: props.sella[0].y,
+          edit: true,
         };
       }
 
-      if (props.sella[0]?.x && props.sella[0]?.y) {
-        let newArr = [...marker];
-        newArr[2] = newMarker;
-        setMarker(newArr);
-        marker.splice(2, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[2] = newMarker;
-        setMarker(updatedMarker);
-      }
+      marker[2] = newMarker;
 
       props.set_sella(newMarker);
     }
@@ -954,41 +844,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.nasion[0].x,
-          y: props.nasion[0].y - 2,
+          y: props.nasion[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.nasion[0].x,
-          y: props.nasion[0].y + 2,
+          y: props.nasion[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.nasion[0].x + 2,
+          x: props.nasion[0].x + point_speed,
           y: props.nasion[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.nasion[0].x - 2,
+          x: props.nasion[0].x - point_speed,
           y: props.nasion[0].y,
+          edit: true,
         };
       }
 
-      if (props.nasion[0]?.x && props.nasion[0]?.y) {
-        let newArr = [...marker];
-        newArr[3] = newMarker;
-        setMarker(newArr);
-        marker.splice(3, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[3] = newMarker;
-        setMarker(updatedMarker);
-      }
+      marker[3] = newMarker;
       props.set_nasion(newMarker);
     }
     //  POINTA
@@ -998,43 +883,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.pointa[0].x,
-          y: props.pointa[0].y - 2,
+          y: props.pointa[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.pointa[0].x,
-          y: props.pointa[0].y + 2,
+          y: props.pointa[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pointa[0].x + 2,
+          x: props.pointa[0].x + point_speed,
           y: props.pointa[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pointa[0].x - 2,
+          x: props.pointa[0].x - point_speed,
           y: props.pointa[0].y,
+          edit: true,
         };
       }
 
-      if (props.pointa[0]?.x && props.pointa[0]?.y) {
-        let newArr = [...marker];
-        newArr[4] = newMarker;
-        setMarker(newArr);
-        marker.splice(4, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[4] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[4] = newMarker;
       props.set_pointa(newMarker);
     }
     //  POINTB
@@ -1044,42 +922,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.pointb[0].x,
-          y: props.pointb[0].y - 2,
+          y: props.pointb[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.pointb[0].x,
-          y: props.pointb[0].y + 2,
+          y: props.pointb[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pointb[0].x + 2,
+          x: props.pointb[0].x + point_speed,
           y: props.pointb[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pointb[0].x - 2,
+          x: props.pointb[0].x - point_speed,
           y: props.pointb[0].y,
+          edit: true,
         };
       }
 
-      if (props.pointb[0]?.x && props.pointb[0]?.y) {
-        let newArr = [...marker];
-        newArr[5] = newMarker;
-        setMarker(newArr);
-        marker.splice(5, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[5] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[5] = newMarker;
       props.set_pointb(newMarker);
     }
     //  U6
@@ -1089,43 +961,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.u6[0].x,
-          y: props.u6[0].y - 2,
+          y: props.u6[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.u6[0].x,
-          y: props.u6[0].y + 2,
+          y: props.u6[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.u6[0].x + 2,
+          x: props.u6[0].x + point_speed,
           y: props.u6[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.u6[0].x - 2,
+          x: props.u6[0].x - point_speed,
           y: props.u6[0].y,
+          edit: true,
         };
       }
 
-      if (props.u6[0]?.x && props.pointb[0]?.y) {
-        let newArr = [...marker];
-        newArr[6] = newMarker;
-        setMarker(newArr);
-        marker.splice(6, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[6] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[6] = newMarker;
       props.set_u6(newMarker);
     }
     //  U4
@@ -1135,43 +1000,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.u4[0].x,
-          y: props.u4[0].y - 2,
+          y: props.u4[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.u4[0].x,
-          y: props.u4[0].y + 2,
+          y: props.u4[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.u4[0].x + 2,
+          x: props.u4[0].x + point_speed,
           y: props.u4[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.u4[0].x - 2,
+          x: props.u4[0].x - point_speed,
           y: props.u4[0].y,
+          edit: true,
         };
       }
 
-      if (props.u4[0]?.x && props.u4[0]?.y) {
-        let newArr = [...marker];
-        newArr[7] = newMarker;
-        setMarker(newArr);
-        marker.splice(7, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[7] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[7] = newMarker;
       props.set_u4(newMarker);
     }
     //  GONION
@@ -1181,43 +1039,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.gonion[0].x,
-          y: props.gonion[0].y - 2,
+          y: props.gonion[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.gonion[0].x,
-          y: props.gonion[0].y + 2,
+          y: props.gonion[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.gonion[0].x + 2,
+          x: props.gonion[0].x + point_speed,
           y: props.gonion[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.gonion[0].x - 2,
+          x: props.gonion[0].x - point_speed,
           y: props.gonion[0].y,
+          edit: true,
         };
       }
 
-      if (props.gonion[0]?.x && props.u4[0]?.y) {
-        let newArr = [...marker];
-        newArr[8] = newMarker;
-        setMarker(newArr);
-        marker.splice(8, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[8] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[8] = newMarker;
       props.set_gonion(newMarker);
     }
     //  GNATHION
@@ -1227,43 +1078,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.gnathion[0].x,
-          y: props.gnathion[0].y - 2,
+          y: props.gnathion[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.gnathion[0].x,
-          y: props.gnathion[0].y + 2,
+          y: props.gnathion[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.gnathion[0].x + 2,
+          x: props.gnathion[0].x + point_speed,
           y: props.gnathion[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.gnathion[0].x - 2,
+          x: props.gnathion[0].x - point_speed,
           y: props.gnathion[0].y,
+          edit: true,
         };
       }
 
-      if (props.gnathion[0]?.x && props.gnathion[0]?.y) {
-        let newArr = [...marker];
-        newArr[9] = newMarker;
-        setMarker(newArr);
-        marker.splice(9, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[9] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[9] = newMarker;
       props.set_gnathion(newMarker);
     }
     //  ISA
@@ -1273,43 +1117,35 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.isa[0].x,
-          y: props.isa[0].y - 2,
+          y: props.isa[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.isa[0].x,
-          y: props.isa[0].y + 2,
+          y: props.isa[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.isa[0].x + 2,
+          x: props.isa[0].x + point_speed,
           y: props.isa[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.isa[0].x - 2,
+          x: props.isa[0].x - point_speed,
           y: props.isa[0].y,
+          edit: true,
         };
       }
-
-      if (props.isa[0]?.x && props.isa[0]?.y) {
-        let newArr = [...marker];
-        newArr[10] = newMarker;
-        setMarker(newArr);
-        marker.splice(10, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[10] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[10] = newMarker;
       props.set_isa(newMarker);
     }
     //  ISI
@@ -1319,43 +1155,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.isi[0].x,
-          y: props.isi[0].y - 2,
+          y: props.isi[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.isi[0].x,
-          y: props.isi[0].y + 2,
+          y: props.isi[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.isi[0].x + 2,
+          x: props.isi[0].x + point_speed,
           y: props.isi[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.isi[0].x - 2,
+          x: props.isi[0].x - point_speed,
           y: props.isi[0].y,
+          edit: true,
         };
       }
 
-      if (props.isi[0]?.x && props.isi[0]?.y) {
-        let newArr = [...marker];
-        newArr[11] = newMarker;
-        setMarker(newArr);
-        marker.splice(11, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[11] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[11] = newMarker;
       props.set_isi(newMarker);
     }
     //  IIA
@@ -1365,43 +1194,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.iia[0].x,
-          y: props.iia[0].y - 2,
+          y: props.iia[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.iia[0].x,
-          y: props.iia[0].y + 2,
+          y: props.iia[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.iia[0].x + 2,
+          x: props.iia[0].x + point_speed,
           y: props.iia[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.iia[0].x - 2,
+          x: props.iia[0].x - point_speed,
           y: props.iia[0].y,
+          edit: true,
         };
       }
 
-      if (props.iia[0]?.x && props.iia[0]?.y) {
-        let newArr = [...marker];
-        newArr[12] = newMarker;
-        setMarker(newArr);
-        marker.splice(12, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[12] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[12] = newMarker;
       props.set_iia(newMarker);
     }
     //  III
@@ -1411,43 +1233,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.iii[0].x,
-          y: props.iii[0].y - 2,
+          y: props.iii[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.iii[0].x,
-          y: props.iii[0].y + 2,
+          y: props.iii[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.iii[0].x + 2,
+          x: props.iii[0].x + point_speed,
           y: props.iii[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.iii[0].x - 2,
+          x: props.iii[0].x - point_speed,
           y: props.iii[0].y,
+          edit: true,
         };
       }
 
-      if (props.iii[0]?.x && props.iia[0]?.y) {
-        let newArr = [...marker];
-        newArr[13] = newMarker;
-        setMarker(newArr);
-        marker.splice(13, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[13] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[13] = newMarker;
       props.set_iii(newMarker);
     }
     //  MS
@@ -1457,43 +1272,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.ms[0].x,
-          y: props.ms[0].y - 2,
+          y: props.ms[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.ms[0].x,
-          y: props.ms[0].y + 2,
+          y: props.ms[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.ms[0].x + 2,
+          x: props.ms[0].x + point_speed,
           y: props.ms[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.ms[0].x - 2,
+          x: props.ms[0].x - point_speed,
           y: props.ms[0].y,
+          edit: true,
         };
       }
 
-      if (props.ms[0]?.x && props.ms[0]?.y) {
-        let newArr = [...marker];
-        newArr[14] = newMarker;
-        setMarker(newArr);
-        marker.splice(14, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[14] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[14] = newMarker;
       props.set_ms(newMarker);
     }
     //  POGS
@@ -1503,42 +1311,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.pogs[0].x,
-          y: props.pogs[0].y - 2,
+          y: props.pogs[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.pogs[0].x,
-          y: props.pogs[0].y + 2,
+          y: props.pogs[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pogs[0].x + 2,
+          x: props.pogs[0].x + point_speed,
           y: props.pogs[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pogs[0].x - 2,
+          x: props.pogs[0].x - point_speed,
           y: props.pogs[0].y,
+          edit: true,
         };
       }
 
-      if (props.pogs[0]?.x && props.pogs[0]?.y) {
-        let newArr = [...marker];
-        newArr[15] = newMarker;
-        setMarker(newArr);
-        marker.splice(15, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[15] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[15] = newMarker;
 
       props.set_pogs(newMarker);
     }
@@ -1549,43 +1351,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.ls[0].x,
-          y: props.ls[0].y - 2,
+          y: props.ls[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.ls[0].x,
-          y: props.ls[0].y + 2,
+          y: props.ls[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.ls[0].x + 2,
+          x: props.ls[0].x + point_speed,
           y: props.ls[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.ls[0].x - 2,
+          x: props.ls[0].x - point_speed,
           y: props.ls[0].y,
+          edit: true,
         };
       }
 
-      if (props.ls[0]?.x && props.ls[0]?.y) {
-        let newArr = [...marker];
-        newArr[16] = newMarker;
-        setMarker(newArr);
-        marker.splice(16, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[16] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[16] = newMarker;
       props.set_ls(newMarker);
     }
     //  LI
@@ -1595,43 +1390,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.li[0].x,
-          y: props.li[0].y - 2,
+          y: props.li[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.li[0].x,
-          y: props.li[0].y + 2,
+          y: props.li[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.li[0].x + 2,
+          x: props.li[0].x + point_speed,
           y: props.li[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.li[0].x - 2,
+          x: props.li[0].x - point_speed,
           y: props.li[0].y,
+          edit: true,
         };
       }
 
-      if (props.li[0]?.x && props.li[0]?.y) {
-        let newArr = [...marker];
-        newArr[17] = newMarker;
-        setMarker(newArr);
-        marker.splice(17, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[17] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
-
+      marker[17] = newMarker;
       props.set_li(newMarker);
     }
     //  POG
@@ -1641,42 +1429,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.pog[0].x,
-          y: props.pog[0].y - 2,
+          y: props.pog[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.pog[0].x,
-          y: props.pog[0].y + 2,
+          y: props.pog[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pog[0].x + 2,
+          x: props.pog[0].x + point_speed,
           y: props.pog[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pog[0].x - 2,
+          x: props.pog[0].x - point_speed,
           y: props.pog[0].y,
+          edit: true,
         };
       }
 
-      if (props.pog[0]?.x && props.pog[0]?.y) {
-        let newArr = [...marker];
-        newArr[18] = newMarker;
-        setMarker(newArr);
-        marker.splice(18, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[18] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[18] = newMarker;
 
       props.set_pog(newMarker);
     }
@@ -1687,42 +1469,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.ans[0].x,
-          y: props.ans[0].y - 3,
+          y: props.ans[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.ans[0].x,
-          y: props.ans[0].y + 3,
+          y: props.ans[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.ans[0].x + 3,
+          x: props.ans[0].x + point_speed,
           y: props.ans[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.ans[0].x - 3,
+          x: props.ans[0].x - point_speed,
           y: props.ans[0].y,
+          edit: true,
         };
       }
 
-      if (props.ans[0]?.x && props.ans[0]?.y) {
-        let newArr = [...marker];
-        newArr[19] = newMarker;
-        setMarker(newArr);
-        marker.splice(19, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[19] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[19] = newMarker;
 
       props.set_ans(newMarker);
     }
@@ -1733,64 +1509,68 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.menton[0].x,
-          y: props.menton[0].y - 2,
+          y: props.menton[0].y - point_speed,
+          edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
           x: props.menton[0].x,
-          y: props.menton[0].y + 2,
+          y: props.menton[0].y + point_speed,
+          edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.menton[0].x + 2,
+          x: props.menton[0].x + point_speed,
           y: props.menton[0].y,
+          edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.menton[0].x - 2,
+          x: props.menton[0].x - point_speed,
           y: props.menton[0].y,
+          edit: true,
         };
       }
 
-      if (props.menton[0]?.x && props.menton[0]?.y) {
-        let newArr = [...marker];
-        newArr[20] = newMarker;
-        setMarker(newArr);
-        marker.splice(20, 1);
-      } else {
-        const updatedMarker = [...marker];
-        updatedMarker[20] = newMarker;
-        setMarker(updatedMarker);
-        // setMarker((prevState) => [...prevState, newMarker]);
-      }
+      marker[20] = newMarker;
 
       props.set_menton(newMarker);
     }
   }
 
   function _prevClick() {
-    if (props.bantuMarker >= 1 && props.bantuMarker <= 22) {
+    if (props.bantuMarker > 4 && props.bantuMarker <= 22) {
+      props.set_bantuMarker(props.bantuMarker - 1);
+    }
+
+    if (props.bantuMarker > 1 && props.bantuMarker <= 3) {
       props.set_bantuMarker(props.bantuMarker - 1);
     }
   }
   function _nextClick() {
-    if (props.bantuMarker >= 1 && props.bantuMarker <= 22) {
+    if (props.bantuMarker >= 1 && props.bantuMarker <= 2) {
       props.set_bantuMarker(props.bantuMarker + 1);
+      props.set_disable_pointer('auto');
+      props.set_opacity_pointer(1);
     }
 
-    if (props.bantuMarker > 22) {
+    if (props.bantuMarker > 3 && props.bantuMarker <= 22) {
+      props.set_bantuMarker(props.bantuMarker + 1);
+      props.set_disable_pointer('auto');
+      props.set_opacity_pointer(1);
+    }
+
+    if (props.bantuMarker == 3) {
       props.navigation.openDrawer();
+      props.set_bantuMarker(25);
       props.set_disable_pointer('none');
       props.set_opacity_pointer(0.5);
-      props.set_markingdot(true);
-      props.set_resultanalysis(false);
-      props.set_detailresult(false);
     }
   }
   function _upClick() {
@@ -2066,6 +1846,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       props.set_subHeaderText('');
       setTitleText('-');
     }
+
+    if (props.bantuMarker == 24) {
+      props.set_headerText('Cephalometric Analysis');
+      props.set_subHeaderText('');
+    }
   }
 
   // ==================================
@@ -2184,6 +1969,9 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
+      console.log('width : ' + width);
+      console.log('heigth : ' + height);
+
       if (props.pressAnalysis == true) {
         downloadImage();
         props.set_press_analysis(false);
@@ -2202,7 +1990,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       // react-native-view-shot caputures component
       const uri = await captureRef(ref_capture, {
         format: 'png',
-        quality: 0.9,
+        quality: 0.0,
         result: 'base64',
       }).then(
         async (uri) => {
@@ -2229,6 +2017,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             fileName: 'test',
             base64: true,
             // directory: 'Orthoceph',
+            width: 792,
+            height: 500,
           };
 
           let file = await RNHTMLtoPDF.convert(options);
@@ -2247,6 +2037,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   }
 
   const newAnalysis__ = () => {
+    console.log('Masuk New Analysis');
     props.set_headerText('Cephalometric Analysis');
     props.set_bantuMarker(0);
     props.set_loading(true);
@@ -2282,11 +2073,16 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         console.log('width :' + JSON.stringify(width_image));
         console.log('height :' + JSON.stringify(height_image));
 
+        props.set_width_last_device(width_image.uri);
+        props.set_height_last_device(height_image.uri);
+
         props.set_tempgambar(source);
         props.set_imageuri(response.assets[0].uri);
         props.set_imagetype(response.assets[0].type);
         props.set_imagefilename(response.assets[0].fileName);
         props.navigation.closeDrawer();
+
+        marker = [];
 
         props.remove_startingPoint([]);
         props.remove_endPoint([]);
@@ -2349,18 +2145,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   function saveAnalysis() {
     refImageZoom.current.resetScale();
+
     refImageZoom.current.centerOn({
-      x: 10,
-      y: 100,
-      scale: 1.3,
+      x: 0,
+      y: 0,
+      scale: 1,
       duration: 100,
     });
 
-    Animated.timing(fadeAnim, {
-      toValue: 3,
-      duration: 100,
-      useNativeDriver: true,
-    }).start();
+    // Animated.timing(fadeAnim, {
+    //   toValue: 3,
+    //   duration: 100,
+    //   useNativeDriver: true,
+    // }).start();
 
     props.set_loading_global(true);
 
@@ -2370,8 +2167,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       try {
         // react-native-view-shot caputures component
         const uri = await captureRef(ref_capture, {
-          format: 'png',
-          quality: 1,
+          format: 'jpg',
+          quality: 1.0,
           result: 'base64',
         }).then(
           async (uri) => {
@@ -2410,95 +2207,136 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               ) {
                 const data = new FormData();
 
-                data.append('fileImages', {
-                  uri: props.imageUri,
-                  type: props.imageType,
-                  name: props.imageFileName,
-                });
+                var data2 = {
+                  patient_name: props.fullname,
+                  patientid: props.patientid,
+                  pdf_base64: file.base64,
+                  step: props.step,
+                };
 
-                data.append('patientid', props.patientid);
-                data.append('platform', Platform.OS);
-                data.append('patient_name', props.fullname);
-                data.append('pdf_base64', file.base64);
-                data.append(
-                  'startingPoint',
-                  JSON.stringify(props.startingPoint[0]),
-                );
-                data.append('endPoint', JSON.stringify(props.endPoint[0]));
-                data.append(
-                  'calibrationDistance',
-                  '' + props.calibrationDistance + '',
-                );
-                data.append('sella', JSON.stringify(props.sella[0]));
-                data.append('nasion', JSON.stringify(props.nasion[0]));
-                data.append('pointA', JSON.stringify(props.pointa[0]));
-                data.append('pointB', JSON.stringify(props.pointb[0]));
-                data.append('u6', JSON.stringify(props.u6[0]));
-                data.append('u4', JSON.stringify(props.u4[0]));
-                data.append('gonion', JSON.stringify(props.gonion[0]));
-                data.append('gnathion', JSON.stringify(props.gnathion[0]));
-                data.append('isa', JSON.stringify(props.isa[0]));
-                data.append('isi', JSON.stringify(props.isi[0]));
-                data.append('iia', JSON.stringify(props.iia[0]));
-                data.append('iii', JSON.stringify(props.iii[0]));
-                data.append('ms', JSON.stringify(props.ms[0]));
-                data.append('pogs', JSON.stringify(props.pogs[0]));
-                data.append('ls', JSON.stringify(props.ls[0]));
-                data.append('li', JSON.stringify(props.li[0]));
-                data.append('pog', JSON.stringify(props.pog[0]));
-                data.append('ans', JSON.stringify(props.ans[0]));
-                data.append('menton', JSON.stringify(props.menton[0]));
-                data.append('step', props.step);
-                data.append('sna', JSON.stringify(props.sna));
-                data.append('snb', JSON.stringify(props.snb));
-                data.append('anb', JSON.stringify(props.anb));
-                data.append('pognb', JSON.stringify(props.pogNB));
-                data.append('snop', JSON.stringify(props.snop));
-                data.append('snmp', JSON.stringify(props.snmp));
-                data.append('uina_angular', JSON.stringify(props.uina_angular));
-                data.append('uina_linear', JSON.stringify(props.uina_linear));
-                data.append('linb_angular', JSON.stringify(props.linb_angular));
-                data.append('linb_linear', JSON.stringify(props.linb_linear));
-                data.append('_iia', JSON.stringify(props._iia));
-                data.append('upper_lip', JSON.stringify(props.upper_lip));
-                data.append('lower_lip', JSON.stringify(props.lower_lip));
-                data.append(
-                  'mid_face',
-                  JSON.stringify(props.wendellWylie?.MIDFACE),
-                );
-                data.append(
-                  'lower_face',
-                  JSON.stringify(props.wendellWylie?.LOWERFACE),
-                );
+                _addPdfReport(data2)
+                  .then((result2) => {
+                    console.log(result2);
+                    if (result2 == 200) {
+                      data.append('fileImages', {
+                        uri: props.imageUri,
+                        type: props.imageType,
+                        name: props.imageFileName,
+                      });
 
-                _addAnalysisPatient(data)
-                  .then((result) => {
-                    console.log('RESULT ### 1 :' + result);
-                    if (result == 200) {
-                      Toast.show({
-                        type: 'success',
-                        text1: 'Save Successfully',
-                        autohide: true,
-                        visibilityTime: 2500,
-                      });
-                      props.set_loading_global(false);
-                      props.set_press_save_analysis(false);
-                    } else {
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Failed, Please Try Again!',
-                        autohide: true,
-                        visibilityTime: 2500,
-                      });
-                      props.set_loading_global(false);
-                      props.set_press_save_analysis(false);
+                      data.append('patientid', props.patientid);
+                      data.append('platform', Platform.OS);
+                      data.append('patient_name', props.fullname);
+                      data.append('width', width);
+                      data.append('height', height);
+                      // data.append('pdf_base64', file.base64);
+                      data.append(
+                        'startingPoint',
+                        JSON.stringify(props.startingPoint[0]),
+                      );
+                      data.append(
+                        'endPoint',
+                        JSON.stringify(props.endPoint[0]),
+                      );
+                      data.append(
+                        'calibrationDistance',
+                        '' + props.calibrationDistance + '',
+                      );
+                      data.append('sella', JSON.stringify(props.sella[0]));
+                      data.append('nasion', JSON.stringify(props.nasion[0]));
+                      data.append('pointA', JSON.stringify(props.pointa[0]));
+                      data.append('pointB', JSON.stringify(props.pointb[0]));
+                      data.append('u6', JSON.stringify(props.u6[0]));
+                      data.append('u4', JSON.stringify(props.u4[0]));
+                      data.append('gonion', JSON.stringify(props.gonion[0]));
+                      data.append(
+                        'gnathion',
+                        JSON.stringify(props.gnathion[0]),
+                      );
+                      data.append('isa', JSON.stringify(props.isa[0]));
+                      data.append('isi', JSON.stringify(props.isi[0]));
+                      data.append('iia', JSON.stringify(props.iia[0]));
+                      data.append('iii', JSON.stringify(props.iii[0]));
+                      data.append('ms', JSON.stringify(props.ms[0]));
+                      data.append('pogs', JSON.stringify(props.pogs[0]));
+                      data.append('ls', JSON.stringify(props.ls[0]));
+                      data.append('li', JSON.stringify(props.li[0]));
+                      data.append('pog', JSON.stringify(props.pog[0]));
+                      data.append('ans', JSON.stringify(props.ans[0]));
+                      data.append('menton', JSON.stringify(props.menton[0]));
+                      data.append('step', props.step);
+                      data.append('sna', JSON.stringify(props.sna));
+                      data.append('snb', JSON.stringify(props.snb));
+                      data.append('anb', JSON.stringify(props.anb));
+                      data.append('pognb', JSON.stringify(props.pogNB));
+                      data.append('snop', JSON.stringify(props.snop));
+                      data.append('snmp', JSON.stringify(props.snmp));
+                      data.append(
+                        'uina_angular',
+                        JSON.stringify(props.uina_angular),
+                      );
+                      data.append(
+                        'uina_linear',
+                        JSON.stringify(props.uina_linear),
+                      );
+                      data.append(
+                        'linb_angular',
+                        JSON.stringify(props.linb_angular),
+                      );
+                      data.append(
+                        'linb_linear',
+                        JSON.stringify(props.linb_linear),
+                      );
+                      data.append('_iia', JSON.stringify(props._iia));
+                      data.append('upper_lip', JSON.stringify(props.upper_lip));
+                      data.append('lower_lip', JSON.stringify(props.lower_lip));
+                      data.append(
+                        'mid_face',
+                        JSON.stringify(props.wendellWylie?.MIDFACE),
+                      );
+                      data.append(
+                        'lower_face',
+                        JSON.stringify(props.wendellWylie?.LOWERFACE),
+                      );
+
+                      _addAnalysisPatient(data)
+                        .then((result) => {
+                          console.log('RESULT ### 1 :' + result);
+                          if (result == 200) {
+                            Toast.show({
+                              type: 'success',
+                              text1: 'Save Successfully',
+                              autohide: true,
+                              visibilityTime: 2500,
+                            });
+                            props.set_loading_global(false);
+                            props.set_press_save_analysis(false);
+                            setTimeout(() => {
+                              props.navigation.goBack();
+                            }, 1000);
+                          } else {
+                            Toast.show({
+                              type: 'error',
+                              text1: 'Failed, Please Try Again!',
+                              autohide: true,
+                              visibilityTime: 2500,
+                            });
+                            props.set_loading_global(false);
+                            props.set_press_save_analysis(false);
+                          }
+                        })
+                        .catch((errornya) => {
+                          console.log('ERROR ### 1 :' + errornya);
+                          props.set_loading_global(false);
+                          props.set_press_save_analysis(false);
+                          // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+                        });
                     }
                   })
-                  .catch((errornya) => {
-                    console.log('ERROR ### 1 :' + errornya);
+                  .catch((error) => {
+                    console.log(error);
                     props.set_loading_global(false);
                     props.set_press_save_analysis(false);
-                    // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
                   });
               }
 
@@ -2507,89 +2345,112 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                 props.tempGambar !== null &&
                 file.base64 !== null
               ) {
-                var data = {
-                  pdf_base64: file.base64,
+                var data2 = {
                   patient_name: props.fullname,
                   patientid: props.patientid,
-                  platform: Platform.OS,
-                  startingPoint: JSON.stringify(props.startingPoint[0]),
-                  endPoint: JSON.stringify(props.endPoint[0]),
-                  calibrationDistance: '' + props.calibrationDistance + '',
-                  sella: JSON.stringify(props.sella[0]),
-                  nasion: JSON.stringify(props.nasion[0]),
-                  pointA: JSON.stringify(props.pointa[0]),
-                  pointB: JSON.stringify(props.pointb[0]),
-                  u6: JSON.stringify(props.u6[0]),
-                  u4: JSON.stringify(props.u4[0]),
-                  gonion: JSON.stringify(props.gonion[0]),
-                  gnathion: JSON.stringify(props.gnathion[0]),
-                  isa: JSON.stringify(props.isa[0]),
-                  isi: JSON.stringify(props.isi[0]),
-                  iia: JSON.stringify(props.iia[0]),
-                  iii: JSON.stringify(props.iii[0]),
-                  ms: JSON.stringify(props.ms[0]),
-                  pogs: JSON.stringify(props.pogs[0]),
-                  ls: JSON.stringify(props.ls[0]),
-                  li: JSON.stringify(props.li[0]),
-                  pog: JSON.stringify(props.pog[0]),
-                  ans: JSON.stringify(props.ans[0]),
-                  menton: JSON.stringify(props.menton[0]),
+                  pdf_base64: file.base64,
                   step: props.step,
-                  sna: JSON.stringify(props.sna),
-                  snb: JSON.stringify(props.snb),
-                  anb: JSON.stringify(props.anb),
-                  pognb: JSON.stringify(props.pogNB),
-                  snop: JSON.stringify(props.snop),
-                  snmp: JSON.stringify(props.snmp),
-
-                  uina_angular: JSON.stringify(props.uina_angular),
-
-                  uina_linear: JSON.stringify(props.uina_linear),
-
-                  linb_angular: JSON.stringify(props.linb_angular),
-
-                  linb_linear: JSON.stringify(props.linb_linear),
-
-                  _iia: JSON.stringify(props._iia),
-
-                  upper_lip: JSON.stringify(props.upper_lip)
-                    ? JSON.stringify(props.upper_lip)
-                    : null,
-
-                  lower_lip: JSON.stringify(props.lower_lip)
-                    ? JSON.stringify(props.lower_lip)
-                    : null,
-
-                  mid_face: JSON.stringify(props.wendellWylie.MIDFACE)
-                    ? JSON.stringify(props.wendellWylie.MIDFACE)
-                    : null,
-                  lower_face: JSON.stringify(props.wendellWylie.LOWERFACE)
-                    ? JSON.stringify(props.wendellWylie.LOWERFACE)
-                    : null,
                 };
 
-                _addAnalysisPatientExistingImage(data)
-                  .then((result) => {
-                    console.log(result);
-                    if (result == 200) {
-                      Toast.show({
-                        type: 'success',
-                        text1: 'Save Successfully',
-                        // autohide: true,
-                        // visibilityTime: 2500,
-                      });
+                _addPdfReport(data2)
+                  .then((result2) => {
+                    console.log(result2);
+                    if (result2 == 200) {
+                      var data = {
+                        patient_name: props.fullname,
+                        patientid: props.patientid,
+                        platform: Platform.OS,
+                        width: props.widthLastDevice,
+                        height: props.heightLastDevice,
+                        startingPoint: JSON.stringify(props.startingPoint[0]),
+                        endPoint: JSON.stringify(props.endPoint[0]),
+                        calibrationDistance:
+                          '' + props.calibrationDistance + '',
+                        sella: JSON.stringify(props.sella[0]),
+                        nasion: JSON.stringify(props.nasion[0]),
+                        pointA: JSON.stringify(props.pointa[0]),
+                        pointB: JSON.stringify(props.pointb[0]),
+                        u6: JSON.stringify(props.u6[0]),
+                        u4: JSON.stringify(props.u4[0]),
+                        gonion: JSON.stringify(props.gonion[0]),
+                        gnathion: JSON.stringify(props.gnathion[0]),
+                        isa: JSON.stringify(props.isa[0]),
+                        isi: JSON.stringify(props.isi[0]),
+                        iia: JSON.stringify(props.iia[0]),
+                        iii: JSON.stringify(props.iii[0]),
+                        ms: JSON.stringify(props.ms[0]),
+                        pogs: JSON.stringify(props.pogs[0]),
+                        ls: JSON.stringify(props.ls[0]),
+                        li: JSON.stringify(props.li[0]),
+                        pog: JSON.stringify(props.pog[0]),
+                        ans: JSON.stringify(props.ans[0]),
+                        menton: JSON.stringify(props.menton[0]),
+                        step: props.step,
+                        sna: JSON.stringify(props.sna),
+                        snb: JSON.stringify(props.snb),
+                        anb: JSON.stringify(props.anb),
+                        pognb: JSON.stringify(props.pogNB),
+                        snop: JSON.stringify(props.snop),
+                        snmp: JSON.stringify(props.snmp),
 
-                      props.set_loading_global(false);
-                      props.set_press_save_analysis(false);
-                    } else {
-                      Toast.show({
-                        type: 'info',
-                        text1: 'Failed, Please Try Again!',
-                        autohide: true,
-                        visibilityTime: 2500,
-                      });
-                      props.set_loading_global(false);
-                      props.set_press_save_analysis(false);
+                        uina_angular: JSON.stringify(props.uina_angular),
+
+                        uina_linear: JSON.stringify(props.uina_linear),
+
+                        linb_angular: JSON.stringify(props.linb_angular),
+
+                        linb_linear: JSON.stringify(props.linb_linear),
+
+                        _iia: JSON.stringify(props._iia),
+
+                        upper_lip: JSON.stringify(props.upper_lip)
+                          ? JSON.stringify(props.upper_lip)
+                          : null,
+
+                        lower_lip: JSON.stringify(props.lower_lip)
+                          ? JSON.stringify(props.lower_lip)
+                          : null,
+
+                        mid_face: JSON.stringify(props.wendellWylie.MIDFACE)
+                          ? JSON.stringify(props.wendellWylie.MIDFACE)
+                          : null,
+                        lower_face: JSON.stringify(props.wendellWylie.LOWERFACE)
+                          ? JSON.stringify(props.wendellWylie.LOWERFACE)
+                          : null,
+                      };
+
+                      _addAnalysisPatientExistingImage(data)
+                        .then((result) => {
+                          console.log(result);
+                          if (result == 200) {
+                            Toast.show({
+                              type: 'success',
+                              text1: 'Save Successfully',
+                              // autohide: true,
+                              // visibilityTime: 2500,
+                            });
+
+                            props.set_loading_global(false);
+                            props.set_press_save_analysis(false);
+                            setTimeout(() => {
+                              props.navigation.goBack();
+                            }, 1000);
+                          } else {
+                            Toast.show({
+                              type: 'info',
+                              text1: 'Failed, Please Try Again!',
+                              autohide: true,
+                              visibilityTime: 2500,
+                            });
+                            props.set_loading_global(false);
+                            props.set_press_save_analysis(false);
+                          }
+                        })
+                        .catch((error) => {
+                          console.log(error);
+                          props.set_loading_global(false);
+                          props.set_press_save_analysis(false);
+                        });
                     }
                   })
                   .catch((error) => {
@@ -2609,133 +2470,293 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   }
 
   async function _analysis() {
-    let _SNA = null;
-    let _SNB = null;
-    let _ANB = null;
-    let _PogNB = null;
-    let _SNOP = null;
-    let _SNMP = null;
-    let _UINA_Angular = null;
-    let _UINA_Linear = null;
-    let _LINB_Angular = null;
-    let _LINB_Linear = null;
-    let __IIA = null;
-    let _Upper_Lip = null;
-    let _Lower_Lip = null;
-    let _WendellWylie = null;
+    console.log('ANALYSIS Form');
+    props.navigation.closeDrawer();
 
-    props.navigation.openDrawer();
+    if (props.startingPoint.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Starting Point!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.endPoint.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position End Point!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.sella.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Sella!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.nasion.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Nasion!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pointa.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Point A!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pointb.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Point B!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.u6.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position U6!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.u4.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position U4!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.gonion.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Gonion!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.gnathion.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Gnathion!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.isa.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position ISA!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.isi.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position ISI!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.iia.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position IIA!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.iii.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position III!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.ms.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position MS!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pogs.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Soft Pogonion (Pog`)!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.ls.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position LS!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.li.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position LI!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pog.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Pogonion (Pog)!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.ans.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position ANS!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.menton.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Menton!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else {
+      let _SNA = null;
+      let _SNB = null;
+      let _ANB = null;
+      let _PogNB = null;
+      let _SNOP = null;
+      let _SNMP = null;
+      let _UINA_Angular = null;
+      let _UINA_Linear = null;
+      let _LINB_Angular = null;
+      let _LINB_Linear = null;
+      let __IIA = null;
+      let _Upper_Lip = null;
+      let _Lower_Lip = null;
+      let _WendellWylie = null;
 
-    props.set_markingdot(false);
-    props.set_resultanalysis(true);
-    props.set_detailresult(false);
-    props.set_bantuMarker(23);
+      console.log('ANALYSIS Ceph');
+      props.set_loading_global(true);
+      props.set_markingdot(false);
+      props.set_resultanalysis(true);
 
-    const _calibrationDistance = Number(props.calibrationDistance);
-    const _calibrationPointDistance = await distanceBetween(
-      props.startingPoint[0],
-      props.endPoint[0],
-    );
+      const _calibrationDistance = Number(props.calibrationDistance);
+      const _calibrationPointDistance = await distanceBetween(
+        props.startingPoint[0],
+        props.endPoint[0],
+      );
 
-    let _calibrationRatio = 0;
-    if (
-      !isNaN(_calibrationDistance / _calibrationPointDistance) &&
-      isFinite(_calibrationDistance / _calibrationPointDistance)
-    )
-      _calibrationRatio = _calibrationDistance / _calibrationPointDistance;
+      let _calibrationRatio = 0;
+      if (
+        !isNaN(_calibrationDistance / _calibrationPointDistance) &&
+        isFinite(_calibrationDistance / _calibrationPointDistance)
+      )
+        _calibrationRatio = _calibrationDistance / _calibrationPointDistance;
 
-    _SNA = await SNA(props.sella[0], props.nasion[0], props.pointa[0]);
-    props.set_sna(_SNA);
+      _SNA = await SNA(props.sella[0], props.nasion[0], props.pointa[0]);
+      props.set_sna(_SNA);
 
-    _SNB = await SNB(props.sella[0], props.nasion[0], props.pointb[0]);
-    props.set_snb(_SNB);
-    _ANB = await ANB(props.pointa[0], props.nasion[0], props.pointb[0]);
-    props.set_anb(_ANB);
-    _PogNB = await PogNB(
-      props.pog[0],
-      props.nasion[0],
-      props.pointb[0],
-      _calibrationRatio,
-    );
-    props.set_pogNB(_PogNB);
-    _SNOP = await SNOP(
-      props.sella[0],
-      props.nasion[0],
-      props.u6[0],
-      props.u4[0],
-    );
-    props.set_snop(_SNOP);
-    _SNMP = await SNMP(
-      props.sella[0],
-      props.nasion[0],
-      props.gonion[0],
-      props.gnathion[0],
-    );
-    props.set_snmp(_SNMP);
-    _UINA_Angular = await UINA_ANGULAR(
-      props.nasion[0],
-      props.pointa[0],
-      props.isa[0],
-      props.isi[0],
-    );
-    props.set_uina_angular(_UINA_Angular);
-    _UINA_Linear = await UINA_LINEAR(
-      props.nasion[0],
-      props.pointa[0],
-      props.isa[0],
-      props.isi[0],
-      _calibrationRatio,
-    );
-    props.set_uina_linear(_UINA_Linear);
-    _LINB_Angular = await LINB_ANGULAR(
-      props.nasion[0],
-      props.pointb[0],
-      props.iia[0],
-      props.iii[0],
-    );
-    props.set_linb_angular(_LINB_Angular);
-    _LINB_Linear = await LINB_LINEAR(
-      props.nasion[0],
-      props.pointb[0],
-      props.iia[0],
-      props.iii[0],
-      _calibrationRatio,
-    );
-    props.set_linb_linear(_LINB_Linear);
-    __IIA = await IIA(props.isa[0], props.isi[0], props.iia[0], props.iii[0]);
-    props.set__iia(__IIA);
-    _Upper_Lip = await UPPER_LIP(
-      props.ms[0],
-      props.pogs[0],
-      props.ls[0],
-      _calibrationRatio,
-    );
-    props.set_upper_lip(_Upper_Lip);
-    _Lower_Lip = await LOWER_LIP(
-      props.ms[0],
-      props.pogs[0],
-      props.li[0],
-      _calibrationRatio,
-    );
-    props.set_lower_lip(_Lower_Lip);
-    _WendellWylie = await WendellWylie(
-      props.nasion[0],
-      props.ans[0],
-      props.menton[0],
-      _calibrationRatio,
-    );
+      _SNB = await SNB(props.sella[0], props.nasion[0], props.pointb[0]);
+      props.set_snb(_SNB);
+      _ANB = await ANB(props.pointa[0], props.nasion[0], props.pointb[0]);
+      props.set_anb(_ANB);
+      _PogNB = await PogNB(
+        props.pog[0],
+        props.nasion[0],
+        props.pointb[0],
+        _calibrationRatio,
+      );
+      props.set_pogNB(_PogNB);
+      _SNOP = await SNOP(
+        props.sella[0],
+        props.nasion[0],
+        props.u6[0],
+        props.u4[0],
+      );
+      props.set_snop(_SNOP);
+      _SNMP = await SNMP(
+        props.sella[0],
+        props.nasion[0],
+        props.gonion[0],
+        props.gnathion[0],
+      );
+      props.set_snmp(_SNMP);
+      _UINA_Angular = await UINA_ANGULAR(
+        props.nasion[0],
+        props.pointa[0],
+        props.isa[0],
+        props.isi[0],
+      );
+      props.set_uina_angular(_UINA_Angular);
+      _UINA_Linear = await UINA_LINEAR(
+        props.nasion[0],
+        props.pointa[0],
+        props.isa[0],
+        props.isi[0],
+        _calibrationRatio,
+      );
+      props.set_uina_linear(_UINA_Linear);
+      _LINB_Angular = await LINB_ANGULAR(
+        props.nasion[0],
+        props.pointb[0],
+        props.iia[0],
+        props.iii[0],
+      );
+      props.set_linb_angular(_LINB_Angular);
+      _LINB_Linear = await LINB_LINEAR(
+        props.nasion[0],
+        props.pointb[0],
+        props.iia[0],
+        props.iii[0],
+        _calibrationRatio,
+      );
+      props.set_linb_linear(_LINB_Linear);
+      __IIA = await IIA(props.isa[0], props.isi[0], props.iia[0], props.iii[0]);
+      props.set__iia(__IIA);
+      _Upper_Lip = await UPPER_LIP(
+        props.ms[0],
+        props.pogs[0],
+        props.ls[0],
+        _calibrationRatio,
+      );
+      props.set_upper_lip(_Upper_Lip);
+      _Lower_Lip = await LOWER_LIP(
+        props.ms[0],
+        props.pogs[0],
+        props.li[0],
+        _calibrationRatio,
+      );
+      props.set_lower_lip(_Lower_Lip);
+      _WendellWylie = await WendellWylie(
+        props.nasion[0],
+        props.ans[0],
+        props.menton[0],
+        _calibrationRatio,
+      );
 
-    props.set_wendellwylie(_WendellWylie);
+      props.set_wendellwylie(_WendellWylie);
 
-    props.set_enablesave(true);
+      if (_WendellWylie.LOWERFACE.value) {
+        props.set_enablesave(true);
+        props.set_loading(false);
+        props.set_loading_global(false);
+        props.navigation.openDrawer();
+      }
 
-    return null;
+      return null;
+    }
   }
 
   function changeDotMarking(e) {
-    if (e.scale > 1 && e.scale < 2) {
+    if (e.scale >= 1 && e.scale < 2) {
       Animated.timing(fadeAnim, {
-        toValue: 2,
+        toValue: 1.3,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(strokeBorderAnim, {
+        toValue: 0.5,
         duration: 100,
         useNativeDriver: true,
       }).start();
@@ -2745,15 +2766,30 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         duration: 100,
         useNativeDriver: true,
       }).start();
+      Animated.timing(strokeBorderAnim, {
+        toValue: 0.3,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
     } else if (e.scale >= 3) {
       Animated.timing(fadeAnim, {
         toValue: 0.8,
         duration: 100,
         useNativeDriver: true,
       }).start();
-    } else if (e.scale <= 1) {
+      Animated.timing(strokeBorderAnim, {
+        toValue: 0.1,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    } else if (e.scale < 1) {
       Animated.timing(fadeAnim, {
-        toValue: 4,
+        toValue: 2,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(strokeBorderAnim, {
+        toValue: 0.7,
         duration: 100,
         useNativeDriver: true,
       }).start();
@@ -2835,6 +2871,12 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               {props.tempGambar ? (
                 <>
                   <Appbar.Action
+                    style={{
+                      display:
+                        props.bantuMarker >= 1 && props.bantuMarker < 23
+                          ? 'flex'
+                          : 'none',
+                    }}
                     size={wp(6)}
                     icon={'help-circle-outline'}
                     onPress={() => {
@@ -2844,7 +2886,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                   />
 
                   <Appbar.Action
-                    icon="dots-vertical"
+                    icon="menu"
                     onPress={() => {
                       props.navigation.openDrawer();
                     }}
@@ -2864,40 +2906,45 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             />
           )}
         </Appbar.Header>
-
+        <View
+          style={{position: 'absolute', right: 0, left: 0, zIndex: 9999999}}>
+          <Toast />
+        </View>
         {/* ======================================================================== */}
 
         {/* ======================================================================== */}
+
+        {props.bantuMarker > 0 && props.bantuMarker <= 22 ? (
+          <Animated.View
+            style={{
+              display: props.tempGambar ? 'flex' : 'none',
+              // width: '100%',
+              // height: wp(50),
+              backgroundColor: 'black',
+              position: 'absolute',
+              transform: [{translateX: fadeIn}],
+              zIndex: 1,
+              left: 0,
+              right: 0,
+              top: Platform.OS == 'ios' ? wp(25) : wp(13),
+              // flexShrink: 1,
+            }}>
+            <Text
+              style={{
+                textAlign: 'justify',
+                color: 'white',
+                fontSize: wp(2.5),
+                // flexWrap: 'wrap',
+                // flexGrow: 1,
+                paddingHorizontal: wp(5),
+                paddingVertical: wp(2),
+              }}>
+              {titleText}
+            </Text>
+          </Animated.View>
+        ) : null}
 
         <View style={styles.container}>
-          {props.bantuMarker > 0 && props.bantuMarker <= 22 ? (
-            <Animated.View
-              style={{
-                marginTop: wp(-8),
-                display: props.tempGambar ? 'flex' : 'none',
-                width: '100%',
-                backgroundColor: 'black',
-                // position: 'absolute',
-                transform: [{translateX: fadeIn}],
-                zIndex: 1,
-                // left: 0,
-                // right: 0,
-                // top: Platform.OS == 'android' ? wp(13) : wp(13),
-                flexShrink: 1,
-              }}>
-              <Text
-                style={{
-                  textAlign: 'justify',
-                  color: 'white',
-                  fontSize: wp(2.5),
-                  flexWrap: 'wrap',
-                  paddingHorizontal: wp(5),
-                  paddingVertical: wp(2),
-                }}>
-                {titleText}
-              </Text>
-            </Animated.View>
-          ) : null}
           {titleText ? (
             <>
               {props.loading ? (
@@ -2916,97 +2963,117 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                     width: '100%',
                     height: '100%',
                     fileName: 'captureImage',
-                    format: 'jpg',
+                    format: 'png',
                     quality: 1,
                     result: 'base64',
                   }}>
-                  {/* <View
-             ref={click_imageZoom}
-             onTouchStart={(e) => (pinchToZoom ? setPinchToZoom(false) : null)}
-             onTouchEnd={(e) =>
-               pinchToZoom
-                 ? null
-                 : _clickImage(e.nativeEvent, false, false, false, false)
-             }> */}
                   <ImageZoom
                     ref={refImageZoom}
                     cropWidth={Dimensions.get('window').width}
                     cropHeight={Dimensions.get('window').height}
+                    style={{alignSelf: 'center'}}
                     imageWidth={wp(100)}
-                    imageHeight={hp(100)}
-                    style={
-                      {
-                        // marginTop: Platform.OS == 'android' ? wp(-10) : wp(-30),
-                      }
-                    }
+                    imageHeight={hp(98)}
                     useNativeDriver={true}
                     enableCenterFocus={true}
-                    // longPressTime={0}
-                    // onLongPress={(e) => {
-                    // console.log(e);
-                    // setTimeout(() => {
-                    //   _clickImage(e, false, false, false, false);
-                    // }, 200);
-                    // _clickImage(e, false, false, false, false);
-                    // }}
+                    minScale={1}
                     panToMove={true}
                     pinchToZoom={true}
-                    onClick={(e) => _clickImage(e, false, false, false, false)}
                     onMove={(e) => {
                       changeDotMarking(e);
+                      // touch_count = 3;
                     }}
-                    centerOn={scaleScreen}
+                    // onMoveShouldSetPanResponder={(e) => true}
+                    centerOn={scaleScreen}>
+                    <View
+                      onTouchMove={(e) => {
+                        setTimeout(() => {
+                          touch_count = 3;
+                        }, 180);
+                      }}
+                      onTouchEnd={(e) => {
+                        if (touch_count === 0 && Platform.OS == 'android') {
+                          _clickImage(
+                            e.nativeEvent,
+                            false,
+                            false,
+                            false,
+                            false,
+                          );
+                        }
 
-                    // onLongPress={
-                    // (e) => console.log('click')
-                    // clickable
-                    //   ? _clickImage(e, false, false, false, false)
-                    //   : setClickable(true)
-                    // }
-                  >
-                    <ImageBackground
-                      source={props.tempGambar}
-                      resizeMode="contain"
-                      style={{
-                        justifyContent: 'center',
-                        alignSelf: 'center',
-                        // zIndex: 1,
-                        width: wp(100),
-                        height: wp(100),
-                        marginTop: wp(10),
+                        if (touch_count === 1 && Platform.OS == 'ios') {
+                          _clickImage(
+                            e.nativeEvent,
+                            false,
+                            false,
+                            false,
+                            false,
+                          );
+                        }
+                      }}
+                      onTouchStart={(e) => {
+                        touch_count = e.nativeEvent.identifier;
                       }}>
-                      <Svg
+                      <ImageBackground
+                        source={props.tempGambar}
+                        resizeMode="contain"
                         style={{
-                          position: 'absolute',
-                          zIndex: 99999,
-                          justifyContent: 'center',
-                          alignSelf: 'center',
-                          width: wp(100),
-                          height: wp(100),
-                          marginTop: wp(10),
+                          minWidth: wp(100),
+                          minHeight: hp(75),
                         }}>
-                        {props.bantuMarker > 0 && marker.length > 0
-                          ? marker.map((value, index) => {
-                              if (value?.x && value?.y) {
-                                if (
-                                  props.bantuMarker > 3 &&
-                                  props.bantuMarker <= 22
-                                ) {
+                        <Svg
+                          style={{
+                            position: 'absolute',
+                            zIndex: 99999,
+
+                            minWidth: wp(100),
+                            minHeight: hp(75),
+                          }}>
+                          {/* {props.bantuMarker > 0 &&
+                          marker.length > 0 &&
+                          props.selectid == null &&
+                          bantuClick == true
+                            ? marker.map((value, index) => {
+                                if (value?.x && value?.y) {
                                   if (
-                                    parseInt(index + 2) == props.bantuMarker
+                                    props.bantuMarker > 3 &&
+                                    props.bantuMarker <= 22
                                   ) {
-                                    return (
-                                      <AnimatedCircle
-                                        key={index}
-                                        cx={value.x}
-                                        cy={value.y}
-                                        r={fadeAnim}
-                                        fill="red"
-                                        stroke="yellow"
-                                        strokeWidth="0.5"
-                                      />
+                                    console.log(
+                                      parseInt(index + 2) +
+                                        ' ==== ' +
+                                        props.bantuMarker,
                                     );
-                                  } else {
+                                    if (
+                                      parseInt(index + 2) == props.bantuMarker
+                                    ) {
+                                      console.log('###### MASUK #####');
+                                      return (
+                                        <AnimatedCircle
+                                          key={index}
+                                          cx={value.x}
+                                          cy={value.y}
+                                          r={fadeAnim}
+                                          fill="red"
+                                          stroke="yellow"
+                                          strokeWidth={strokeBorderAnim}
+                                        />
+                                      );
+                                    } else {
+                                      return (
+                                        <AnimatedCircle
+                                          key={index}
+                                          cx={value.x}
+                                          cy={value.y}
+                                          r={fadeAnim}
+                                          fill="green"
+                                          stroke="yellow"
+                                          strokeWidth={strokeBorderAnim}
+                                        />
+                                      );
+                                    }
+                                  } else if (props.bantuMarker === 3) {
                                     return (
                                       <AnimatedCircle
                                         key={index}
@@ -3015,1332 +3082,1970 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                         r={fadeAnim}
                                         fill="green"
                                         stroke="yellow"
-                                        strokeWidth="0.5"
-                                      />
-                                    );
-                                  }
-                                } else if (props.bantuMarker === 3) {
-                                  return (
-                                    <AnimatedCircle
-                                      key={index}
-                                      cx={value.x}
-                                      cy={value.y}
-                                      r={fadeAnim}
-                                      fill="green"
-                                      stroke="yellow"
-                                      strokeWidth="0.5"
-                                    />
-                                  );
-                                } else {
-                                  if (
-                                    parseInt(index + 1) == props.bantuMarker
-                                  ) {
-                                    return (
-                                      <AnimatedCircle
-                                        key={index}
-                                        cx={value.x}
-                                        cy={value.y}
-                                        r={fadeAnim}
-                                        fill="red"
-                                        stroke="yellow"
-                                        strokeWidth="1"
+                                        strokeWidth={strokeBorderAnim}
                                       />
                                     );
                                   } else {
-                                    return (
-                                      <AnimatedCircle
-                                        key={index}
-                                        cx={value.x}
-                                        cy={value.y}
-                                        r={fadeAnim}
-                                        fill="green"
-                                        stroke="yellow"
-                                        strokeWidth="0.5"
-                                      />
-                                    );
+                                    if (
+                                      parseInt(index + 1) == props.bantuMarker
+                                    ) {
+                                      return (
+                                        <AnimatedCircle
+                                          key={index}
+                                          cx={value.x}
+                                          cy={value.y}
+                                          r={fadeAnim}
+                                          fill="red"
+                                          stroke="yellow"
+                                          strokeWidth={strokeBorderAnim}
+                                        />
+                                      );
+                                    } else {
+                                      return (
+                                        <AnimatedCircle
+                                          key={index}
+                                          cx={value.x}
+                                          cy={value.y}
+                                          r={fadeAnim}
+                                          fill="green"
+                                          stroke="yellow"
+                                          strokeWidth={strokeBorderAnim}
+                                        />
+                                      );
+                                    }
                                   }
                                 }
-                              }
-                            })
-                          : null}
+                              })
+                            : null} */}
 
-                        {props.markingDot !== true ? (
-                          <>
-                            {props.selectid == null ? (
-                              <>
-                                {/* ==== SNA ==== */}
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointa[0]?.x)}
-                                  y2={correction_XY(props.pointa[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                {/* ==== SNB ==== */}
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                {/* ==== ANB ==== */}
-                                <Line
-                                  x1={correction_XY(props.pointa[0]?.x)}
-                                  y1={correction_XY(props.pointa[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.startingPoint[0]?.x}
+                            cy={props.startingPoint[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 1 &&
+                              props.startingPoint.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== PogNB ==== */}
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.pogNB.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.pogNB.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.pogNB.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.pogNB.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.pogNB.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.pogNB.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.pogNB.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.pogNB.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                {/* ==== SNOP ==== */}
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.u6[0]?.x)}
-                                  y1={correction_XY(props.u6[0]?.y)}
-                                  x2={correction_XY(props.u4[0]?.x)}
-                                  y2={correction_XY(props.u4[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.snop.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.snop.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.snop.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.snop.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2,2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.snop.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.snop.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.snop.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.snop.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2,2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.endPoint[0]?.x}
+                            cy={props.endPoint[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 2 &&
+                              props.endPoint.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== UINA LINEAR ==== */}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.sella[0]?.x}
+                            cy={props.sella[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 4 && props.sella.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointa[0]?.x)}
-                                  y2={correction_XY(props.pointa[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.isa[0]?.x)}
-                                  y1={correction_XY(props.isa[0]?.y)}
-                                  x2={correction_XY(props.isi[0]?.x)}
-                                  y2={correction_XY(props.isi[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.uina_angular.analysis?.lines[0]
-                                      .startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.uina_angular.analysis?.lines[0]
-                                      .startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.uina_angular.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.uina_angular.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.nasion[0]?.x}
+                            cy={props.nasion[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 5 && props.nasion.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== UINA LINEAR ==== */}
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointa[0]?.x)}
-                                  y2={correction_XY(props.pointa[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.isa[0]?.x)}
-                                  y1={correction_XY(props.isa[0]?.y)}
-                                  x2={correction_XY(props.isi[0]?.x)}
-                                  y2={correction_XY(props.isi[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.pointa[0]?.x}
+                            cy={props.pointa[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 6 && props.pointa.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== LINB ANGULAR ==== */}
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.iii[0]?.x)}
-                                  y1={correction_XY(props.iii[0]?.y)}
-                                  x2={correction_XY(props.iia[0]?.x)}
-                                  y2={correction_XY(props.iia[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.pointb[0]?.x}
+                            cy={props.pointb[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 7 && props.pointb.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== LINB Linear ==== */}
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.iii[0]?.x)}
-                                  y1={correction_XY(props.iii[0]?.y)}
-                                  x2={correction_XY(props.iia[0]?.x)}
-                                  y2={correction_XY(props.iia[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.u6[0]?.x}
+                            cy={props.u6[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 8 && props.u6.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== IIA  ==== */}
-                                <Line
-                                  x1={correction_XY(props.iii[0]?.x)}
-                                  y1={correction_XY(props.iii[0]?.y)}
-                                  x2={correction_XY(props.iia[0]?.x)}
-                                  y2={correction_XY(props.iia[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.isa[0]?.x)}
-                                  y1={correction_XY(props.isa[0]?.y)}
-                                  x2={correction_XY(props.isi[0]?.x)}
-                                  y2={correction_XY(props.isi[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props._iia.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props._iia.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props._iia.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props._iia.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props._iia.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props._iia.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props._iia.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props._iia.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.u4[0]?.x}
+                            cy={props.u4[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 9 && props.u4.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== UPPER LIP ==== */}
-                                <Line
-                                  x1={correction_XY(props.ms[0]?.x)}
-                                  y1={correction_XY(props.ms[0]?.y)}
-                                  x2={correction_XY(props.pogs[0]?.x)}
-                                  y2={correction_XY(props.pogs[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.gonion[0]?.x}
+                            cy={props.gonion[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 10 && props.gonion.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== LOWER LIP ==== */}
-                                <Line
-                                  x1={correction_XY(props.ms[0]?.x)}
-                                  y1={correction_XY(props.ms[0]?.y)}
-                                  x2={correction_XY(props.pogs[0]?.x)}
-                                  y2={correction_XY(props.pogs[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.gnathion[0]?.x}
+                            cy={props.gnathion[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 11 &&
+                              props.gnathion.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== MID FACE ==== */}
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.ans[0]?.x)}
-                                  y2={correction_XY(props.ans[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.ans[0]?.x)}
-                                  y1={correction_XY(props.ans[0]?.y)}
-                                  x2={correction_XY(props.menton[0]?.x)}
-                                  y2={correction_XY(props.menton[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.isa[0]?.x}
+                            cy={props.isa[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 12 && props.isa.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                                {/* ==== LOWER FACE ==== */}
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.ans[0]?.x)}
-                                  y2={correction_XY(props.ans[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.ans[0]?.x)}
-                                  y1={correction_XY(props.ans[0]?.y)}
-                                  x2={correction_XY(props.menton[0]?.x)}
-                                  y2={correction_XY(props.menton[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
-                            {/* ==== SNA ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/SNA' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointa[0]?.x)}
-                                  y2={correction_XY(props.pointa[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.isi[0]?.x}
+                            cy={props.isi[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 13 && props.isi.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== SNB ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/SNB' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.iia[0]?.x}
+                            cy={props.iia[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 14 && props.iia.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== ANB ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/ANB' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.pointa[0]?.x)}
-                                  y1={correction_XY(props.pointa[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.iii[0]?.x}
+                            cy={props.iii[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 15 && props.iii.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== PogNB ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/POGNB' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.pogNB.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.pogNB.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.pogNB.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.pogNB.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.pogNB.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.pogNB.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.pogNB.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.pogNB.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.ms[0]?.x}
+                            cy={props.ms[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 16 && props.ms.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== SNOP ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/SNOP' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.u6[0]?.x)}
-                                  y1={correction_XY(props.u6[0]?.y)}
-                                  x2={correction_XY(props.u4[0]?.x)}
-                                  y2={correction_XY(props.u4[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.snop.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.snop.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.snop.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.snop.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2,2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.snop.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.snop.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.snop.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.snop.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2,2"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.pogs[0]?.x}
+                            cy={props.pogs[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 17 && props.pogs.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== SNMP ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/SNMP' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.sella[0]?.x)}
-                                  y1={correction_XY(props.sella[0]?.y)}
-                                  x2={correction_XY(props.nasion[0]?.x)}
-                                  y2={correction_XY(props.nasion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.gonion[0]?.x)}
-                                  y1={correction_XY(props.gonion[0]?.y)}
-                                  x2={correction_XY(props.gnathion[0]?.x)}
-                                  y2={correction_XY(props.gnathion[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.snmp.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.snmp.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.snmp.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.snmp.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.snmp.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.snmp.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.snmp.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.snmp.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.ls[0]?.x}
+                            cy={props.ls[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 18 && props.ls.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== UINA ANGULAR ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/UINA_ANGULAR' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointa[0]?.x)}
-                                  y2={correction_XY(props.pointa[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.isa[0]?.x)}
-                                  y1={correction_XY(props.isa[0]?.y)}
-                                  x2={correction_XY(props.isi[0]?.x)}
-                                  y2={correction_XY(props.isi[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.uina_angular.analysis?.lines[0]
-                                      .startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.uina_angular.analysis?.lines[0]
-                                      .startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.uina_angular.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.uina_angular.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.li[0]?.x}
+                            cy={props.li[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 19 && props.li.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== UINA LINEAR ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/UINA_LINEAR' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointa[0]?.x)}
-                                  y2={correction_XY(props.pointa[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.isa[0]?.x)}
-                                  y1={correction_XY(props.isa[0]?.y)}
-                                  x2={correction_XY(props.isi[0]?.x)}
-                                  y2={correction_XY(props.isi[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.uina_linear.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.uina_linear.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.pog[0]?.x}
+                            cy={props.pog[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 20 && props.pog.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== LINB ANGULAR ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/LINB_ANGULAR' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.iii[0]?.x)}
-                                  y1={correction_XY(props.iii[0]?.y)}
-                                  x2={correction_XY(props.iia[0]?.x)}
-                                  y2={correction_XY(props.iia[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.ans[0]?.x}
+                            cy={props.ans[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 21 && props.ans.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== LINB Linear ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/LINB_LINEAR' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.pointb[0]?.x)}
-                                  y2={correction_XY(props.pointb[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.iii[0]?.x)}
-                                  y1={correction_XY(props.iii[0]?.y)}
-                                  x2={correction_XY(props.iia[0]?.x)}
-                                  y2={correction_XY(props.iia[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.linb_linear.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                          <AnimatedCircle
+                            key={Math.random()}
+                            cx={props.menton[0]?.x}
+                            cy={props.menton[0]?.y}
+                            r={fadeAnim}
+                            fill={
+                              props.bantuMarker == 22 && props.menton.length > 0
+                                ? 'red'
+                                : 'green'
+                            }
+                            stroke="yellow"
+                            strokeWidth={strokeBorderAnim}
+                          />
 
-                            {/* ==== IIA  ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/IIA' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.iii[0]?.x)}
-                                  y1={correction_XY(props.iii[0]?.y)}
-                                  x2={correction_XY(props.iia[0]?.x)}
-                                  y2={correction_XY(props.iia[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.isa[0]?.x)}
-                                  y1={correction_XY(props.isa[0]?.y)}
-                                  x2={correction_XY(props.isi[0]?.x)}
-                                  y2={correction_XY(props.isi[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props._iia.analysis?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props._iia.analysis?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props._iia.analysis?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props._iia.analysis?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props._iia.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props._iia.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props._iia.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props._iia.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                          {props.markingDot !== true ? (
+                            <>
+                              {props.selectid == null ? (
+                                <>
+                                  {/* ==== SNA ==== */}
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointa[0]?.x}
+                                    y2={props.pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  {/* ==== SNB ==== */}
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  {/* ==== ANB ==== */}
+                                  <Line
+                                    x1={props.pointa[0]?.x}
+                                    y1={props.pointa[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
 
-                            {/* ==== UPPER LIP ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/UPPER_LIP' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.ms[0]?.x)}
-                                  y1={correction_XY(props.ms[0]?.y)}
-                                  x2={correction_XY(props.pogs[0]?.x)}
-                                  y2={correction_XY(props.pogs[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.upper_lip.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                                  {/* ==== PogNB ==== */}
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.pogNB.analysis?.lines[0].startX}
+                                    y1={props.pogNB.analysis?.lines[0].startY}
+                                    x2={props.pogNB.analysis?.lines[0].endX}
+                                    y2={props.pogNB.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={props.pogNB.analysis?.lines[1].startX}
+                                    y1={props.pogNB.analysis?.lines[1].startY}
+                                    x2={props.pogNB.analysis?.lines[1].endX}
+                                    y2={props.pogNB.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  {/* ==== SNOP ==== */}
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.u6[0]?.x}
+                                    y1={props.u6[0]?.y}
+                                    x2={props.u4[0]?.x}
+                                    y2={props.u4[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.snop.analysis?.lines[0].startX}
+                                    y1={props.snop.analysis?.lines[0].startY}
+                                    x2={props.snop.analysis?.lines[0].endX}
+                                    y2={props.snop.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2,2"
+                                  />
+                                  <Line
+                                    x1={props.snop.analysis?.lines[1].startX}
+                                    y1={props.snop.analysis?.lines[1].startY}
+                                    x2={props.snop.analysis?.lines[1].endX}
+                                    y2={props.snop.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2,2"
+                                  />
 
-                            {/* ==== LOWER LIP ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/LOWER_LIP' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.ms[0]?.x)}
-                                  y1={correction_XY(props.ms[0]?.y)}
-                                  x2={correction_XY(props.pogs[0]?.x)}
-                                  y2={correction_XY(props.pogs[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.lower_lip.analysis?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                                  {/* ==== SNMP ==== */}
 
-                            {/* ==== MID FACE ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/MIDFACE' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.ans[0]?.x)}
-                                  y2={correction_XY(props.ans[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.ans[0]?.x)}
-                                  y1={correction_XY(props.ans[0]?.y)}
-                                  x2={correction_XY(props.menton[0]?.x)}
-                                  y2={correction_XY(props.menton[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.MIDFACE?.analysis
-                                      ?.lines[2].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.gonion[0]?.x}
+                                    y1={props.gonion[0]?.y}
+                                    x2={props.gnathion[0]?.x}
+                                    y2={props.gnathion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.snmp.analysis?.lines[0].startX}
+                                    y1={props.snmp.analysis?.lines[0].startY}
+                                    x2={props.snmp.analysis?.lines[0].endX}
+                                    y2={props.snmp.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={props.snmp.analysis?.lines[1].startX}
+                                    y1={props.snmp.analysis?.lines[1].startY}
+                                    x2={props.snmp.analysis?.lines[1].endX}
+                                    y2={props.snmp.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
 
-                            {/* ==== LOWER FACE ==== */}
-                            {props.selectid == 'IDS/ANALYSIS/LOWERFACE' ? (
-                              <>
-                                <Line
-                                  x1={correction_XY(props.nasion[0]?.x)}
-                                  y1={correction_XY(props.nasion[0]?.y)}
-                                  x2={correction_XY(props.ans[0]?.x)}
-                                  y2={correction_XY(props.ans[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(props.ans[0]?.x)}
-                                  y1={correction_XY(props.ans[0]?.y)}
-                                  x2={correction_XY(props.menton[0]?.x)}
-                                  y2={correction_XY(props.menton[0]?.y)}
-                                  stroke="#8AFF06"
-                                  strokeWidth="0.8"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[0].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[1].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                                <Line
-                                  x1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].startX,
-                                  )}
-                                  y1={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].startY,
-                                  )}
-                                  x2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].endX,
-                                  )}
-                                  y2={correction_XY(
-                                    props.wendellWylie.LOWERFACE?.analysis
-                                      ?.lines[2].endY,
-                                  )}
-                                  stroke="yellow"
-                                  strokeWidth="0.8"
-                                  stroke-linecap="round"
-                                  strokeDasharray="2"
-                                />
-                              </>
-                            ) : null}
-                          </>
-                        ) : null}
-                      </Svg>
-                    </ImageBackground>
+                                  {/* ==== UINA LINEAR ==== */}
+
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointa[0]?.x}
+                                    y2={props.pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.isa[0]?.x}
+                                    y1={props.isa[0]?.y}
+                                    x2={props.isi[0]?.x}
+                                    y2={props.isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.uina_angular.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.uina_angular.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.uina_angular.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.uina_angular.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== UINA LINEAR ==== */}
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointa[0]?.x}
+                                    y2={props.pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.isa[0]?.x}
+                                    y1={props.isa[0]?.y}
+                                    x2={props.isi[0]?.x}
+                                    y2={props.isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.uina_linear.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.uina_linear.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.uina_linear.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.uina_linear.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.uina_linear.analysis?.lines[1]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.uina_linear.analysis?.lines[1]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.uina_linear.analysis?.lines[1].endX
+                                    }
+                                    y2={
+                                      props.uina_linear.analysis?.lines[1].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== LINB ANGULAR ==== */}
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.iii[0]?.x}
+                                    y1={props.iii[0]?.y}
+                                    x2={props.iia[0]?.x}
+                                    y2={props.iia[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+
+                                  {/* ==== LINB Linear ==== */}
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.iii[0]?.x}
+                                    y1={props.iii[0]?.y}
+                                    x2={props.iia[0]?.x}
+                                    y2={props.iia[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.linb_linear.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.linb_linear.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.linb_linear.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.linb_linear.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== IIA  ==== */}
+                                  <Line
+                                    x1={props.iii[0]?.x}
+                                    y1={props.iii[0]?.y}
+                                    x2={props.iia[0]?.x}
+                                    y2={props.iia[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.isa[0]?.x}
+                                    y1={props.isa[0]?.y}
+                                    x2={props.isi[0]?.x}
+                                    y2={props.isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props._iia.analysis?.lines[0].startX}
+                                    y1={props._iia.analysis?.lines[0].startY}
+                                    x2={props._iia.analysis?.lines[0].endX}
+                                    y2={props._iia.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={props._iia.analysis?.lines[1].startX}
+                                    y1={props._iia.analysis?.lines[1].startY}
+                                    x2={props._iia.analysis?.lines[1].endX}
+                                    y2={props._iia.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== UPPER LIP ==== */}
+                                  <Line
+                                    x1={props.ms[0]?.x}
+                                    y1={props.ms[0]?.y}
+                                    x2={props.pogs[0]?.x}
+                                    y2={props.pogs[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.upper_lip.analysis?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.upper_lip.analysis?.lines[1].startY
+                                    }
+                                    x2={props.upper_lip.analysis?.lines[1].endX}
+                                    y2={props.upper_lip.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== LOWER LIP ==== */}
+                                  <Line
+                                    x1={props.ms[0]?.x}
+                                    y1={props.ms[0]?.y}
+                                    x2={props.pogs[0]?.x}
+                                    y2={props.pogs[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.lower_lip.analysis?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.lower_lip.analysis?.lines[1].startY
+                                    }
+                                    x2={props.lower_lip.analysis?.lines[1].endX}
+                                    y2={props.lower_lip.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== MID FACE ==== */}
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.ans[0]?.x}
+                                    y2={props.ans[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.ans[0]?.x}
+                                    y1={props.ans[0]?.y}
+                                    x2={props.menton[0]?.x}
+                                    y2={props.menton[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== LOWER FACE ==== */}
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.ans[0]?.x}
+                                    y2={props.ans[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.ans[0]?.x}
+                                    y1={props.ans[0]?.y}
+                                    x2={props.menton[0]?.x}
+                                    y2={props.menton[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+                              {/* ==== SNA ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/SNA' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.sella[0]?.x}
+                                    cy={props.sella[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointa[0]?.x}
+                                    cy={props.pointa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointa[0]?.x}
+                                    y2={props.pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== SNB ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/SNB' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.sella[0]?.x}
+                                    cy={props.sella[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointb[0]?.x}
+                                    cy={props.pointb[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== ANB ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/ANB' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.pointa[0]?.x}
+                                    cy={props.pointa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointb[0]?.x}
+                                    cy={props.pointb[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.pointa[0]?.x}
+                                    y1={props.pointa[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== PogNB ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/POGNB' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.pog[0]?.x}
+                                    cy={props.pog[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointb[0]?.x}
+                                    cy={props.pointb[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.pogNB.analysis?.lines[0].startX}
+                                    y1={props.pogNB.analysis?.lines[0].startY}
+                                    x2={props.pogNB.analysis?.lines[0].endX}
+                                    y2={props.pogNB.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={props.pogNB.analysis?.lines[1].startX}
+                                    y1={props.pogNB.analysis?.lines[1].startY}
+                                    x2={props.pogNB.analysis?.lines[1].endX}
+                                    y2={props.pogNB.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== SNOP ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/SNOP' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.sella[0]?.x}
+                                    cy={props.sella[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.u6[0]?.x}
+                                    cy={props.u6[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.u4[0]?.x}
+                                    cy={props.u4[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.u6[0]?.x}
+                                    y1={props.u6[0]?.y}
+                                    x2={props.u4[0]?.x}
+                                    y2={props.u4[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.snop.analysis?.lines[0].startX}
+                                    y1={props.snop.analysis?.lines[0].startY}
+                                    x2={props.snop.analysis?.lines[0].endX}
+                                    y2={props.snop.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2,2"
+                                  />
+                                  <Line
+                                    x1={props.snop.analysis?.lines[1].startX}
+                                    y1={props.snop.analysis?.lines[1].startY}
+                                    x2={props.snop.analysis?.lines[1].endX}
+                                    y2={props.snop.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2,2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== SNMP ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/SNMP' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.sella[0]?.x}
+                                    cy={props.sella[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.gonion[0]?.x}
+                                    cy={props.gonion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.gnathion[0]?.x}
+                                    cy={props.gnathion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+
+                                  <Line
+                                    x1={props.sella[0]?.x}
+                                    y1={props.sella[0]?.y}
+                                    x2={props.nasion[0]?.x}
+                                    y2={props.nasion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.gonion[0]?.x}
+                                    y1={props.gonion[0]?.y}
+                                    x2={props.gnathion[0]?.x}
+                                    y2={props.gnathion[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.snmp.analysis?.lines[0].startX}
+                                    y1={props.snmp.analysis?.lines[0].startY}
+                                    x2={props.snmp.analysis?.lines[0].endX}
+                                    y2={props.snmp.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={props.snmp.analysis?.lines[1].startX}
+                                    y1={props.snmp.analysis?.lines[1].startY}
+                                    x2={props.snmp.analysis?.lines[1].endX}
+                                    y2={props.snmp.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== UINA ANGULAR ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/UINA_ANGULAR' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointa[0]?.x}
+                                    cy={props.pointa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.isa[0]?.x}
+                                    cy={props.isa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.isi[0]?.x}
+                                    cy={props.isi[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.sella[0]?.x}
+                                    cy={props.sella[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointa[0]?.x}
+                                    y2={props.pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.isa[0]?.x}
+                                    y1={props.isa[0]?.y}
+                                    x2={props.isi[0]?.x}
+                                    y2={props.isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.uina_angular.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.uina_angular.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.uina_angular.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.uina_angular.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== UINA LINEAR ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/UINA_LINEAR' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointa[0]?.x}
+                                    cy={props.pointa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.isa[0]?.x}
+                                    cy={props.isa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+
+                                  <AnimatedCircle
+                                    cx={props.isi[0]?.x}
+                                    cy={props.isi[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointa[0]?.x}
+                                    y2={props.pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.isa[0]?.x}
+                                    y1={props.isa[0]?.y}
+                                    x2={props.isi[0]?.x}
+                                    y2={props.isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.uina_linear.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.uina_linear.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.uina_linear.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.uina_linear.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.uina_linear.analysis?.lines[1]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.uina_linear.analysis?.lines[1]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.uina_linear.analysis?.lines[1].endX
+                                    }
+                                    y2={
+                                      props.uina_linear.analysis?.lines[1].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== LINB ANGULAR ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/LINB_ANGULAR' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointb[0]?.x}
+                                    cy={props.pointb[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.iii[0]?.x}
+                                    cy={props.iii[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.iia[0]?.x}
+                                    cy={props.iia[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.iii[0]?.x}
+                                    y1={props.iii[0]?.y}
+                                    x2={props.iia[0]?.x}
+                                    y2={props.iia[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== LINB Linear ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/LINB_LINEAR' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pointb[0]?.x}
+                                    cy={props.pointb[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.iii[0]?.x}
+                                    cy={props.iii[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.iia[0]?.x}
+                                    cy={props.iia[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.pointb[0]?.x}
+                                    y2={props.pointb[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.iii[0]?.x}
+                                    y1={props.iii[0]?.y}
+                                    x2={props.iia[0]?.x}
+                                    y2={props.iia[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.linb_linear.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      props.linb_linear.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      props.linb_linear.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.linb_linear.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== IIA  ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/IIA' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.iii[0]?.x}
+                                    cy={props.iii[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.iia[0]?.x}
+                                    cy={props.iia[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.isa[0]?.x}
+                                    cy={props.isa[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.isi[0]?.x}
+                                    cy={props.isi[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.iii[0]?.x}
+                                    y1={props.iii[0]?.y}
+                                    x2={props.iia[0]?.x}
+                                    y2={props.iia[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.isa[0]?.x}
+                                    y1={props.isa[0]?.y}
+                                    x2={props.isi[0]?.x}
+                                    y2={props.isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props._iia.analysis?.lines[0].startX}
+                                    y1={props._iia.analysis?.lines[0].startY}
+                                    x2={props._iia.analysis?.lines[0].endX}
+                                    y2={props._iia.analysis?.lines[0].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={props._iia.analysis?.lines[1].startX}
+                                    y1={props._iia.analysis?.lines[1].startY}
+                                    x2={props._iia.analysis?.lines[1].endX}
+                                    y2={props._iia.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== UPPER LIP ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/UPPER_LIP' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.ms[0]?.x}
+                                    cy={props.ms[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pogs[0]?.x}
+                                    cy={props.pogs[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.ls[0]?.x}
+                                    cy={props.ls[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.ms[0]?.x}
+                                    y1={props.ms[0]?.y}
+                                    x2={props.pogs[0]?.x}
+                                    y2={props.pogs[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.upper_lip.analysis?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.upper_lip.analysis?.lines[1].startY
+                                    }
+                                    x2={props.upper_lip.analysis?.lines[1].endX}
+                                    y2={props.upper_lip.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== LOWER LIP ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/LOWER_LIP' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.ms[0]?.x}
+                                    cy={props.ms[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.pogs[0]?.x}
+                                    cy={props.pogs[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.li[0]?.x}
+                                    cy={props.li[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <Line
+                                    x1={props.ms[0]?.x}
+                                    y1={props.ms[0]?.y}
+                                    x2={props.pogs[0]?.x}
+                                    y2={props.pogs[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.lower_lip.analysis?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.lower_lip.analysis?.lines[1].startY
+                                    }
+                                    x2={props.lower_lip.analysis?.lines[1].endX}
+                                    y2={props.lower_lip.analysis?.lines[1].endY}
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== MID FACE ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/MIDFACE' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.ans[0]?.x}
+                                    cy={props.ans[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.menton[0]?.x}
+                                    cy={props.menton[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.ans[0]?.x}
+                                    y2={props.ans[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.ans[0]?.x}
+                                    y1={props.ans[0]?.y}
+                                    x2={props.menton[0]?.x}
+                                    y2={props.menton[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[1].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.MIDFACE?.analysis
+                                        ?.lines[2].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+
+                              {/* ==== LOWER FACE ==== */}
+                              {props.selectid == 'IDS/ANALYSIS/LOWERFACE' ? (
+                                <>
+                                  <AnimatedCircle
+                                    cx={props.nasion[0]?.x}
+                                    cy={props.nasion[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.ans[0]?.x}
+                                    cy={props.ans[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+                                  <AnimatedCircle
+                                    cx={props.menton[0]?.x}
+                                    cy={props.menton[0]?.y}
+                                    r={fadeAnim}
+                                    fill="green"
+                                    stroke="yellow"
+                                    strokeWidth="0.5"
+                                  />
+
+                                  <Line
+                                    x1={props.nasion[0]?.x}
+                                    y1={props.nasion[0]?.y}
+                                    x2={props.ans[0]?.x}
+                                    y2={props.ans[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={props.ans[0]?.x}
+                                    y1={props.ans[0]?.y}
+                                    x2={props.menton[0]?.x}
+                                    y2={props.menton[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[1].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                  <Line
+                                    x1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].startX
+                                    }
+                                    y1={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].startY
+                                    }
+                                    x2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].endX
+                                    }
+                                    y2={
+                                      props.wendellWylie.LOWERFACE?.analysis
+                                        ?.lines[2].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+                                </>
+                              ) : null}
+                            </>
+                          ) : null}
+                        </Svg>
+                      </ImageBackground>
+                    </View>
+                    <View style={{margin: wp(20)}} />
                   </ImageZoom>
+
                   {/* </View> */}
                 </ViewShot>
               )}
@@ -4390,15 +5095,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             borderRadius: 5,
             justifyContent: 'space-between',
             position: 'absolute',
-            bottom: Platform.OS == 'ios' ? hp(12) : hp(7),
+            bottom: Platform.OS == 'ios' ? wp(25) : wp(12),
             left: 0,
             right: 0,
+            paddingVertical: wp(1),
           }}>
           {/*================ PREVIOUS EVENT ============*/}
           <TouchableOpacity
             onPress={() => _prevClick()}
             style={{
+              flex: 1,
               flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
               paddingVertical: 10,
               marginLeft: 10,
             }}>
@@ -4407,17 +5116,31 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               Prev
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => _leftClick()}
-            style={{flexDirection: 'column', paddingVertical: 10}}>
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
             <Entypo name="arrow-bold-left" size={30} color="white" />
             <Text style={{color: 'white', textAlign: 'center', fontSize: 11}}>
               Left
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => _upClick()}
-            style={{flexDirection: 'column', paddingVertical: 10}}>
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
             <Entypo name="arrow-bold-up" size={30} color="white" />
             <Text style={{color: 'white', textAlign: 'center', fontSize: 11}}>
               Up
@@ -4425,7 +5148,13 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => _downClick()}
-            style={{flexDirection: 'column', paddingVertical: 10}}>
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
             <Entypo name="arrow-bold-down" size={30} color="white" />
             <Text style={{color: 'white', textAlign: 'center', fontSize: 11}}>
               Down
@@ -4433,7 +5162,13 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => _rightClick()}
-            style={{flexDirection: 'column', paddingVertical: 10}}>
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
             <Entypo name="arrow-bold-right" size={30} color="white" />
             <Text style={{color: 'white', textAlign: 'center', fontSize: 11}}>
               Right
@@ -4442,7 +5177,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           <TouchableOpacity
             onPress={() => _nextClick()}
             style={{
+              flex: 1,
               flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
               paddingVertical: 10,
               marginRight: 20,
             }}>
@@ -4489,26 +5227,52 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                 <MaterialCommunityIcons name="close" style={{padding: 2}} />
               </TouchableOpacity>
             </View>
+
             <View
               style={{
                 flexDirection: 'column',
-                height: '60%',
+                height: '70%',
                 backgroundColor: 'white',
                 padding: wp(2),
               }}>
-              <Image
-                style={{
-                  flex: 1,
-                  width: '100%',
-                  resizeMode: 'contain',
-                }}
-                source={imageModal}
-              />
-              <Text style={{fontSize: wp(3)}}>{textModal}</Text>
+              <ImageZoom
+                cropWidth={wp(85)}
+                cropHeight={hp(40)}
+                imageWidth={wp(85)}
+                imageHeight={hp(40)}
+                minScale={1}
+                useNativeDriver={true}
+                enableCenterFocus={true}
+                style={{borderWidth: 0.5, borderRadius: 5}}
+                panToMove={true}
+                pinchToZoom={true}>
+                <Image
+                  style={{
+                    width: wp(85),
+                    height: hp(40),
+                    resizeMode: 'contain',
+                  }}
+                  source={imageModal}
+                />
+              </ImageZoom>
+
+              <Text style={{fontSize: wp(2.5), marginVertical: hp(1)}}>
+                {textModal}
+              </Text>
+              <Text style={{fontSize: wp(2.5), marginVertical: hp(1.2)}}>
+                {
+                  'Use the Left, Up, Down, Right button to move the mark to a more precise location'
+                }
+              </Text>
+              <Text style={{fontSize: wp(2.5), marginVertical: hp(1.2)}}>
+                {
+                  'You can zoom in/out and drag the image for a better view. Press the Next button to save & continue'
+                }
+              </Text>
             </View>
           </Modal>
         </View>
-        <Toast />
+
         {/* MODAL ================================================ */}
       </View>
     </>
@@ -4552,6 +5316,8 @@ const mapStateToProps = (state) => {
     loading: state.variabelReducer.loading,
     loadingGlobal: state.variabelReducer.loadingGlobal,
     selectid: state.variabelReducer.selectid,
+    widthLastDevice: state.variabelReducer.widthLastDevice,
+    heightLastDevice: state.variabelReducer.heightLastDevice,
     sna: state.resultReducer.sna,
     snb: state.resultReducer.snb,
     anb: state.resultReducer.anb,
@@ -4682,6 +5448,8 @@ const mapDispatchToProps = (dispatch) => {
     set_loading: (val) => dispatch(set_loading(val)),
     set_loading_global: (val) => dispatch(set_loading_global(val)),
     set_select_id: (val) => dispatch(set_select_id(val)),
+    set_width_last_device: (val) => dispatch(set_width_last_device(val)),
+    set_height_last_device: (val) => dispatch(set_height_last_device(val)),
   };
 };
 

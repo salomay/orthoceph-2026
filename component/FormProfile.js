@@ -63,21 +63,18 @@ class FormProfile extends React.Component {
 
   logOut = async () => {
     try {
-      await GoogleSignin.signOut();
+      // await GoogleSignin.signOut();
       const appleSign = appleAuth.Operation.LOGOUT;
-      console.log('Apple Logout :' + appleSign);
-      if (appleSign) {
-        AsyncStorage.getAllKeys()
-          .then((keys) => AsyncStorage.multiRemove(keys))
-          .then(() =>
-            this.props.navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{name: 'login'}],
-              }),
-            ),
-          );
-      }
+      AsyncStorage.getAllKeys()
+        .then((keys) => AsyncStorage.multiRemove(keys))
+        .then(() =>
+          this.props.navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{name: 'login'}],
+            }),
+          ),
+        );
     } catch (error) {
       console.error(error);
     }

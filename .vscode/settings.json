@@ -3,8 +3,8 @@
   "editor.wordWrap": "on",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": false,
-    "source.fixAll": true
+    "source.organizeImports": "never",
+    "source.fixAll": "explicit"
   },
   "typescript.tsdk": "node_modules/typescript/lib"
 }

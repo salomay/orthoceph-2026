@@ -112,7 +112,7 @@ export const CALIBRATION_DETAILS = [
       {
         IMG: require('../../assets/help/calibration1.png'),
         DESC: [
-          `The starting point of known distance. Marked on the ruler which is usually displayed on the cephalometric image.`,
+          `Mark the starting point of the known calibration distance by touching the location on the image. Marked on the ruler which is usually displayed on the cephalometric image.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -128,7 +128,7 @@ export const CALIBRATION_DETAILS = [
       {
         IMG: require('../../assets/help/calibration1.png'),
         DESC: [
-          `The ending point of known distance. Marked on the ruler which is usually displayed on the cephalometric image.`,
+          `Mark the starting point of the known calibration distance by touching the location on the image. Marked on the ruler which is usually displayed on the cephalometric image.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -144,7 +144,7 @@ export const CALIBRATION_DETAILS = [
       {
         IMG: require('../../assets/help/calibration1.png'),
         DESC: [
-          `The calibration distance from the Starting Point to the End Point. In millimeters (mm).`,
+          `Enter the calibration distance value in milimeters (mm) from the Starting Point to the End Point.`,
         ],
         INFO: [
           `Enter the calibration distance between the Starting Point and the End Point in millimeters (mm)`,
@@ -163,7 +163,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/sella.png'),
         DESC: [
-          `S (Sella): Point representing the midpoint of the pituitary fossa (sella turcica)`,
+          `S (Sella): Locate and mark the point representing the midpoint of the pituitary fossa (sella turcica)`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -179,7 +179,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/nasion.png'),
         DESC: [
-          `N (nasion): The point in the midline of both the nasal root and the nasofrontal suture.`,
+          `N (nasion): Locate and mark the point in the midline of both the nasal root and the nasofrontal suture.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -195,7 +195,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/pointA.png'),
         DESC: [
-          `Point A: The deepest point in the curve of the maxilla between the ANS and the dental alveolus.`,
+          `Point A: Locate and mark the deepest point in the curve of the maxilla between the ANS and the dental alveolus.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -211,7 +211,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/pointB.png'),
         DESC: [
-          `Point B: The point at the deepest midline concavity on the mandibular symphysis between infradentale and pogonion`,
+          `Point B: Locate and mark the point at the deepest midline concavity on the mandibular symphysis between infradentale and pogonion`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -227,7 +227,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/u6.png'),
         DESC: [
-          `U6: Mesio buccal cusp tip of maxillary first molar to construct occlusal plane.`,
+          `U6: Locate and mark the Mesio buccal cusp tip of maxillary first molar to construct occlusal plane.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -243,7 +243,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/u4.png'),
         DESC: [
-          `U4: Buccal cusp tip of maxillary first premolar to construct occlusal plane.`,
+          `U4: Locate and mark the Buccal cusp tip of maxillary first premolar to construct occlusal plane.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -259,7 +259,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/gonion.png'),
         DESC: [
-          `Go (Gonion): Constructed point of intersection of the ramus plane and the mandibular plane.`,
+          `Go (Gonion): Locate and mark the Constructed point of intersection of the ramus plane and the mandibular plane.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -275,7 +275,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/gnathion.png'),
         DESC: [
-          `Gn (gnathion): The lowest point in the midlane on the lower border of the chin.`,
+          `Gn (gnathion): Locate and mark the lowest point in the midlane on the lower border of the chin.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -291,7 +291,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/isa.png'),
         DESC: [
-          `ISA: Root Apex Point of Maxillary Central Incisor to construct its long axis.`,
+          `ISA: Locate and mark the Root Apex Point of Maxillary Central Incisor to construct its long axis.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -307,7 +307,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/isi.png'),
         DESC: [
-          `ISI: Incisal Tip Point of Maxillary Central Incisor to construct its long axis.`,
+          `ISI: Locate and mark the Incisal Tip Point of Maxillary Central Incisor to construct its long axis.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -322,7 +322,9 @@ export const MARK_DETAILS = [
     HELP: [
       {
         IMG: require('../../assets/help/iia.png'),
-        DESC: [`IIA: Root Apex Point of Mandibular Central Incisor`],
+        DESC: [
+          `IIA: Locate and mark the Root Apex Point of Mandibular Central Incisor`,
+        ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
         ],
@@ -336,7 +338,9 @@ export const MARK_DETAILS = [
     HELP: [
       {
         IMG: require('../../assets/help/iii.png'),
-        DESC: [`III: Incisal Tip Point of Mandibular Central Incisor`],
+        DESC: [
+          `III: Locate and mark the Incisal Tip Point of Mandibular Central Incisor`,
+        ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
         ],
@@ -350,7 +354,9 @@ export const MARK_DETAILS = [
     HELP: [
       {
         IMG: require('../../assets/help/ms.png'),
-        DESC: [`Midpoint on the S Shaped curve joining upperlip and nose`],
+        DESC: [
+          `Locate and mark the Midpoint on the S Shaped curve joining upperlip and nose`,
+        ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
         ],
@@ -365,7 +371,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/soft-pog.png'),
         DESC: [
-          `Pog\xB4 (soft tissue pogonion): The most protuding point of the soft tissue chin contour.`,
+          `Pog\xB4 (soft tissue pogonion): Locate and mark the most protuding point of the soft tissue chin contour.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -380,7 +386,9 @@ export const MARK_DETAILS = [
     HELP: [
       {
         IMG: require('../../assets/help/ls.png'),
-        DESC: [`Ls (Labrale superior): Most anterior point of the upper lip.`],
+        DESC: [
+          `Ls (Labrale superior): Locate and mark the Most anterior point of the upper lip.`,
+        ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
         ],
@@ -394,7 +402,9 @@ export const MARK_DETAILS = [
     HELP: [
       {
         IMG: require('../../assets/help/li.png'),
-        DESC: [`Li (Labrale inferior): Most anterior point on the lower lip.`],
+        DESC: [
+          `Li (Labrale inferior): Locate and mark the Most anterior point on the lower lip.`,
+        ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
         ],
@@ -408,7 +418,9 @@ export const MARK_DETAILS = [
     HELP: [
       {
         IMG: require('../../assets/help/pog.png'),
-        DESC: [`Pog (pogonion): The most anterior midpoint of the mandible.`],
+        DESC: [
+          `Pog (pogonion): Locate and mark the most anterior midpoint of the mandible.`,
+        ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
         ],
@@ -424,7 +436,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/ans.png'),
         DESC: [
-          `ANS (Anterior Nasal Spine): The anterior tip of the sharp bony process of the maxilla at the lower margin of the anterior nasal opening.`,
+          `ANS (Anterior Nasal Spine): Locate and mark the anterior tip of the sharp bony process of the maxilla at the lower margin of the anterior nasal opening.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,
@@ -440,7 +452,7 @@ export const MARK_DETAILS = [
       {
         IMG: require('../../assets/help/menton.png'),
         DESC: [
-          `Me (Menton): The lowest point on the symphseal shadow of the mandible seen on a lateral cephalogram.`,
+          `Me (Menton): Locate and mark the lowest point on the symphseal shadow of the mandible seen on a lateral cephalogram.`,
         ],
         INFO: [
           `Adjust the position by pressing the operational buttons or by touching a new location on the cephalogram`,

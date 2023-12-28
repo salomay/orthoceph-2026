@@ -141,8 +141,8 @@ android {
         applicationId "com.orthoceph"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20
-        versionName "20.0"
+        versionCode 43
+        versionName "28.1.15"
         multiDexEnabled true
     }
     splits {
@@ -174,6 +174,7 @@ android {
         resolutionStrategy {
              force 'androidx.core:core-ktx:1.6.0'
              force 'androidx.core:core:1.7.0'
+              
            
         }
     }

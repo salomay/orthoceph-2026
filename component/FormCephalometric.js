@@ -455,6 +455,8 @@ class FormCephalometric extends React.Component {
             fileName: 'CompareResult',
             base64: true,
             // directory: 'Orthoceph',
+            width: 792,
+            height: 500,
           };
 
           let file = await RNHTMLtoPDF.convert(options);
@@ -542,7 +544,7 @@ class FormCephalometric extends React.Component {
                   color: '#9C9C9C',
                   paddingVertical: 2,
                 }}>
-                {this.state.birthDate}
+                {this.state.race}
               </Text>
             </View>
           </View>
@@ -556,7 +558,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: wp(3),
+                fontSize: wp(3.5),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>
@@ -575,7 +577,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: wp(3),
+                fontSize: wp(3.5),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>
@@ -594,7 +596,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: wp(3),
+                fontSize: wp(3.5),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>
@@ -610,7 +612,7 @@ class FormCephalometric extends React.Component {
             <Text
               style={{
                 color: 'white',
-                fontSize: wp(3),
+                fontSize: wp(3.5),
                 paddingVertical: hp(4),
                 fontWeight: 'bold',
               }}>

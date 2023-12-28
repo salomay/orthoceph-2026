@@ -6,7 +6,7 @@ buildscript {
         buildToolsVersion = "29.0.2"
         minSdkVersion = 26
         compileSdkVersion = 31
-        targetSdkVersion = 31
+        targetSdkVersion = 33
         kotlinVersion = "1.6.21"
         googlePlayServicesAuthVersion = "19.2.0"
     }

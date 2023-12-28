@@ -12,6 +12,7 @@ import {
   View,
   Alert,
   PermissionsAndroid,
+  Linking,
 } from 'react-native';
 import jwt_decode from 'jwt-decode';
 import {
@@ -49,6 +50,7 @@ import {
 import Geolocation from '@react-native-community/geolocation';
 import {CommonActions} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import CheckBox from '@react-native-community/checkbox';
 
 // Settings.initializeSDK();
 
@@ -78,10 +80,48 @@ export default class FormLogin extends React.Component {
     latitude: null,
     longitude: null,
     address: null,
+    checkAgreement: false,
   };
 
   componentDidMount() {
     this.getPermission();
+  }
+
+  validationForm() {
+    if (this.state.email === '') {
+      Toast.show({
+        type: 'info',
+        text1: 'Information!',
+        text2: 'Please input email!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      return false;
+    }
+
+    if (this.state.password === '') {
+      Toast.show({
+        type: 'info',
+        text1: 'Information!',
+        text2: 'Please input password !',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      return false;
+    }
+
+    if (this.state.checkAgreement !== true) {
+      Toast.show({
+        type: 'info',
+        text1: 'Information!',
+        text2: 'Please Checked User Agreement!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      return false;
+    }
+
+    return true;
   }
 
   AuthFunction = async () => {
@@ -90,15 +130,13 @@ export default class FormLogin extends React.Component {
       password: this.state.password,
     };
 
-    if (data.email != '') {
+    if (this.validationForm()) {
       this.setState({
         visible: true,
       });
 
       _loginAuth(data)
         .then((result) => {
-          console.log(JSON.stringify(result));
-
           if (result[0].jumlah > 0) {
             AsyncStorage.setItem('doctorId', '' + result[0].doctorid + '');
             AsyncStorage.setItem('fullName', '' + result[0].fullname + '');
@@ -147,11 +185,8 @@ export default class FormLogin extends React.Component {
           });
         });
     } else {
-      Toast.show({
-        type: 'info',
-        text1: 'Silahkan Isi Email Anda',
-        autohide: true,
-        visibilityTime: 2500,
+      this.setState({
+        visible: false,
       });
     }
   };
@@ -483,13 +518,13 @@ export default class FormLogin extends React.Component {
         />
 
         <View style={styles.body}>
-          <Toast />
           <Image
             source={title_icon}
             style={{
               resizeMode: 'cover',
               width: wp(100),
               height: wp(15),
+              zIndex: 0,
             }}></Image>
 
           <Image
@@ -499,7 +534,9 @@ export default class FormLogin extends React.Component {
               marginVertical: 20,
               width: wp(20),
               height: wp(15),
+              zIndex: 0,
             }}></Image>
+          <Toast />
 
           <View
             style={{
@@ -554,28 +591,60 @@ export default class FormLogin extends React.Component {
             ) : (
               <TouchableOpacity
                 style={styles.customBtnBG}
-                onPress={this.AuthFunction}>
+                onPress={() => this.AuthFunction()}>
                 <Text style={styles.txtMasuk}>LogIn</Text>
               </TouchableOpacity>
             )}
 
             {/* ========================================================== */}
-            <TouchableOpacity
-              onPress={() => this.props.navigation.navigate('FormRegistrasi')}>
+
+            <View
+              style={{
+                width: '90%',
+                marginTop: wp(5),
+                flexDirection: 'row',
+              }}>
+              <CheckBox
+                disabled={false}
+                value={this.state.checkAgreement}
+                onValueChange={(newValue) =>
+                  this.setState({checkAgreement: newValue})
+                }
+                boxType={'square'}
+                tintColor={'white'}
+                onCheckColor={'white'}
+              />
               <Text
                 style={{
                   color: 'white',
-                  marginTop: 10,
-                  alignSelf: 'center',
-                  fontSize: wp(2.5),
+                  fontSize: wp(3.5),
+                  marginHorizontal: wp(2),
+                  textAlign: 'justify',
+                  fontWeight: '100',
                 }}>
-                Don't have account please
-                <Text style={{fontWeight: 'bold', fontSize: wp(3)}} oncl>
-                  {' '}
-                  SignUp
+                {'Yes, I understand and agree to the '}
+                <Text
+                  style={{fontWeight: '400'}}
+                  onPress={() =>
+                    Linking.openURL(
+                      'https://orthoceph-web.furnabel.com/term-condition/',
+                    )
+                  }>
+                  {'OrthoCeph Terms of Service,'}
+                </Text>
+
+                <Text>{',including the '}</Text>
+                <Text
+                  style={{fontWeight: '400'}}
+                  onPress={() =>
+                    Linking.openURL(
+                      'https://orthoceph-web.furnabel.com/privacy-policy-2/',
+                    )
+                  }>
+                  {'User Agreement and Privacy Policy'}
                 </Text>
               </Text>
-            </TouchableOpacity>
+            </View>
 
             <View
               style={{
@@ -584,8 +653,25 @@ export default class FormLogin extends React.Component {
                 borderBottomWidth: 0.5,
               }}
             />
+
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate('FormRegistrasi')}>
+              <Text
+                style={{
+                  color: 'white',
+                  marginTop: 10,
+                  alignSelf: 'center',
+                  fontSize: wp(3),
+                }}>
+                Don't have account, please
+                <Text style={{fontWeight: 'bold', fontSize: wp(3)}} oncl>
+                  {' '}
+                  SignUp
+                </Text>
+              </Text>
+            </TouchableOpacity>
             {/* ========================================================== */}
-            <GoogleSigninButton
+            {/* <GoogleSigninButton
               style={{
                 width: '100%',
                 height: wp(13),
@@ -595,7 +681,7 @@ export default class FormLogin extends React.Component {
               color={GoogleSigninButton.Color.Light}
               onPress={this.signInGoogle}
               disabled={this.state.isSigninInProgress}
-            />
+            /> */}
 
             {/* <LoginButton
               style={{

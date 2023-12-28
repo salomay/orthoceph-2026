@@ -55,6 +55,8 @@ import {
   SET_LOADING,
   SET_LOADING_GLOBAL,
   SET_SELECT_ID,
+  SET_WIDTH_IMAGE,
+  SET_HEIGHT_IMAGE,
 } from '../actions/types';
 
 const initialState = {
@@ -92,6 +94,8 @@ const initialState = {
   loading: false,
   loadingGlobal: false,
   selectid: null,
+  widthLastDevice: null,
+  heightLastDevice: null,
 };
 
 const variabelReducer = (state = initialState, action) => {
@@ -387,6 +391,18 @@ const variabelReducer = (state = initialState, action) => {
       return {
         ...state,
         selectid: action.data,
+      };
+
+    case SET_WIDTH_IMAGE:
+      return {
+        ...state,
+        widthLastDevice: action.data,
+      };
+
+    case SET_HEIGHT_IMAGE:
+      return {
+        ...state,
+        heightLastDevice: action.data,
       };
 
     default:

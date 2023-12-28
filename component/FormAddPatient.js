@@ -43,6 +43,7 @@ class FormProfile extends React.Component {
       dataRace: [],
       showBirthDate: false,
       birthDate: new Date(1598051730000),
+      age: null,
       tempGambar: null,
       imageUri: null,
       imageType: null,
@@ -130,8 +131,8 @@ class FormProfile extends React.Component {
     } else if (this.state.race == '' || this.state.race == null) {
       ToastAndroid.show('Require Race', ToastAndroid.SHORT);
       return false;
-    } else if (this.state.birthDate == '' || this.state.birthDate == null) {
-      ToastAndroid.show('Require Birth Date', ToastAndroid.SHORT);
+    } else if (this.state.age == '' || this.state.age == null) {
+      ToastAndroid.show('Require Age', ToastAndroid.SHORT);
       return false;
     } else {
       return true;
@@ -157,7 +158,7 @@ class FormProfile extends React.Component {
       data.append('fullname', this.state.fullName);
       data.append('race', this.state.race);
       data.append('gender', this.state.gender);
-      data.append('birthdate', '' + this.state.birthDate + '');
+      data.append('age', '' + this.state.age + '');
 
       _addPatient(data)
         .then((result) => {
@@ -195,7 +196,7 @@ class FormProfile extends React.Component {
         fullname: this.state.fullName,
         race: this.state.race,
         gender: this.state.gender,
-        birthdate: this.state.birthDate,
+        age: this.state.age,
       };
 
       _addPatientNoImage(data)
@@ -285,7 +286,7 @@ class FormProfile extends React.Component {
             <View style={styles.containerList}>
               <TouchableOpacity
                 onPress={this.uploadPhoto}
-                style={{alignSelf: 'center', marginLeft: 10}}>
+                style={{alignSelf: 'center', alignItems: 'center'}}>
                 {this.state.tempGambar ? (
                   <Image
                     style={{width: 100, height: 100, borderRadius: 10}}
@@ -297,6 +298,14 @@ class FormProfile extends React.Component {
                     source={require('./../img/iconUpload.png')}
                   />
                 )}
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: 'white',
+                    fontSize: wp(3),
+                  }}>
+                  Add Photo Profile Patient
+                </Text>
               </TouchableOpacity>
 
               <View style={{margin: hp(1)}} />
@@ -305,12 +314,12 @@ class FormProfile extends React.Component {
                 <TextInput
                   value={this.state.fullName}
                   style={{
-                    // height: wp(),
+                    height: wp(8),
                     backgroundColor: '#224957',
-                    borderTopRightRadius: 10,
-                    borderTopLeftRadius: 10,
-                    borderBottomLeftRadius: 10,
-                    borderBottomRightRadius: 10,
+                    borderTopRightRadius: 5,
+                    borderTopLeftRadius: 5,
+                    borderBottomLeftRadius: 5,
+                    borderBottomRightRadius: 5,
                     fontSize: wp(3),
                   }}
                   theme={{colors: {text: 'white'}}}
@@ -325,7 +334,7 @@ class FormProfile extends React.Component {
                 <DropDownPicker
                   containerStyle={{
                     height: wp(8),
-                    borderRadius: 15,
+                    borderRadius: 5,
                     backgroundColor: '#224957',
                     zIndex: 999,
                   }}
@@ -370,7 +379,7 @@ class FormProfile extends React.Component {
                 <DropDownPicker
                   containerStyle={{
                     height: wp(8),
-                    borderRadius: 15,
+                    borderRadius: 5,
                     backgroundColor: '#224957',
                     zIndex: 998,
                   }}
@@ -393,20 +402,33 @@ class FormProfile extends React.Component {
                   value={this.state.valueRace}
                   items={[
                     {
-                      label: 'American Indian or Alaska Native',
-                      value: 'American Indian or Alaska Native',
+                      label: 'Jawa / deutro melayu',
+                      value: 'Jawa / deutro melayu',
                     },
-                    {label: 'Asian', value: 'Asian'},
                     {
-                      label: 'Black or African American',
-                      value: 'Black or African American',
+                      label: 'Batak / dayak / proto melayu',
+                      value: 'Batak / dayak / proto melayu',
                     },
-                    {label: 'Hispanic or Latino', value: 'Hispanic or Latino'},
                     {
-                      label: 'Native Hawaiian or Other Pacific Islander',
-                      value: 'Native Hawaiian or Other Pacific Islander',
+                      label: 'Sunda / austronesia',
+                      value: 'Sunda / austronesia',
                     },
-                    {label: 'White', value: 'White'},
+                    {
+                      label: 'China / tionghoa',
+                      value: 'China / tionghoa',
+                    },
+                    {
+                      label: 'Arab',
+                      value: 'Arab',
+                    },
+                    {
+                      label: 'Indonesia timur / papua / ambon',
+                      value: 'Indonesia timur / papua / ambon',
+                    },
+                    {
+                      label: 'Caucasian',
+                      value: 'Caucasian',
+                    },
                   ]}
                   onPress={() =>
                     this.state.openRace
@@ -421,7 +443,8 @@ class FormProfile extends React.Component {
                 <View style={{margin: hp(1)}} />
 
                 <TextInput
-                  value={this.formatDate(this.state.birthDate)}
+                  value={this.state.age}
+                  keyboardType="number-pad"
                   style={{
                     fontSize: wp(3),
                     height: wp(8),
@@ -433,14 +456,15 @@ class FormProfile extends React.Component {
                   }}
                   theme={{colors: {text: 'white'}}}
                   activeUnderlineColor="transparent"
-                  placeholder="Birth Date"
+                  placeholder="Age"
                   placeholderTextColor={'white'}
                   selectionColor="white"
                   maxLength={100}
-                  onTouchStart={() => this.setState({showBirthDate: true})}
+                  onChangeText={(val) => this.setState({age: val})}
+                  // onTouchStart={() => this.setState({showBirthDate: true})}
                 />
 
-                {this.state.showBirthDate && Platform.OS == 'android' ? (
+                {/* {this.state.showBirthDate && Platform.OS == 'android' ? (
                   <>
                     <DateTimePicker
                       testID="dateTimePicker"
@@ -463,7 +487,7 @@ class FormProfile extends React.Component {
                       onChange={(x, y) => this.changeBirthdate(x, y)}
                     />
                   </Modal>
-                ) : null}
+                ) : null} */}
               </View>
             </View>
 

@@ -299,7 +299,7 @@ class FormPatient extends React.Component {
                   color: '#9C9C9C',
                   paddingVertical: 2,
                 }}>
-                {this.state.birthDate}
+                {this.state.race}
               </Text>
             </View>
           </View>

@@ -192,7 +192,7 @@ import Permissions, {
   PERMISSIONS,
   RESULTS,
 } from 'react-native-permissions';
-import {useEffect} from 'react';
+import Toast from 'react-native-toast-message';
 
 const {width, height} = Dimensions.get('screen');
 
@@ -208,7 +208,9 @@ function sideBarNavigation(props) {
       drawerPosition="right"
       drawerStyle={{
         width: '80%',
-        height: '100%',
+        height:
+          height > 950 ? '100%' : Platform.OS == 'android' ? '100%' : '95%',
+        marginTop: height > 950 ? 0 : Platform.OS == 'android' ? 0 : wp(10),
       }}
       drawerContent={(props) => <CalibrationContainer {...props} />}>
       <Drawer.Screen name="Analysis" component={FormCephalometricAnalysis} />
@@ -241,15 +243,166 @@ function CustomDrawerContent(props) {
   let _WendellWylie = null;
 
   function _analysis() {
-    // props.navigation.closeDrawer();
+    console.log('ANALYSIS APP');
+    props.navigation.closeDrawer();
 
-    props.set_markingdot(false);
-    props.set_resultanalysis(true);
-    props.set_detailresult(false);
-    props.set_bantuMarker(23);
+    if (props.startingPoint.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Starting Point!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.endPoint.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position End Point!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.sella.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Sella!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.nasion.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Nasion!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pointa.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Point A!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pointb.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Point B!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.u6.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position U6!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.u4.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position U4!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.gonion.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Gonion!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.gnathion.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Gnathion!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.isa.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position ISA!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.isi.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position ISI!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.iia.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position IIA!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.iii.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position III!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.ms.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position MS!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pogs.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Soft Pogonion (Pog`)!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.ls.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position LS!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.li.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position LI!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.pog.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Pogonion (Pog)!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.ans.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position ANS!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else if (props.menton.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Please select position Menton!',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+    } else {
+      props.set_loading_global(true);
+      props.set_markingdot(false);
+      props.set_resultanalysis(true);
+      props.set_detailresult(false);
 
-    process_analysis();
-
+      setTimeout(() => {
+        process_analysis();
+      }, 500);
+    }
     return null;
   }
 
@@ -359,15 +512,24 @@ function CustomDrawerContent(props) {
 
     props.set_wendellwylie(_WendellWylie);
 
-    props.set_enablesave(true);
-    props.navigation.openDrawer();
+    if (_WendellWylie.LOWERFACE.value) {
+      props.set_enablesave(true);
+      props.set_loading_global(false);
+      props.navigation.openDrawer();
+    }
   }
 
   function _markAgain() {
+    props.set_loading_global(true);
+    props.navigation.closeDrawer();
     props.set_markingdot(true);
     props.set_resultanalysis(false);
     props.set_detailresult(false);
     props.set_enablesave(false);
+    setTimeout(() => {
+      props.navigation.openDrawer();
+      props.set_loading_global(false);
+    }, 500);
   }
 
   function _exportPDF() {
@@ -612,7 +774,7 @@ function CustomDrawerContent(props) {
     <View style={{flex: 1}}>
       <HeaderTop props={props} />
 
-      {props.markingDot ? (
+      {props.markingDot === true ? (
         <>
           <HeaderStep
             headerText={'Cephalometric One'}
@@ -1096,7 +1258,6 @@ function HeaderResult({headerText, headerIcon}) {
 }
 
 const CalibrationContent = ({props}) => {
-  // console.log(props.startingPoint);
   function setData(val, headerText) {
     props.set_bantuMarker(val);
     props.navigation.closeDrawer();
@@ -1190,7 +1351,7 @@ const CalibrationContent = ({props}) => {
         <View style={{flexDirection: 'row', width: '93%'}}>
           <MaterialCommunityIcons name="ruler" size={wp(5)} />
           <Text style={{fontSize: wp(3), marginLeft: wp(5)}}>
-            Calibration Distance : 0 mm
+            Calibration Distance : {props?.calibrationDistance} mm
           </Text>
         </View>
 
@@ -2075,6 +2236,8 @@ function CephalometricLandMarkContent({props}) {
     props.navigation.closeDrawer();
     props.set_disable_pointer('auto');
     props.set_opacity_pointer(1);
+    // props.set_markingdot(true);
+    props.set_resultanalysis(false);
   }
 
   return (
@@ -2777,6 +2940,8 @@ class App extends React.Component {
 const mapStateToProps = (state) => {
   return {
     bantuMarker: state.variabelReducer.bantuMarker,
+    loadingGlobal: state.variabelReducer.loadingGlobal,
+    loading: state.variabelReducer.loading,
     disablePointer: state.variabelReducer.disablePointer,
     opacityPointer: state.variabelReducer.opacityPointer,
     startingPoint: state.variabelReducer.startingPoint,

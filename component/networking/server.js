@@ -1,7 +1,7 @@
 import {Platform} from 'react-native';
 
 const apiurl = 'http://orthoceph.furnabel.com/';
-// const apiurl = Platform.OS == 'ios' ? 'http://localhost:3000/' : 'http://10.0.2.2:3000/';
+const apiurlImage = 'http://orthoceph-image.furnabel.com/';
 
 //loginAuth
 const _loginAuth = async (params) => {
@@ -289,13 +289,13 @@ const _addPdfReport = async (params) => {
     let respon = null;
 
     if (params) {
-      respon = await fetch(apiurl + 'addPdfReport', {
+      respon = await fetch(apiurlImage + 'addPdfReport', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: params,
+        body: JSON.stringify(params),
       });
     }
 
@@ -350,6 +350,28 @@ const _viewResultAnalysis = async (params) => {
   }
 };
 
+const _addNotesPatient = async (params) => {
+  try {
+    let respon = null;
+
+    if (params) {
+      respon = await fetch(apiurl + 'addNotesPatient', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+    }
+
+    let responJson = await respon.json();
+    return responJson.status;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const _openImage = (imageUrl) => {
   return apiurl + 'getImages/?gambar=' + imageUrl;
 };
@@ -388,6 +410,7 @@ export {
   _addPatientNoImage,
   _viewPatient,
   _delPatient,
+  _addNotesPatient,
   _addAnalysisPatient,
   _addPdfReport,
   _openImage,
