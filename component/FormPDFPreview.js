@@ -1,6 +1,13 @@
 import React from 'react';
-import {StyleSheet, Dimensions, View, BackHandler} from 'react-native';
-import Pdf from 'react-native-pdf';
+import {
+  StyleSheet,
+  Dimensions,
+  View,
+  BackHandler,
+  Modal,
+  Platform,
+} from 'react-native';
+import PDFView from 'react-native-view-pdf';
 import {Appbar, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
@@ -41,7 +48,10 @@ export default class FormPdfPreview extends React.Component {
         failOnCancel: false,
         mimeType: 'application/pdf',
         saveToFiles: true,
-        urls: [this.props.route.params.fileBase64],
+        urls: [
+          'data:application/pdf;base64,' + this.props.route.params.fileBase64,
+        ],
+
         // url: this.props.route.params.fileName,
         // fileName: _pdf.fileName,
 
@@ -63,67 +73,56 @@ export default class FormPdfPreview extends React.Component {
   };
 
   render() {
-    const source = {
-      uri: this.props.route.params.fileName,
-      cache: true,
-    };
+    const source = this.props.route.params.fileBase64;
 
     return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: 'column',
-          backgroundColor: '#093545',
-        }}>
-        <Appbar.Header
+      <>
+        <View
           style={{
-            // position: 'absolute',
-            backgroundColor: '#637363',
-            borderRadius: 10,
-            justifyContent: 'center',
-            alignContent: 'center',
-            marginTop: 5,
-            zIndex: 9999,
+            flex: 1,
+            flexDirection: 'column',
+            backgroundColor: '#093545',
           }}>
-          <Appbar.BackAction onPress={() => this.props.navigation.goBack()} />
-          <Appbar.Content
-            title="Report Viewer"
-            subtitle=""
-            titleStyle={{
-              fontSize: wp(4),
-              fontWeight: 'bold',
-              textAlign: 'center',
-            }}
-            color="white"
-          />
-          <Appbar.Action
-            icon="share-variant-outline"
-            onPress={() => this._onShareReport()}
-          />
-        </Appbar.Header>
-
-        <View style={styles.container}>
-          <Pdf
-            source={source}
-            fitWidth={true}
-            // fitPolicy={100}
-            horizontal={true}
-            onLoadComplete={(numberOfPages, filePath) => {
-              console.log(`Number of pages: ${numberOfPages}`);
-            }}
-            onPageChanged={(page, numberOfPages) => {
-              console.log(`Current page: ${page}`);
-            }}
-            onError={(error) => {
-              console.log(error);
-            }}
-            onPressLink={(uri) => {
-              console.log(`Link pressed: ${uri}`);
-            }}
-            style={styles.pdf}
-          />
+          <Appbar.Header
+            style={{
+              // position: 'absolute',
+              backgroundColor: '#637363',
+              borderRadius: 10,
+              justifyContent: 'center',
+              alignContent: 'center',
+              marginTop: 5,
+              zIndex: 9999,
+            }}>
+            <Appbar.BackAction onPress={() => this.props.navigation.goBack()} />
+            <Appbar.Content
+              title="Report Viewer"
+              subtitle=""
+              titleStyle={{
+                fontSize: wp(4),
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}
+              color="white"
+            />
+            <Appbar.Action
+              icon="share-variant-outline"
+              onPress={() => this._onShareReport()}
+            />
+          </Appbar.Header>
+          <View style={styles.container}>
+            <PDFView
+              fadeInDuration={500.0}
+              style={{flex: 1}}
+              resource={source}
+              resourceType={'base64'}
+              onLoad={() => {}}
+              onError={(e) => {
+                console.log(e);
+              }}
+            />
+          </View>
         </View>
-      </View>
+      </>
     );
   }
 }
@@ -131,9 +130,11 @@ export default class FormPdfPreview extends React.Component {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: '-20%',
+    width: Platform.OS == 'ios' ? '100%' : '100%',
+    height: Platform.OS == 'ios' ? '100%' : '40%',
+    // justifyContent: 'flex-start',
+    // alignItems: 'center',
+    marginTop: '10%',
   },
   pdf: {
     // flex: 1,

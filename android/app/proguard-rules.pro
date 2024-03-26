@@ -24,3 +24,6 @@
 -keepclassmembers class * {
     @com.facebook.jni.annotations.DoNotStrip *;
 }
+-keepclassmembers class com.android.installreferrer.api.** {
+  *;
+}

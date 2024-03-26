@@ -10,6 +10,7 @@ import {
   VirtualizedList,
   RefreshControl,
   Alert,
+  BackHandler,
 } from 'react-native';
 import {Appbar, Button, Modal, TextInput} from 'react-native-paper';
 import {
@@ -92,7 +93,7 @@ const ListPatient = ({
             }}>
             {item[index].gender != 'M'
               ? 'Female'
-              : 'Male' + ' / ' + item[index].ageInYears + 'Y'}
+              : 'Male' + ' / ' + item[index].age + 'Y'}
           </Text>
           <Text
             style={{
@@ -155,7 +156,7 @@ const ListPatient = ({
               fullName: item[index].fullname,
               gender: item[index].gender,
               race: item[index].race,
-              ageInYears: item[index].ageInYears,
+              ageInYears: item[index].age,
               urlImage: urlImage,
             })
           }>
@@ -197,14 +198,35 @@ class FormPatientList extends React.Component {
     };
   }
 
+  backAction = () => {
+    Alert.alert('Do you want to exit ?', '', [
+      {
+        text: 'No',
+        onPress: () => null,
+        style: 'cancel',
+      },
+      {text: 'Yes', onPress: () => BackHandler.exitApp()},
+    ]);
+    return true;
+  };
+
   UNSAFE_componentWillMount() {
     this._refreshData();
   }
 
   componentDidMount() {
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.backAction,
+    );
+
     const unsubscribe = this.props.navigation.addListener('focus', () => {
       this._refreshData();
     });
+  }
+
+  componentWillUnmount() {
+    this.backHandler.remove();
   }
 
   _refreshDataPagination = () => {
@@ -273,8 +295,7 @@ class FormPatientList extends React.Component {
               } else {
                 this.setState({DataPatient: []});
               }
-
-              // this.setState({isRefreshing : false});
+              this.setState({isRefreshing: false});
             })
             .catch((error) => {
               console.log(error);
@@ -435,9 +456,30 @@ class FormPatientList extends React.Component {
           </Appbar.Header>
           <Toast />
 
+          {this.state.DataPatient.length > 0 ? null : (
+            <TouchableOpacity
+              style={{
+                marginTop: '5%',
+                width: '40%',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'grey',
+                borderRadius: 15,
+                alignSelf: 'center',
+              }}
+              onPress={() => this._refreshData()}>
+              <Fontisto
+                name="spinner-refresh"
+                size={20}
+                style={{padding: 5}}></Fontisto>
+              <Text style={{color: 'white', padding: 5}}>Refresh </Text>
+            </TouchableOpacity>
+          )}
+
           {this.state.DataPatient.length > 0 ? (
             <VirtualizedList
-              style={{paddingTop: '10%'}}
+              style={{paddingTop: '5%'}}
               onEndReachedThreshold={1}
               onEndReached={({distanceFromEnd}) => {
                 this._refreshDataPagination();
@@ -489,7 +531,10 @@ export default FormPatientList;
 
 const styles = StyleSheet.create({
   container: {
+    // width: 390,
+    // height: 844,
     flex: 1,
+    // alignSelf: 'center',
     flexDirection: 'column',
     backgroundColor: '#093545',
   },

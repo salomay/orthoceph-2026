@@ -188,7 +188,7 @@ class FormProfile extends React.Component {
             <View style={{margin: hp(1)}} />
 
             <TextInput
-              value={this.state.gender}
+              value={this.state.gender == 'M' ? 'Male' : 'Female'}
               style={{
                 height: hp(7),
                 backgroundColor: '#637363',

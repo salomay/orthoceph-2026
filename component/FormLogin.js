@@ -84,7 +84,7 @@ export default class FormLogin extends React.Component {
   };
 
   componentDidMount() {
-    this.getPermission();
+    // this.getPermission();
   }
 
   validationForm() {
@@ -143,8 +143,8 @@ export default class FormLogin extends React.Component {
             AsyncStorage.setItem('gender', '' + result[0].gender + '');
             AsyncStorage.setItem('country', '' + result[0].country + '');
             AsyncStorage.setItem('email', '' + result[0].email + '');
-            AsyncStorage.setItem('longitude', '' + result[0].longitude + '');
-            AsyncStorage.setItem('latitude', '' + result[0].latitude + '');
+            // AsyncStorage.setItem('longitude', '' + result[0].longitude + '');
+            // AsyncStorage.setItem('latitude', '' + result[0].latitude + '');
 
             this.props.navigation.dispatch(
               CommonActions.reset({
@@ -462,11 +462,10 @@ export default class FormLogin extends React.Component {
       Geolocation.requestAuthorization();
       Geolocation.setRNConfiguration({
         skipPermissionRequests: false,
-        authorizationLevel: 'always',
+        authorizationLevel: 'whenInUse',
       });
 
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then((result) => {
-        console.log(result);
         if (result == 'granted') {
           Geolocation.getCurrentPosition((info) => {
             this.setState(
@@ -480,8 +479,6 @@ export default class FormLogin extends React.Component {
               },
             );
           });
-        } else {
-          Alert.alert('Information', 'Please Turn On your GPS!!');
         }
       });
     }
@@ -603,9 +600,11 @@ export default class FormLogin extends React.Component {
                 width: '90%',
                 marginTop: wp(5),
                 flexDirection: 'row',
+                alignItems: 'center',
               }}>
               <CheckBox
                 disabled={false}
+                style={{width: wp(6), height: wp(6)}}
                 value={this.state.checkAgreement}
                 onValueChange={(newValue) =>
                   this.setState({checkAgreement: newValue})
@@ -705,7 +704,7 @@ export default class FormLogin extends React.Component {
               onLogoutFinished={() => console.log('logout.')}
             /> */}
 
-            {Platform.OS == 'ios' ? (
+            {/* {Platform.OS == 'ios' ? (
               <AppleButton
                 buttonStyle={AppleButton.Style.WHITE}
                 buttonType={AppleButton.Type.SIGN_IN}
@@ -717,7 +716,7 @@ export default class FormLogin extends React.Component {
                 }}
                 onPress={() => this.onAppleButtonPress()}
               />
-            ) : null}
+            ) : null} */}
           </View>
         </View>
       </KeyboardAvoidingView>

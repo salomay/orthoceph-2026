@@ -196,6 +196,7 @@ class FormPatient extends React.Component {
       urlImage,
     } = this.props.route.params;
     if (fullName) {
+      console.log('AGE' + ageInYears);
       this.setState({
         doctorId: doctorId,
         patientId: patientId,

@@ -306,6 +306,28 @@ const _addPdfReport = async (params) => {
   }
 };
 
+const _addImageAnalysis = async (params) => {
+  try {
+    let respon = null;
+
+    if (params) {
+      respon = await fetch(apiurlImage + 'addImageAnalysis', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+    }
+
+    let responJson = await respon.json();
+    return responJson.status;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const _viewExistingAnalysis = async (params) => {
   try {
     let respon = null;
@@ -413,6 +435,7 @@ export {
   _addNotesPatient,
   _addAnalysisPatient,
   _addPdfReport,
+  _addImageAnalysis,
   _openImage,
   _viewPatientPagination,
   _viewExistingAnalysis,

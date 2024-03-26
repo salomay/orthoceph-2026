@@ -11,9 +11,9 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		36228F50797F08123D5B7D1F /* libPods-orthoceph.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F84AED3235B543CFF910EF0E /* libPods-orthoceph.a */; };
 		521B761529F24ACE00393548 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 521B761429F24ACE00393548 /* GoogleService-Info.plist */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		9EF03778614A903546A2D010 /* libPods-orthoceph.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 919B71E20CCE56DDD6947C33 /* libPods-orthoceph.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,11 +38,11 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = orthoceph/main.m; sourceTree = "<group>"; };
 		5212AAF52A480DF100CAF5A0 /* orthoceph.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = orthoceph.entitlements; path = orthoceph/orthoceph.entitlements; sourceTree = "<group>"; };
 		521B761429F24ACE00393548 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "orthoceph/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		7859C7255F7BEC9F99780792 /* Pods-orthoceph.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-orthoceph.debug.xcconfig"; path = "Target Support Files/Pods-orthoceph/Pods-orthoceph.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = orthoceph/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		919B71E20CCE56DDD6947C33 /* libPods-orthoceph.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-orthoceph.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CBC893945E6B5EB00DB5D40E /* Pods-orthoceph.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-orthoceph.debug.xcconfig"; path = "Target Support Files/Pods-orthoceph/Pods-orthoceph.debug.xcconfig"; sourceTree = "<group>"; };
-		D832C390F6C4FD503DCFBCF6 /* Pods-orthoceph.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-orthoceph.release.xcconfig"; path = "Target Support Files/Pods-orthoceph/Pods-orthoceph.release.xcconfig"; sourceTree = "<group>"; };
+		C9FD3A801C3091FF4AA13651 /* Pods-orthoceph.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-orthoceph.release.xcconfig"; path = "Target Support Files/Pods-orthoceph/Pods-orthoceph.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F84AED3235B543CFF910EF0E /* libPods-orthoceph.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-orthoceph.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EF03778614A903546A2D010 /* libPods-orthoceph.a in Frameworks */,
+				36228F50797F08123D5B7D1F /* libPods-orthoceph.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,7 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				919B71E20CCE56DDD6947C33 /* libPods-orthoceph.a */,
+				F84AED3235B543CFF910EF0E /* libPods-orthoceph.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -139,8 +139,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				CBC893945E6B5EB00DB5D40E /* Pods-orthoceph.debug.xcconfig */,
-				D832C390F6C4FD503DCFBCF6 /* Pods-orthoceph.release.xcconfig */,
+				7859C7255F7BEC9F99780792 /* Pods-orthoceph.debug.xcconfig */,
+				C9FD3A801C3091FF4AA13651 /* Pods-orthoceph.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -170,14 +170,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "orthoceph" */;
 			buildPhases = (
-				06B55AAAF696986ABE1C7B6F /* [CP] Check Pods Manifest.lock */,
+				3CF6DF763A69CA0E013DA0F7 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				27AE235EAC4C4B23302AE024 /* [CP] Embed Pods Frameworks */,
-				D15D76B00670E4AC7449A52A /* [CP] Copy Pods Resources */,
+				43A000D81ECB93E60B4AEB6C /* [CP] Embed Pods Frameworks */,
+				6D658E2096A5413306D18545 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -261,7 +261,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		06B55AAAF696986ABE1C7B6F /* [CP] Check Pods Manifest.lock */ = {
+		3CF6DF763A69CA0E013DA0F7 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -283,7 +283,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		27AE235EAC4C4B23302AE024 /* [CP] Embed Pods Frameworks */ = {
+		43A000D81ECB93E60B4AEB6C /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -300,7 +300,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-orthoceph/Pods-orthoceph-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D15D76B00670E4AC7449A52A /* [CP] Copy Pods Resources */ = {
+		6D658E2096A5413306D18545 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -424,7 +424,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CBC893945E6B5EB00DB5D40E /* Pods-orthoceph.debug.xcconfig */;
+			baseConfigurationReference = 7859C7255F7BEC9F99780792 /* Pods-orthoceph.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -440,23 +440,24 @@
 				INFOPLIST_KEY_CFBundleDisplayName = orthoceph;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Apps wants to access Apple Music";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "$(PRODUCT_NAME) finding the right location for your dental practice requires careful analysis and consideration.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "$(PRODUCT_NAME) finding the right location for your dental practice requires careful analysis and consideration.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "$(PRODUCT_NAME) finding the right location for your dental practice requires careful analysis and consideration.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "orthoceph finding the right location for your dental practice requires careful analysis and consideration.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "orthoceph finding the right location for your dental practice requires careful analysis and consideration.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "orthoceph finding the right location for your dental practice requires careful analysis and consideration.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Apps wants to access Library Photo";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Apps wants to access Photo";
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -470,14 +471,14 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D832C390F6C4FD503DCFBCF6 /* Pods-orthoceph.release.xcconfig */;
+			baseConfigurationReference = C9FD3A801C3091FF4AA13651 /* Pods-orthoceph.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -492,23 +493,24 @@
 				INFOPLIST_KEY_CFBundleDisplayName = orthoceph;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Apps wants to access Apple Music";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "$(PRODUCT_NAME) finding the right location for your dental practice requires careful analysis and consideration.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "$(PRODUCT_NAME) finding the right location for your dental practice requires careful analysis and consideration.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "$(PRODUCT_NAME) finding the right location for your dental practice requires careful analysis and consideration.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "orthoceph finding the right location for your dental practice requires careful analysis and consideration.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "orthoceph finding the right location for your dental practice requires careful analysis and consideration.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "orthoceph finding the right location for your dental practice requires careful analysis and consideration.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Apps wants to access Library Photo";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Apps wants to access Photo";
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -521,7 +523,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

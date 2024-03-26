@@ -1,9 +1,9 @@
 PODS:
-  - AppAuth (1.6.0):
-    - AppAuth/Core (= 1.6.0)
-    - AppAuth/ExternalUserAgent (= 1.6.0)
-  - AppAuth/Core (1.6.0)
-  - AppAuth/ExternalUserAgent (1.6.0):
+  - AppAuth (1.6.2):
+    - AppAuth/Core (= 1.6.2)
+    - AppAuth/ExternalUserAgent (= 1.6.2)
+  - AppAuth/Core (1.6.2)
+  - AppAuth/ExternalUserAgent (1.6.2):
     - AppAuth/Core
   - BEMCheckBox (1.4.1)
   - boost (1.76.0)
@@ -274,8 +274,6 @@ PODS:
     - React
   - react-native-image-picker (5.4.0):
     - React-Core
-  - react-native-pdf (6.6.2):
-    - React-Core
   - react-native-safe-area-context (3.4.1):
     - React-Core
   - react-native-view-shot (3.5.0):
@@ -367,7 +365,9 @@ PODS:
     - React-Core
   - RNImageMarker (0.6.3):
     - React
-  - RNPermissions (3.8.0):
+  - RNPDF (0.10.1):
+    - React
+  - RNPermissions (4.1.2):
     - React-Core
   - RNReanimated (2.14.4):
     - DoubleConversion
@@ -434,7 +434,6 @@ DEPENDENCIES:
   - react-native-html-to-pdf (from `../node_modules/react-native-html-to-pdf`)
   - react-native-image-base64 (from `../node_modules/react-native-image-base64`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
-  - react-native-pdf (from `../node_modules/react-native-pdf`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -459,6 +458,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNImageMarker (from `../node_modules/react-native-image-marker`)
+  - RNPDF (from `../node_modules/react-native-view-pdf`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -533,8 +533,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-base64"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
-  react-native-pdf:
-    :path: "../node_modules/react-native-pdf"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-view-shot:
@@ -583,6 +581,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin"
   RNImageMarker:
     :path: "../node_modules/react-native-image-marker"
+  RNPDF:
+    :path: "../node_modules/react-native-view-pdf"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReanimated:
@@ -599,7 +599,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  AppAuth: 8fca6b5563a5baef2c04bee27538025e4ceb2add
+  AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
   BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
@@ -636,7 +636,6 @@ SPEC CHECKSUMS:
   react-native-html-to-pdf: d994a500216e88032cce3635d3240f6e4fa0cb40
   react-native-image-base64: acfe962aa79535d826a2668e66474e85a9ee468d
   react-native-image-picker: 92e55b704340c12fa695bdf1fea572a81b24c918
-  react-native-pdf: 33c622cbdf776a649929e8b9d1ce2d313347c4fa
   react-native-safe-area-context: 5b8a418400eb3d8364aa87300e865c0262cc17b9
   react-native-view-shot: ef3ebacaacaefffcfd953d04b4304962fbe1fae2
   React-perflogger: 15cb741d6c2379f4d3fc8f9e4d4e1110ef3020cb
@@ -661,7 +660,8 @@ SPEC CHECKSUMS:
   RNGestureHandler: 62232ba8f562f7dea5ba1b3383494eb5bf97a4d3
   RNGoogleSignin: f06a361f451796a11e69145595dfcd2e91eccb47
   RNImageMarker: 76cd113306bcfad2f74f78d83d5accfd50b4434a
-  RNPermissions: 9e21cb898fe81e4fe704050251a5f1362188b073
+  RNPDF: 8a40fafbed2714e7e8fe4e7c9f6f9815f52a939c
+  RNPermissions: 4b425947c4225648092a4e425e56550049a1aaea
   RNReanimated: 73afd1a9b4087e403163e0d300854cb99260c9b6
   RNScreens: f7ad633b2e0190b77b6a7aab7f914fad6f198d8d
   RNShare: 8b171d4b43c1d886917fdd303bf7a4b87167b05c
@@ -669,6 +669,6 @@ SPEC CHECKSUMS:
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   Yoga: 6671cf077f614314c22fd09ddf87d7abeee64e96
 
-PODFILE CHECKSUM: a61f49f53c7c293ddc2c30b4bd3d328c5c84bb5a
+PODFILE CHECKSUM: bac40a083584aade57a1c87a9c0bc7f2aec44f36
 
 COCOAPODS: 1.12.1

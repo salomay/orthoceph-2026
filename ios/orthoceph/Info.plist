@@ -71,5 +71,9 @@
 	<array>
 		<dict/>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>To get location maybe for your clinic or office</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>To get location maybe for your clinic or office</string>
 </dict>
 </plist>

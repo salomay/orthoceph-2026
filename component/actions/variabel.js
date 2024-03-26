@@ -43,6 +43,7 @@ import {
   SET_SNMP,
   SET_PRESS_ANALYSIS,
   SET_PRESS_SAVE_ANALYSIS,
+  SET_RESET_SCALE_IMAGE,
   SET_PATIENTID,
   SET_DOCTORID,
   SET_FULLNAME,
@@ -108,6 +109,11 @@ export const set_press_analysis = (value) => ({
 
 export const set_press_save_analysis = (value) => ({
   type: SET_PRESS_SAVE_ANALYSIS,
+  data: value,
+});
+
+export const set_reset_scale_image = (value) => ({
+  type: SET_RESET_SCALE_IMAGE,
   data: value,
 });
 

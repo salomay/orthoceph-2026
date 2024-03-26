@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, Dimensions, View} from 'react-native';
-import Pdf from 'react-native-pdf';
+import PDFView from 'react-native-view-pdf';
 import {Appbar, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
@@ -17,7 +17,9 @@ export default class FormCompareResult extends React.Component {
         failOnCancel: false,
         mimeType: 'application/pdf',
         saveToFiles: true,
-        urls: [this.props.route.params.fileBase64],
+        urls: [
+          'data:application/pdf;base64,' + this.props.route.params.fileBase64,
+        ],
         // url: this.props.route.params.fileName,
         // fileName: _pdf.fileName,
 
@@ -39,11 +41,7 @@ export default class FormCompareResult extends React.Component {
   };
 
   render() {
-    const source = {
-      uri: this.props.route.params.fileName,
-      cache: true,
-    };
-
+    const source = this.props.route.params.fileBase64;
     return (
       <View
         style={{
@@ -79,22 +77,15 @@ export default class FormCompareResult extends React.Component {
         </Appbar.Header>
 
         <View style={styles.container}>
-          <Pdf
-            source={source}
-            horizontal={true}
-            onLoadComplete={(numberOfPages, filePath) => {
-              console.log(`Number of pages: ${numberOfPages}`);
+          <PDFView
+            fadeInDuration={500.0}
+            style={{flex: 1}}
+            resource={source}
+            resourceType={'base64'}
+            onLoad={() => {}}
+            onError={(e) => {
+              console.log(e);
             }}
-            onPageChanged={(page, numberOfPages) => {
-              console.log(`Current page: ${page}`);
-            }}
-            onError={(error) => {
-              console.log(error);
-            }}
-            onPressLink={(uri) => {
-              console.log(`Link pressed: ${uri}`);
-            }}
-            style={styles.pdf}
           />
         </View>
       </View>
@@ -105,9 +96,11 @@ export default class FormCompareResult extends React.Component {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: '-20%',
+    width: Platform.OS == 'ios' ? 'auto' : '100%',
+    height: Platform.OS == 'ios' ? '100%' : '40%',
+    // justifyContent: 'flex-start',
+    // alignItems: 'center',
+    marginTop: '10%',
   },
   pdf: {
     // flex: 1,

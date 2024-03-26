@@ -1529,6 +1529,7 @@ export async function generateTableCompHtml(
   const _SNA_COLOR_C2 = getAnalysisColor(_SNA_C2?.status);
 
   const _SNB_C2 = analysisC2?.snb;
+  console.log('SNB COMP = ' + JSON.stringify(analysisC2?.snb));
   const _SNB_DETAILS_C2 = getAnalysisDetailsByID('IDS/ANALYSIS/SNB');
   // const _SNB_NAME_C2 = `${_SNB_DETAILS_C2.NAME}`;
   const _SNB_VALUE_C2 = `${_SNB_C2?.value ? _SNB_C2?.value : 0}${

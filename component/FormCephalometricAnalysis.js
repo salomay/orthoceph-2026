@@ -24,7 +24,11 @@ import {
   StatusBar,
   BackHandler,
   TouchableWithoutFeedback,
+  PlatformIOSStatic,
+  SafeAreaView,
+  PixelRatio,
 } from 'react-native';
+
 import ImageZoom from 'react-native-image-pan-zoom';
 import ImageViewer from 'react-native-image-pan-zoom/built/image-zoom/image-zoom.component';
 import {Appbar, TextInput, CardTitle, Button} from 'react-native-paper';
@@ -41,7 +45,16 @@ import Modal from 'react-native-modal';
 import ViewShot, {captureRef} from 'react-native-view-shot';
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import Svg, {Circle, Line, G, Rect, SvgXml} from 'react-native-svg';
+import Svg, {
+  Circle,
+  Line,
+  G,
+  Rect,
+  SvgXml,
+  ClipPath,
+  Polyline,
+  Polygon,
+} from 'react-native-svg';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
@@ -53,6 +66,7 @@ import {
   set_detailresult,
   set_press_analysis,
   set_press_save_analysis,
+  set_reset_scale_image,
   set_disable_pointer,
   set_opacity_pointer,
   set_bantuMarker,
@@ -155,6 +169,7 @@ import {
   _openImage,
   _addAnalysisPatientExistingImage,
   _addPdfReport,
+  _addImageAnalysis,
 } from './networking/server';
 import {
   SNA,
@@ -173,13 +188,12 @@ import {
   WendellWylie,
   distanceBetween,
 } from './common/Utils';
-
-import AesGcmCrypto from 'react-native-aes-gcm-crypto';
+import {scale, moderateScale, verticalScale} from './Scaling';
 
 const key = 'Yzg1MDhmNDYzZjRlMWExOGJkNTk5MmVmNzFkOGQyNzk=';
 
 const spacing = 16;
-const {width, height} = Dimensions.get('screen');
+
 const dashes = new Array(Math.floor(100 / spacing)).fill(null);
 
 var touch_count = 0;
@@ -275,6 +289,9 @@ export const saveAnalysis = (props) => {
   props.props.set_press_save_analysis(true);
 };
 
+const {widthScreen, heightScreen} = Dimensions.get('screen');
+const {widthScreenAndroid, heightScreenAndroid} = Dimensions.get('window');
+
 let fadeIn = new Animated.Value(Dimensions.get('window').width);
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -294,8 +311,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   const [scaleScreen, setScaleScreen] = useState(null);
   const [correctionPoint, setcorrectionPoint] = useState(null);
 
+  const [widthImage, setWidthImage] = useState(null);
+  const [heightImage, setHeightImage] = useState(null);
+
   const fadeAnim = useRef(new Animated.Value(3)).current;
   const strokeBorderAnim = useRef(new Animated.Value(0.8)).current;
+
+  const layoutWidth = PixelRatio.getPixelSizeForLayoutSize(
+    props.widthLastDevice,
+  );
+  const layoutHeight = PixelRatio.getPixelSizeForLayoutSize(
+    props.heightLastDevice,
+  );
+
   //BACK HANDLER
   useEffect(() => {
     const backAction = () => {
@@ -310,7 +338,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           },
           {
             text: 'DONT SAVE',
-            onPress: () => props.navigation.goBack(),
+            onPress: () => {
+              backHandler.remove();
+              props.navigation.goBack();
+            },
             style: 'cancel',
           },
           {text: 'SAVE', onPress: () => props.set_press_save_analysis(true)},
@@ -331,6 +362,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     props.set_bantuMarker(0);
 
     clearVaribleGlobal();
+    props.set_enablesave(false);
 
     return () => {
       props.set_loading(true);
@@ -338,7 +370,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       props.set_markingdot(true);
       props.set_resultanalysis(false);
       props.set_detailresult(false);
-      props.set_enablesave(true);
+
       props.set_tempgambar(null);
       props.set_imageuri(null);
       props.set_imagetype(null);
@@ -535,12 +567,16 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
     await _viewExistingAnalysis(data)
       .then((result) => {
+        // console.log(result);
         if (result[0].jumlah > 0) {
           props.set_width_last_device(result[0].width);
           props.set_height_last_device(result[0].height);
 
           let gambarnya = _openImage(result[0].images);
 
+          console.log('Load Image ' + result[0].images);
+          console.log('Width Screen : ' + Dimensions.get('screen').width);
+          console.log('Width Height : ' + Dimensions.get('screen').height);
           let source = {uri: gambarnya};
 
           if (source) {
@@ -570,39 +606,32 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
     _viewExistingAnalysis(data)
       .then((result) => {
-        console.log('####' + JSON.stringify(result));
         if (result[0].jumlah > 0) {
-          props.set_startingPoint(
-            load_correction_X_Y(JSON.parse(result[0].startingPoint)),
-          );
+          props.set_startingPoint(JSON.parse(result[0].startingPoint));
 
-          props.set_endPoint(
-            load_correction_X_Y(JSON.parse(result[0].endPoint)),
-          );
+          props.set_endPoint(JSON.parse(result[0].endPoint));
           props.set_calibrationDistance(
             '' + result[0].calibrationDistance + '',
           );
-          props.set_sella(load_correction_X_Y(JSON.parse(result[0].sella)));
-          props.set_nasion(load_correction_X_Y(JSON.parse(result[0].nasion)));
-          props.set_pointa(load_correction_X_Y(JSON.parse(result[0].pointA)));
-          props.set_pointb(load_correction_X_Y(JSON.parse(result[0].pointB)));
-          props.set_u6(load_correction_X_Y(JSON.parse(result[0].u6)));
-          props.set_u4(load_correction_X_Y(JSON.parse(result[0].u4)));
-          props.set_gonion(load_correction_X_Y(JSON.parse(result[0].gonion)));
-          props.set_gnathion(
-            load_correction_X_Y(JSON.parse(result[0].gnathion)),
-          );
-          props.set_isa(load_correction_X_Y(JSON.parse(result[0].isa)));
-          props.set_isi(load_correction_X_Y(JSON.parse(result[0].isi)));
-          props.set_iia(load_correction_X_Y(JSON.parse(result[0].iia)));
-          props.set_iii(load_correction_X_Y(JSON.parse(result[0].iii)));
-          props.set_ms(load_correction_X_Y(JSON.parse(result[0].ms)));
-          props.set_pogs(load_correction_X_Y(JSON.parse(result[0].pogs)));
-          props.set_li(load_correction_X_Y(JSON.parse(result[0].li)));
-          props.set_ls(load_correction_X_Y(JSON.parse(result[0].ls)));
-          props.set_pog(load_correction_X_Y(JSON.parse(result[0].pog)));
-          props.set_ans(load_correction_X_Y(JSON.parse(result[0].ans)));
-          props.set_menton(load_correction_X_Y(JSON.parse(result[0].menton)));
+          props.set_sella(JSON.parse(result[0].sella));
+          props.set_nasion(JSON.parse(result[0].nasion));
+          props.set_pointa(JSON.parse(result[0].pointA));
+          props.set_pointb(JSON.parse(result[0].pointB));
+          props.set_u6(JSON.parse(result[0].u6));
+          props.set_u4(JSON.parse(result[0].u4));
+          props.set_gonion(JSON.parse(result[0].gonion));
+          props.set_gnathion(JSON.parse(result[0].gnathion));
+          props.set_isa(JSON.parse(result[0].isa));
+          props.set_isi(JSON.parse(result[0].isi));
+          props.set_iia(JSON.parse(result[0].iia));
+          props.set_iii(JSON.parse(result[0].iii));
+          props.set_ms(JSON.parse(result[0].ms));
+          props.set_pogs(JSON.parse(result[0].pogs));
+          props.set_li(JSON.parse(result[0].li));
+          props.set_ls(JSON.parse(result[0].ls));
+          props.set_pog(JSON.parse(result[0].pog));
+          props.set_ans(JSON.parse(result[0].ans));
+          props.set_menton(JSON.parse(result[0].menton));
 
           loadExistingMarker(JSON.parse(result[0].startingPoint));
           loadExistingMarker(JSON.parse(result[0].endPoint));
@@ -639,43 +668,23 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       });
   };
 
-  function load_correction_X(x_point) {
-    let data = null;
-
-    // if (Number(width).toFixed(0) > props.widthLastDevice) {
-    //   data = x_point ;
-    // + (width - props.widthLastDevice - 1);
-    // } else if (Number(width).toFixed(0) < props.widthLastDevice) {
-    //   data = x_point - (props.widthLastDevice - width + 1);
-    // } else {
-    data = x_point;
-    // }
-
-    return data;
-  }
-
-  function load_correction_Y(y_point) {
-    let data = null;
-
-    // if (Number(height).toFixed(0) > props.heightLastDevice) {
-    //   console.log(Number(height).toFixed(0) + ' > ' + props.heightLastDevice);
-    //   data = y_point + (height - props.heightLastDevice - 10);
-    // } else if (Number(height).toFixed(0) < props.heightLastDevice) {
-    //   console.log(Number(height).toFixed(0) + ' < ' + props.heightLastDevice);
-    //   data = y_point - (props.heightLastDevice - height + 10);
-    // } else {
-    data = y_point;
-    // }
-
-    return data;
-  }
-
   function load_correction_X_Y(x_y_point) {
     let data = null;
 
     data = {
-      x: load_correction_X(x_y_point.x),
-      y: load_correction_Y(x_y_point.y),
+      x: x_y_point.x,
+      y: x_y_point.y,
+    };
+
+    return data;
+  }
+
+  function load_correction_X_Y_new(x_y_point) {
+    let data = null;
+
+    data = {
+      x: scale(x_y_point.x, props.widthLastDevice),
+      y: scale(x_y_point.y, props.widthLastDevice),
     };
 
     return data;
@@ -708,7 +717,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         y: event.locationY,
         edit: true,
       };
-      console.log('#### Marker Point ###' + newMarker);
+      console.log('#### Marker Point ###' + JSON.stringify(newMarker));
     }
 
     //  Starting Point
@@ -718,7 +727,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       if (up == true) {
         newMarker = {
           x: props.startingPoint[0].x,
-          y: props.startingPoint[0].y - point_speed,
+          y:
+            props.startingPoint[0].y - point_speed < 0
+              ? 0
+              : props.startingPoint[0].y - point_speed,
           edit: true,
         };
       }
@@ -747,6 +759,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         };
       }
 
+      console.log(newMarker);
       marker[0] = newMarker;
 
       props.set_startingPoint(newMarker);
@@ -1964,25 +1977,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     }
   }
 
-  // ===========
-  // === SaveImage
-
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log('width : ' + width);
-      console.log('heigth : ' + height);
-
-      if (props.pressAnalysis == true) {
-        downloadImage();
-        props.set_press_analysis(false);
-      }
-
-      return () => props.pressAnalysis;
-    }, [props.pressAnalysis]),
-  );
-
   // download image
-  async function downloadImage() {
+  async function exportToPdf() {
     props.set_loading_global(true);
     props.navigation.closeDrawer();
 
@@ -2012,20 +2008,22 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             props,
           );
 
+          console.log('####' + 'Masuk Report Viewer Ceph PDF');
           let options = {
             html: htmlnya,
             fileName: 'test',
             base64: true,
             // directory: 'Orthoceph',
-            width: 792,
-            height: 500,
+            width:
+              Platform.OS == 'ios' && widthScreen > 700 ? wp(140) : wp(150),
+            height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
           let file = await RNHTMLtoPDF.convert(options);
 
           props.navigation.navigate('FormPdfPreview', {
             fileName: file.filePath,
-            fileBase64: 'data:application/pdf;base64,' + file.base64,
+            fileBase64: file.base64,
           });
           props.set_loading_global(false);
         },
@@ -2143,6 +2141,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     }, [props.pressSaveAnalysis]),
   );
 
+  // ==========
+  // === Reset Scale
+  useFocusEffect(
+    React.useCallback(() => {
+      if (props.resetScaleImage == true) {
+        props.set_reset_scale_image(false);
+        refImageZoom.current?.resetScale();
+      }
+
+      return () => props.resetScaleImage;
+    }, [props.resetScaleImage]),
+  );
+
   function saveAnalysis() {
     refImageZoom.current.resetScale();
 
@@ -2172,8 +2183,6 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           result: 'base64',
         }).then(
           async (uri) => {
-            // const res = await AesGcmCrypto.encrypt(uri, true, key);
-
             if (uri) {
               let patient = {
                 fullname: props.fullname,
@@ -2196,6 +2205,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                 fileName: 'test',
                 base64: true,
                 // directory: 'Orthoceph',
+                width: 792,
+                height: 612,
               };
 
               let file = await RNHTMLtoPDF.convert(options);
@@ -2214,129 +2225,178 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                   step: props.step,
                 };
 
-                _addPdfReport(data2)
-                  .then((result2) => {
-                    console.log(result2);
-                    if (result2 == 200) {
-                      data.append('fileImages', {
-                        uri: props.imageUri,
-                        type: props.imageType,
-                        name: props.imageFileName,
-                      });
+                var data3 = {
+                  patient_name: props.fullname,
+                  patientid: props.patientid,
+                  image_analysis: uri,
+                  step: props.step,
+                };
 
-                      data.append('patientid', props.patientid);
-                      data.append('platform', Platform.OS);
-                      data.append('patient_name', props.fullname);
-                      data.append('width', width);
-                      data.append('height', height);
-                      // data.append('pdf_base64', file.base64);
-                      data.append(
-                        'startingPoint',
-                        JSON.stringify(props.startingPoint[0]),
-                      );
-                      data.append(
-                        'endPoint',
-                        JSON.stringify(props.endPoint[0]),
-                      );
-                      data.append(
-                        'calibrationDistance',
-                        '' + props.calibrationDistance + '',
-                      );
-                      data.append('sella', JSON.stringify(props.sella[0]));
-                      data.append('nasion', JSON.stringify(props.nasion[0]));
-                      data.append('pointA', JSON.stringify(props.pointa[0]));
-                      data.append('pointB', JSON.stringify(props.pointb[0]));
-                      data.append('u6', JSON.stringify(props.u6[0]));
-                      data.append('u4', JSON.stringify(props.u4[0]));
-                      data.append('gonion', JSON.stringify(props.gonion[0]));
-                      data.append(
-                        'gnathion',
-                        JSON.stringify(props.gnathion[0]),
-                      );
-                      data.append('isa', JSON.stringify(props.isa[0]));
-                      data.append('isi', JSON.stringify(props.isi[0]));
-                      data.append('iia', JSON.stringify(props.iia[0]));
-                      data.append('iii', JSON.stringify(props.iii[0]));
-                      data.append('ms', JSON.stringify(props.ms[0]));
-                      data.append('pogs', JSON.stringify(props.pogs[0]));
-                      data.append('ls', JSON.stringify(props.ls[0]));
-                      data.append('li', JSON.stringify(props.li[0]));
-                      data.append('pog', JSON.stringify(props.pog[0]));
-                      data.append('ans', JSON.stringify(props.ans[0]));
-                      data.append('menton', JSON.stringify(props.menton[0]));
-                      data.append('step', props.step);
-                      data.append('sna', JSON.stringify(props.sna));
-                      data.append('snb', JSON.stringify(props.snb));
-                      data.append('anb', JSON.stringify(props.anb));
-                      data.append('pognb', JSON.stringify(props.pogNB));
-                      data.append('snop', JSON.stringify(props.snop));
-                      data.append('snmp', JSON.stringify(props.snmp));
-                      data.append(
-                        'uina_angular',
-                        JSON.stringify(props.uina_angular),
-                      );
-                      data.append(
-                        'uina_linear',
-                        JSON.stringify(props.uina_linear),
-                      );
-                      data.append(
-                        'linb_angular',
-                        JSON.stringify(props.linb_angular),
-                      );
-                      data.append(
-                        'linb_linear',
-                        JSON.stringify(props.linb_linear),
-                      );
-                      data.append('_iia', JSON.stringify(props._iia));
-                      data.append('upper_lip', JSON.stringify(props.upper_lip));
-                      data.append('lower_lip', JSON.stringify(props.lower_lip));
-                      data.append(
-                        'mid_face',
-                        JSON.stringify(props.wendellWylie?.MIDFACE),
-                      );
-                      data.append(
-                        'lower_face',
-                        JSON.stringify(props.wendellWylie?.LOWERFACE),
-                      );
+                _addImageAnalysis(data3)
+                  .then((result3) => {
+                    console.log(result3);
+                    if (result3 == 200) {
+                      _addPdfReport(data2)
+                        .then((result2) => {
+                          console.log(result2);
+                          if (result2 == 200) {
+                            data.append('fileImages', {
+                              uri: props.imageUri,
+                              type: props.imageType,
+                              name: props.imageFileName,
+                            });
 
-                      _addAnalysisPatient(data)
-                        .then((result) => {
-                          console.log('RESULT ### 1 :' + result);
-                          if (result == 200) {
-                            Toast.show({
-                              type: 'success',
-                              text1: 'Save Successfully',
-                              autohide: true,
-                              visibilityTime: 2500,
-                            });
-                            props.set_loading_global(false);
-                            props.set_press_save_analysis(false);
-                            setTimeout(() => {
-                              props.navigation.goBack();
-                            }, 1000);
-                          } else {
-                            Toast.show({
-                              type: 'error',
-                              text1: 'Failed, Please Try Again!',
-                              autohide: true,
-                              visibilityTime: 2500,
-                            });
-                            props.set_loading_global(false);
-                            props.set_press_save_analysis(false);
+                            data.append('patientid', props.patientid);
+                            data.append('platform', Platform.OS);
+                            data.append('patient_name', props.fullname);
+                            data.append(
+                              'width',
+                              Dimensions.get('screen').width,
+                            );
+                            data.append(
+                              'height',
+                              Dimensions.get('screen').height,
+                            );
+
+                            data.append(
+                              'startingPoint',
+                              JSON.stringify(props.startingPoint[0]),
+                            );
+                            data.append(
+                              'endPoint',
+                              JSON.stringify(props.endPoint[0]),
+                            );
+                            data.append(
+                              'calibrationDistance',
+                              '' + props.calibrationDistance + '',
+                            );
+                            data.append(
+                              'sella',
+                              JSON.stringify(props.sella[0]),
+                            );
+                            data.append(
+                              'nasion',
+                              JSON.stringify(props.nasion[0]),
+                            );
+                            data.append(
+                              'pointA',
+                              JSON.stringify(props.pointa[0]),
+                            );
+                            data.append(
+                              'pointB',
+                              JSON.stringify(props.pointb[0]),
+                            );
+                            data.append('u6', JSON.stringify(props.u6[0]));
+                            data.append('u4', JSON.stringify(props.u4[0]));
+                            data.append(
+                              'gonion',
+                              JSON.stringify(props.gonion[0]),
+                            );
+                            data.append(
+                              'gnathion',
+                              JSON.stringify(props.gnathion[0]),
+                            );
+                            data.append('isa', JSON.stringify(props.isa[0]));
+                            data.append('isi', JSON.stringify(props.isi[0]));
+                            data.append('iia', JSON.stringify(props.iia[0]));
+                            data.append('iii', JSON.stringify(props.iii[0]));
+                            data.append('ms', JSON.stringify(props.ms[0]));
+                            data.append('pogs', JSON.stringify(props.pogs[0]));
+                            data.append('ls', JSON.stringify(props.ls[0]));
+                            data.append('li', JSON.stringify(props.li[0]));
+                            data.append('pog', JSON.stringify(props.pog[0]));
+                            data.append('ans', JSON.stringify(props.ans[0]));
+                            data.append(
+                              'menton',
+                              JSON.stringify(props.menton[0]),
+                            );
+                            data.append('step', props.step);
+                            data.append('sna', JSON.stringify(props.sna));
+                            data.append('snb', JSON.stringify(props.snb));
+                            data.append('anb', JSON.stringify(props.anb));
+                            data.append('pognb', JSON.stringify(props.pogNB));
+                            data.append('snop', JSON.stringify(props.snop));
+                            data.append('snmp', JSON.stringify(props.snmp));
+                            data.append(
+                              'uina_angular',
+                              JSON.stringify(props.uina_angular),
+                            );
+                            data.append(
+                              'uina_linear',
+                              JSON.stringify(props.uina_linear),
+                            );
+                            data.append(
+                              'linb_angular',
+                              JSON.stringify(props.linb_angular),
+                            );
+                            data.append(
+                              'linb_linear',
+                              JSON.stringify(props.linb_linear),
+                            );
+                            data.append('_iia', JSON.stringify(props._iia));
+                            data.append(
+                              'upper_lip',
+                              JSON.stringify(props.upper_lip),
+                            );
+                            data.append(
+                              'lower_lip',
+                              JSON.stringify(props.lower_lip),
+                            );
+                            data.append(
+                              'mid_face',
+                              JSON.stringify(props.wendellWylie?.MIDFACE),
+                            );
+                            data.append(
+                              'lower_face',
+                              JSON.stringify(props.wendellWylie?.LOWERFACE),
+                            );
+
+                            _addAnalysisPatient(data)
+                              .then((result) => {
+                                console.log('RESULT ### 1 :' + result);
+                                if (result == 200) {
+                                  Toast.show({
+                                    type: 'success',
+                                    text1: 'Save Successfully',
+                                    autohide: true,
+                                    visibilityTime: 2500,
+                                  });
+                                  props.set_loading_global(false);
+                                  props.set_press_save_analysis(false);
+                                  setTimeout(() => {
+                                    props.navigation.goBack();
+                                  }, 1000);
+                                } else {
+                                  Toast.show({
+                                    type: 'error',
+                                    text1: 'Failed, Please Try Again!',
+                                    autohide: true,
+                                    visibilityTime: 2500,
+                                  });
+                                  props.set_loading_global(false);
+                                  props.set_press_save_analysis(false);
+                                }
+                              })
+                              .catch((errornya) => {
+                                console.log('ERROR ### 1 :' + errornya);
+                                props.set_loading_global(false);
+                                props.set_press_save_analysis(false);
+                                // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+                              });
                           }
                         })
-                        .catch((errornya) => {
-                          console.log('ERROR ### 1 :' + errornya);
+                        .catch((error) => {
+                          console.log(error);
                           props.set_loading_global(false);
                           props.set_press_save_analysis(false);
-                          // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
                         });
                     }
                   })
-                  .catch((error) => {
-                    console.log(error);
+                  .catch((errornya) => {
+                    console.log('ERROR ### 1 :' + errornya);
                     props.set_loading_global(false);
                     props.set_press_save_analysis(false);
+                    // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
                   });
               }
 
@@ -2352,89 +2412,123 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                   step: props.step,
                 };
 
-                _addPdfReport(data2)
-                  .then((result2) => {
-                    console.log(result2);
-                    if (result2 == 200) {
-                      var data = {
-                        patient_name: props.fullname,
-                        patientid: props.patientid,
-                        platform: Platform.OS,
-                        width: props.widthLastDevice,
-                        height: props.heightLastDevice,
-                        startingPoint: JSON.stringify(props.startingPoint[0]),
-                        endPoint: JSON.stringify(props.endPoint[0]),
-                        calibrationDistance:
-                          '' + props.calibrationDistance + '',
-                        sella: JSON.stringify(props.sella[0]),
-                        nasion: JSON.stringify(props.nasion[0]),
-                        pointA: JSON.stringify(props.pointa[0]),
-                        pointB: JSON.stringify(props.pointb[0]),
-                        u6: JSON.stringify(props.u6[0]),
-                        u4: JSON.stringify(props.u4[0]),
-                        gonion: JSON.stringify(props.gonion[0]),
-                        gnathion: JSON.stringify(props.gnathion[0]),
-                        isa: JSON.stringify(props.isa[0]),
-                        isi: JSON.stringify(props.isi[0]),
-                        iia: JSON.stringify(props.iia[0]),
-                        iii: JSON.stringify(props.iii[0]),
-                        ms: JSON.stringify(props.ms[0]),
-                        pogs: JSON.stringify(props.pogs[0]),
-                        ls: JSON.stringify(props.ls[0]),
-                        li: JSON.stringify(props.li[0]),
-                        pog: JSON.stringify(props.pog[0]),
-                        ans: JSON.stringify(props.ans[0]),
-                        menton: JSON.stringify(props.menton[0]),
-                        step: props.step,
-                        sna: JSON.stringify(props.sna),
-                        snb: JSON.stringify(props.snb),
-                        anb: JSON.stringify(props.anb),
-                        pognb: JSON.stringify(props.pogNB),
-                        snop: JSON.stringify(props.snop),
-                        snmp: JSON.stringify(props.snmp),
+                var data3 = {
+                  patient_name: props.fullname,
+                  patientid: props.patientid,
+                  image_analysis: uri,
+                  step: props.step,
+                };
 
-                        uina_angular: JSON.stringify(props.uina_angular),
+                _addImageAnalysis(data3)
+                  .then((result3) => {
+                    console.log(result3);
+                    if (result3 == 200) {
+                      _addPdfReport(data2)
+                        .then((result2) => {
+                          console.log(result2);
+                          if (result2 == 200) {
+                            var data = {
+                              patient_name: props.fullname,
+                              patientid: props.patientid,
+                              platform: Platform.OS,
+                              width: props.widthLastDevice,
+                              height: props.heightLastDevice,
+                              image_analysis: uri,
+                              startingPoint: JSON.stringify(
+                                props.startingPoint[0],
+                              ),
+                              endPoint: JSON.stringify(props.endPoint[0]),
+                              calibrationDistance:
+                                '' + props.calibrationDistance + '',
+                              sella: JSON.stringify(props.sella[0]),
+                              nasion: JSON.stringify(props.nasion[0]),
+                              pointA: JSON.stringify(props.pointa[0]),
+                              pointB: JSON.stringify(props.pointb[0]),
+                              u6: JSON.stringify(props.u6[0]),
+                              u4: JSON.stringify(props.u4[0]),
+                              gonion: JSON.stringify(props.gonion[0]),
+                              gnathion: JSON.stringify(props.gnathion[0]),
+                              isa: JSON.stringify(props.isa[0]),
+                              isi: JSON.stringify(props.isi[0]),
+                              iia: JSON.stringify(props.iia[0]),
+                              iii: JSON.stringify(props.iii[0]),
+                              ms: JSON.stringify(props.ms[0]),
+                              pogs: JSON.stringify(props.pogs[0]),
+                              ls: JSON.stringify(props.ls[0]),
+                              li: JSON.stringify(props.li[0]),
+                              pog: JSON.stringify(props.pog[0]),
+                              ans: JSON.stringify(props.ans[0]),
+                              menton: JSON.stringify(props.menton[0]),
+                              step: props.step,
+                              sna: JSON.stringify(props.sna),
+                              snb: JSON.stringify(props.snb),
+                              anb: JSON.stringify(props.anb),
+                              pognb: JSON.stringify(props.pogNB),
+                              snop: JSON.stringify(props.snop),
+                              snmp: JSON.stringify(props.snmp),
 
-                        uina_linear: JSON.stringify(props.uina_linear),
+                              uina_angular: JSON.stringify(props.uina_angular),
 
-                        linb_angular: JSON.stringify(props.linb_angular),
+                              uina_linear: JSON.stringify(props.uina_linear),
 
-                        linb_linear: JSON.stringify(props.linb_linear),
+                              linb_angular: JSON.stringify(props.linb_angular),
 
-                        _iia: JSON.stringify(props._iia),
+                              linb_linear: JSON.stringify(props.linb_linear),
 
-                        upper_lip: JSON.stringify(props.upper_lip)
-                          ? JSON.stringify(props.upper_lip)
-                          : null,
+                              _iia: JSON.stringify(props._iia),
 
-                        lower_lip: JSON.stringify(props.lower_lip)
-                          ? JSON.stringify(props.lower_lip)
-                          : null,
+                              upper_lip: JSON.stringify(props.upper_lip)
+                                ? JSON.stringify(props.upper_lip)
+                                : null,
 
-                        mid_face: JSON.stringify(props.wendellWylie.MIDFACE)
-                          ? JSON.stringify(props.wendellWylie.MIDFACE)
-                          : null,
-                        lower_face: JSON.stringify(props.wendellWylie.LOWERFACE)
-                          ? JSON.stringify(props.wendellWylie.LOWERFACE)
-                          : null,
-                      };
+                              lower_lip: JSON.stringify(props.lower_lip)
+                                ? JSON.stringify(props.lower_lip)
+                                : null,
 
-                      _addAnalysisPatientExistingImage(data)
-                        .then((result) => {
-                          console.log(result);
-                          if (result == 200) {
-                            Toast.show({
-                              type: 'success',
-                              text1: 'Save Successfully',
-                              // autohide: true,
-                              // visibilityTime: 2500,
-                            });
+                              mid_face: JSON.stringify(
+                                props.wendellWylie.MIDFACE,
+                              )
+                                ? JSON.stringify(props.wendellWylie.MIDFACE)
+                                : null,
+                              lower_face: JSON.stringify(
+                                props.wendellWylie.LOWERFACE,
+                              )
+                                ? JSON.stringify(props.wendellWylie.LOWERFACE)
+                                : null,
+                            };
 
-                            props.set_loading_global(false);
-                            props.set_press_save_analysis(false);
-                            setTimeout(() => {
-                              props.navigation.goBack();
-                            }, 1000);
+                            _addAnalysisPatientExistingImage(data)
+                              .then((result) => {
+                                console.log(result);
+                                if (result == 200) {
+                                  Toast.show({
+                                    type: 'success',
+                                    text1: 'Save Successfully',
+                                    // autohide: true,
+                                    // visibilityTime: 2500,
+                                  });
+
+                                  props.set_loading_global(false);
+                                  props.set_press_save_analysis(false);
+                                  setTimeout(() => {
+                                    props.navigation.goBack();
+                                  }, 1000);
+                                } else {
+                                  Toast.show({
+                                    type: 'info',
+                                    text1: 'Failed, Please Try Again!',
+                                    autohide: true,
+                                    visibilityTime: 2500,
+                                  });
+                                  props.set_loading_global(false);
+                                  props.set_press_save_analysis(false);
+                                }
+                              })
+                              .catch((error) => {
+                                console.log(error);
+                                props.set_loading_global(false);
+                                props.set_press_save_analysis(false);
+                              });
                           } else {
                             Toast.show({
                               type: 'info',
@@ -2451,6 +2545,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                           props.set_loading_global(false);
                           props.set_press_save_analysis(false);
                         });
+                    } else {
+                      Toast.show({
+                        type: 'info',
+                        text1: 'Failed, Please Try Again!',
+                        autohide: true,
+                        visibilityTime: 2500,
+                      });
+                      props.set_loading_global(false);
+                      props.set_press_save_analysis(false);
                     }
                   })
                   .catch((error) => {
@@ -2737,6 +2840,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
       props.set_wendellwylie(_WendellWylie);
 
+      props.set_reset_scale_image(true);
+
       if (_WendellWylie.LOWERFACE.value) {
         props.set_enablesave(true);
         props.set_loading(false);
@@ -2796,47 +2901,116 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     }
   }
 
+  //back header
+  function backActionHeader() {
+    Alert.alert(
+      'Do you want to save before exiting?',
+      'Unsaved work will be lost.',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        {
+          text: 'DONT SAVE',
+          onPress: () => {
+            props.navigation.goBack();
+          },
+          style: 'cancel',
+        },
+        {text: 'SAVE', onPress: () => props.set_press_save_analysis(true)},
+      ],
+    );
+    return true;
+  }
+
+  useEffect(() => {
+    if (props.pressAnalysis == true) {
+      exportToPdf();
+      props.set_press_analysis(false);
+    }
+
+    return () => {
+      props.set_press_analysis(false);
+    };
+  }, [props.pressAnalysis]);
+
+  const STATUS_BAR_HEIGHT =
+    Platform.OS === 'ios' ? 20 : StatusBar.currentHeight;
+
+  function StatusBarPlaceHolder() {
+    return (
+      <View
+        style={{
+          width: '100%',
+          height: STATUS_BAR_HEIGHT,
+          backgroundColor: '#637363',
+        }}>
+        <StatusBar barStyle="light-content" backgroundColor="#637363" />
+      </View>
+    );
+  }
+
   return (
     <>
+      <ActivityIndicator
+        animating={props.loadingGlobal}
+        size={'large'}
+        style={{
+          position: 'absolute',
+          zIndex: props.loadingGlobal == true ? 9999 : 0,
+          bottom: 0,
+          top: 0,
+          right: 0,
+          left: 0,
+          justifyContent: 'center',
+          alignSelf: 'center',
+          backgroundColor: 'rgba(52, 52, 52, 0.8)',
+          display: props.loadingGlobal == true ? 'flex' : 'none',
+        }}
+      />
       <View
         style={{
           flexDirection: 'column',
-          backgroundColor: '#093545',
+          backgroundColor: 'transparent',
+          // alignSelf: 'baseline',
+          // justifyContent: 'center',
+          // width: 390,
+          // height: 844,
+          flex: 1,
         }}>
-        <ActivityIndicator
-          animating={props.loadingGlobal}
-          size={'large'}
-          style={{
-            position: 'absolute',
-            zIndex: props.loadingGlobal == true ? 9999 : 0,
-            bottom: 0,
-            top: 0,
-            right: 0,
-            left: 0,
-            justifyContent: 'center',
-            alignSelf: 'center',
-            backgroundColor: 'rgba(52, 52, 52, 0.8)',
-          }}
-        />
+        <StatusBarPlaceHolder />
+
         <Appbar.Header
           style={{
             backgroundColor: '#637363',
-            borderRadius: 10,
-            marginTop: 5,
-            height: 'auto',
+            // position: 'absolute',
+            // top: 0,
+            // left: 0,
+            // right: 0,
+            zIndex: 999999,
           }}>
-          <Appbar.BackAction onPress={() => props.navigation.goBack()} />
+          <Appbar.BackAction
+            onPress={() =>
+              props.tempGambar ? backActionHeader() : props.navigation.goBack()
+            }
+          />
 
           {props.bantuMarker == 3 ? (
             <TextInput
               value={props.calibrationDistance ? props.calibrationDistance : ''}
-              onChangeText={(val) => props.set_calibrationDistance(val)}
+              onChangeText={(val) =>
+                props.set_calibrationDistance(val.replace(/,/g, '.'))
+              }
               label={''}
               keyboardType="decimal-pad"
+              returnKeyType="done"
               placeholder="Enter Distance (mm)"
               underlineColor="transparent"
               activeUnderlineColor="transparent"
               underlineColorAndroid={'transparent'}
+              onSubmitEditing={() => props.navigation.openDrawer()}
               style={{
                 flex: 1,
                 borderTopRightRadius: 5,
@@ -2906,10 +3080,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             />
           )}
         </Appbar.Header>
-        <View
+        {/* <View
           style={{position: 'absolute', right: 0, left: 0, zIndex: 9999999}}>
-          <Toast />
-        </View>
+          
+        </View> */}
         {/* ======================================================================== */}
 
         {/* ======================================================================== */}
@@ -2969,11 +3143,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                   }}>
                   <ImageZoom
                     ref={refImageZoom}
-                    cropWidth={Dimensions.get('window').width}
-                    cropHeight={Dimensions.get('window').height}
+                    cropWidth={375}
+                    cropHeight={667}
                     style={{alignSelf: 'center'}}
-                    imageWidth={wp(100)}
-                    imageHeight={hp(98)}
+                    imageWidth={375}
+                    imageHeight={667}
                     useNativeDriver={true}
                     enableCenterFocus={true}
                     minScale={1}
@@ -2984,51 +3158,55 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                       // touch_count = 3;
                     }}
                     // onMoveShouldSetPanResponder={(e) => true}
-                    centerOn={scaleScreen}>
-                    <View
-                      onTouchMove={(e) => {
-                        setTimeout(() => {
-                          touch_count = 3;
-                        }, 180);
-                      }}
-                      onTouchEnd={(e) => {
-                        if (touch_count === 0 && Platform.OS == 'android') {
-                          _clickImage(
-                            e.nativeEvent,
-                            false,
-                            false,
-                            false,
-                            false,
-                          );
-                        }
-
-                        if (touch_count === 1 && Platform.OS == 'ios') {
-                          _clickImage(
-                            e.nativeEvent,
-                            false,
-                            false,
-                            false,
-                            false,
-                          );
-                        }
-                      }}
-                      onTouchStart={(e) => {
-                        touch_count = e.nativeEvent.identifier;
+                    // centerOn={scaleScreen}
+                  >
+                    <ImageBackground
+                      source={props.tempGambar}
+                      resizeMode="contain"
+                      style={{
+                        minWidth: 375,
+                        minHeight: 667,
                       }}>
-                      <ImageBackground
-                        source={props.tempGambar}
-                        resizeMode="contain"
+                      <View
                         style={{
-                          minWidth: wp(100),
-                          minHeight: hp(75),
+                          width: '100%',
+                          height: '100%',
+                          // backgroundColor: 'grey',
+                        }}
+                        onTouchMove={(e) => {
+                          setTimeout(() => {
+                            touch_count = 3;
+                          }, 150);
+                        }}
+                        onTouchEnd={(e) => {
+                          if (touch_count === 0 && Platform.OS == 'android') {
+                            _clickImage(
+                              e.nativeEvent,
+                              false,
+                              false,
+                              false,
+                              false,
+                            );
+                          }
+                          if (touch_count === 1 && Platform.OS == 'ios') {
+                            _clickImage(
+                              e.nativeEvent,
+                              false,
+                              false,
+                              false,
+                              false,
+                            );
+                          }
+                        }}
+                        onTouchStart={(e) => {
+                          touch_count = e.nativeEvent.identifier;
                         }}>
                         <Svg
                           style={{
                             position: 'absolute',
-                            zIndex: 99999,
-
-                            minWidth: wp(100),
-                            minHeight: hp(75),
+                            zIndex: 998,
+                            minWidth: 375,
+                            minHeight: 667,
                           }}>
                           {/* {props.bantuMarker > 0 &&
                           marker.length > 0 &&
@@ -3118,303 +3296,343 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               })
                             : null} */}
 
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.startingPoint[0]?.x}
-                            cy={props.startingPoint[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 1 &&
-                              props.startingPoint.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
+                          {/* {console.log(
+                            actuatedNormalize(props.startingPoint[0]?.x),
+                          )} */}
+                          {props.startingPoint[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.startingPoint[0]?.x}
+                              cy={props.startingPoint[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 1 &&
+                                props.startingPoint.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.endPoint[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.endPoint[0]?.x}
+                              cy={props.endPoint[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 2 &&
+                                props.endPoint.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
 
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.endPoint[0]?.x}
-                            cy={props.endPoint[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 2 &&
-                              props.endPoint.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.sella[0]?.x}
-                            cy={props.sella[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 4 && props.sella.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.nasion[0]?.x}
-                            cy={props.nasion[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 5 && props.nasion.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.pointa[0]?.x}
-                            cy={props.pointa[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 6 && props.pointa.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.pointb[0]?.x}
-                            cy={props.pointb[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 7 && props.pointb.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.u6[0]?.x}
-                            cy={props.u6[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 8 && props.u6.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.u4[0]?.x}
-                            cy={props.u4[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 9 && props.u4.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.gonion[0]?.x}
-                            cy={props.gonion[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 10 && props.gonion.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.gnathion[0]?.x}
-                            cy={props.gnathion[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 11 &&
-                              props.gnathion.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.isa[0]?.x}
-                            cy={props.isa[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 12 && props.isa.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.isi[0]?.x}
-                            cy={props.isi[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 13 && props.isi.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.iia[0]?.x}
-                            cy={props.iia[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 14 && props.iia.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.iii[0]?.x}
-                            cy={props.iii[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 15 && props.iii.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.ms[0]?.x}
-                            cy={props.ms[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 16 && props.ms.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.pogs[0]?.x}
-                            cy={props.pogs[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 17 && props.pogs.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.ls[0]?.x}
-                            cy={props.ls[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 18 && props.ls.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.li[0]?.x}
-                            cy={props.li[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 19 && props.li.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.pog[0]?.x}
-                            cy={props.pog[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 20 && props.pog.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.ans[0]?.x}
-                            cy={props.ans[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 21 && props.ans.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
-                          <AnimatedCircle
-                            key={Math.random()}
-                            cx={props.menton[0]?.x}
-                            cy={props.menton[0]?.y}
-                            r={fadeAnim}
-                            fill={
-                              props.bantuMarker == 22 && props.menton.length > 0
-                                ? 'red'
-                                : 'green'
-                            }
-                            stroke="yellow"
-                            strokeWidth={strokeBorderAnim}
-                          />
-
+                          {props.sella[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.sella[0]?.x}
+                              cy={props.sella[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 4 && props.sella.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.nasion[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.nasion[0]?.x}
+                              cy={props.nasion[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 5 &&
+                                props.nasion.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.pointa[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.pointa[0]?.x}
+                              cy={props.pointa[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 6 &&
+                                props.pointa.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.pointb[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.pointb[0]?.x}
+                              cy={props.pointb[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 7 &&
+                                props.pointb.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.u6[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.u6[0]?.x}
+                              cy={props.u6[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 8 && props.u6.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.u4[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.u4[0]?.x}
+                              cy={props.u4[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 9 && props.u4.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.gonion[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.gonion[0]?.x}
+                              cy={props.gonion[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 10 &&
+                                props.gonion.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.gnathion[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.gnathion[0]?.x}
+                              cy={props.gnathion[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 11 &&
+                                props.gnathion.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.isa[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.isa[0]?.x}
+                              cy={props.isa[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 12 && props.isa.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.isi[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.isi[0]?.x}
+                              cy={props.isi[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 13 && props.isi.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.iia[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.iia[0]?.x}
+                              cy={props.iia[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 14 && props.iia.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.iii[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.iii[0]?.x}
+                              cy={props.iii[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 15 && props.iii.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.ms[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.ms[0]?.x}
+                              cy={props.ms[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 16 && props.ms.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.pogs[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.pogs[0]?.x}
+                              cy={props.pogs[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 17 && props.pogs.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.ls[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.ls[0]?.x}
+                              cy={props.ls[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 18 && props.ls.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.li[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.li[0]?.x}
+                              cy={props.li[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 19 && props.li.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.pog[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.pog[0]?.x}
+                              cy={props.pog[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 20 && props.pog.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.ans[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.ans[0]?.x}
+                              cy={props.ans[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 21 && props.ans.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.menton[0]?.x ? (
+                            <AnimatedCircle
+                              key={Math.random()}
+                              cx={props.menton[0]?.x}
+                              cy={props.menton[0]?.y}
+                              r={fadeAnim}
+                              fill={
+                                props.bantuMarker == 22 &&
+                                props.menton.length > 0
+                                  ? 'red'
+                                  : 'green'
+                              }
+                              stroke="yellow"
+                              strokeWidth={strokeBorderAnim}
+                            />
+                          ) : null}
+                          {props.startingPoint[0]?.x && props.endPoint[0]?.x ? (
+                            <Line
+                              x1={props.startingPoint[0]?.x}
+                              y1={props.startingPoint[0]?.y}
+                              x2={props.endPoint[0]?.x}
+                              y2={props.endPoint[0]?.y}
+                              stroke="#8AFF06"
+                              strokeWidth="0.8"
+                            />
+                          ) : null}
                           {props.markingDot !== true ? (
                             <>
                               {props.selectid == null ? (
@@ -3428,6 +3646,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
                                   <Line
                                     x1={props.nasion[0]?.x}
                                     y1={props.nasion[0]?.y}
@@ -3436,6 +3655,30 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
+                                  {/* <Polygon
+                                    points={
+                                      '' +
+                                      props.nasion[0]?.x +
+                                      ',' +
+                                      props.nasion[0]?.y +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      ''
+                                    }
+                                    fill="yellow"
+                                    stroke="yellow"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  /> */}
+
                                   {/* ==== SNB ==== */}
                                   <Line
                                     x1={props.sella[0]?.x}
@@ -3445,6 +3688,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
                                   <Line
                                     x1={props.nasion[0]?.x}
                                     y1={props.nasion[0]?.y}
@@ -3453,6 +3697,30 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+                                  {/* 
+                                  <Polygon
+                                    points={
+                                      '' +
+                                      props.nasion[0]?.x +
+                                      ',' +
+                                      props.nasion[0]?.y +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      ''
+                                    }
+                                    fill="yellow"
+                                    stroke="yellow"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  /> */}
+
                                   {/* ==== ANB ==== */}
                                   <Line
                                     x1={props.pointa[0]?.x}
@@ -3470,6 +3738,29 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
+                                  {/* <Polygon
+                                    points={
+                                      '' +
+                                      props.nasion[0]?.x +
+                                      ',' +
+                                      props.nasion[0]?.y +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      ''
+                                    }
+                                    fill="yellow"
+                                    stroke="yellow"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  /> */}
 
                                   {/* ==== PogNB ==== */}
                                   <Line
@@ -4020,6 +4311,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
                                   <Line
                                     x1={props.nasion[0]?.x}
                                     y1={props.nasion[0]?.y}
@@ -4066,6 +4358,30 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
+                                  {/* <Polygon
+                                    points={
+                                      '' +
+                                      props.nasion[0]?.x +
+                                      ',' +
+                                      props.nasion[0]?.y +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      ''
+                                    }
+                                    fill="yellow"
+                                    stroke="yellow"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  /> */}
+
                                   <Line
                                     x1={props.nasion[0]?.x}
                                     y1={props.nasion[0]?.y}
@@ -4120,6 +4436,29 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
+
+                                  {/* <Polygon
+                                    points={
+                                      '' +
+                                      props.nasion[0]?.x +
+                                      ',' +
+                                      props.nasion[0]?.y +
+                                      ' ' +
+                                      parseFloat(props.nasion[0]?.x) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      ' ' +
+                                      parseFloat(props.pointb[0]?.x - 5) +
+                                      ',' +
+                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      ''
+                                    }
+                                    fill="yellow"
+                                    stroke="yellow"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  /> */}
                                 </>
                               ) : null}
 
@@ -5041,8 +5380,9 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                             </>
                           ) : null}
                         </Svg>
-                      </ImageBackground>
-                    </View>
+                      </View>
+                    </ImageBackground>
+
                     <View style={{margin: wp(20)}} />
                   </ImageZoom>
 
@@ -5095,7 +5435,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             borderRadius: 5,
             justifyContent: 'space-between',
             position: 'absolute',
-            bottom: Platform.OS == 'ios' ? wp(25) : wp(12),
+            bottom: Platform.OS === 'android' ? 0 : hp(2),
             left: 0,
             right: 0,
             paddingVertical: wp(1),
@@ -5109,7 +5449,6 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               justifyContent: 'center',
               alignItems: 'center',
               paddingVertical: 10,
-              marginLeft: 10,
             }}>
             <Entypo name="controller-fast-backward" size={30} color="white" />
             <Text style={{color: 'white', textAlign: 'center', fontSize: 11}}>
@@ -5182,7 +5521,6 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               justifyContent: 'center',
               alignItems: 'center',
               paddingVertical: 10,
-              marginRight: 20,
             }}>
             <Entypo name="controller-fast-forward" size={30} color="white" />
             <Text style={{color: 'white', textAlign: 'center', fontSize: 11}}>
@@ -5284,6 +5622,7 @@ const mapStateToProps = (state) => {
     bantuMarker: state.variabelReducer.bantuMarker,
     pressAnalysis: state.variabelReducer.pressAnalysis,
     pressSaveAnalysis: state.variabelReducer.pressSaveAnalysis,
+    resetScaleImage: state.variabelReducer.resetScaleImage,
     disablePointer: state.variabelReducer.disablePointer,
     opacityPointer: state.variabelReducer.opacityPointer,
     startingPoint: state.variabelReducer.startingPoint,
@@ -5354,6 +5693,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     set_press_analysis: (val) => dispatch(set_press_analysis(val)),
     set_press_save_analysis: (val) => dispatch(set_press_save_analysis(val)),
+    set_reset_scale_image: (val) => dispatch(set_reset_scale_image(val)),
     set_disable_pointer: (val) => dispatch(set_disable_pointer(val)),
     set_opacity_pointer: (val) => dispatch(set_opacity_pointer(val)),
     set_bantuMarker: (val) => dispatch(set_bantuMarker(val)),
@@ -5460,8 +5800,9 @@ export default connect(
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    height: '100%',
+    // width: guidelineBaseWidth,
+    // height: guidelineBaseHeight,
+    flex: 1,
     flexDirection: 'column',
     backgroundColor: '#093545',
     justifyContent: 'center',

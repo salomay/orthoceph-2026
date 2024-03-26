@@ -82,6 +82,7 @@ import {COLORS} from './component/common/Constants';
 import {
   set_press_analysis,
   set_press_save_analysis,
+  set_reset_scale_image,
   set_disable_pointer,
   set_opacity_pointer,
   set_bantuMarker,
@@ -186,9 +187,10 @@ import {
 import {_addAnalysisPatient} from './component/networking/server';
 import FormSearchPatient from './component/FormSearchPatient';
 import FormCompareResult from './component/FormCompareResult';
-import Permissions, {
+import RNPermissions, {
   check,
   request,
+  checkMultiple,
   PERMISSIONS,
   RESULTS,
 } from 'react-native-permissions';
@@ -512,6 +514,8 @@ function CustomDrawerContent(props) {
 
     props.set_wendellwylie(_WendellWylie);
 
+    props.set_reset_scale_image(true);
+
     if (_WendellWylie.LOWERFACE.value) {
       props.set_enablesave(true);
       props.set_loading_global(false);
@@ -530,6 +534,7 @@ function CustomDrawerContent(props) {
       props.navigation.openDrawer();
       props.set_loading_global(false);
     }, 500);
+    props.set_reset_scale_image(true);
   }
 
   function _exportPDF() {
@@ -2515,39 +2520,9 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
-    this.getPermission();
     this.props.set_loading_global(false);
     this.props.set_detailresult(false);
     this.props.set_select_id(null);
-
-    // const config = {
-    //   priority: HIGH_ACCURACY, // default BALANCED_POWER_ACCURACY
-    //   alwaysShow: true, // default false
-    //   needBle: false, // default false
-    // };
-
-    // Check if location is enabled or not
-
-    if (Platform.OS === 'ios') {
-      Geolocation.requestAuthorization();
-      Geolocation.setRNConfiguration({
-        skipPermissionRequests: false,
-        authorizationLevel: 'always',
-      });
-
-      // if (akses_lokasi) {
-      //   checkSettings(config);
-
-      //   const listener = addListener(({locationEnabled}) => {
-      //     if (locationEnabled) {
-      //       listener.remove();
-      //     } else {
-      //       requestResolutionSettings(config);
-      //     }
-      //     console.log(`Location are ${locationEnabled}`);
-      //   });
-      // }
-    }
 
     if (Platform.OS === 'android') {
       const akses_lokasi = await PermissionsAndroid.request(
@@ -2557,44 +2532,49 @@ class App extends React.Component {
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.CAMERA,
       );
-
-      // if (akses_lokasi == 'granted') {
-      //   checkSettings(config);
-
-      //   const listener = addListener(({locationEnabled}) => {
-      //     if (locationEnabled) {
-      //       listener.remove();
-      //     } else {
-      //       requestResolutionSettings(config);
-      //     }
-      //     console.log(`Location are ${locationEnabled}`);
-      //   });
-      // } else {
-      //   checkSettings(config);
-
-      //   const listener = addListener(({locationEnabled}) => {
-      //     if (locationEnabled) {
-      //       listener.remove();
-      //     } else {
-      //       requestResolutionSettings(config);
-      //     }
-      //     console.log(`Location are ${locationEnabled}`);
-      //   });
-      // }
     }
-  }
 
-  getPermission = () => {
-    request(PERMISSIONS.IOS.LOCATION_ALWAYS).then((result) => {
-      if (result == 'blocked') {
-        Geolocation.requestAuthorization();
-        Geolocation.setRNConfiguration({
-          skipPermissionRequests: false,
-          authorizationLevel: 'always',
-        });
-      }
-    });
-  };
+    if (Platform.OS === 'ios') {
+      RNPermissions.requestMultiple(
+        [
+          'ios.permission.LOCATION_ALWAYS',
+          'ios.permission.LOCATION_WHEN_IN_USE',
+        ],
+        {
+          purposeKey: 'full-accuracy',
+        },
+      ).then((accuracy) => {
+        console.log(accuracy);
+      });
+    }
+    // check(PERMISSIONS.IOS.LOCATION_ALWAYS)
+    //   .then((result) => {
+    //     switch (result) {
+    //       case RESULTS.UNAVAILABLE:
+    //         console.log(
+    //           'This feature is not available (on this device / in this context)',
+    //         );
+    //         break;
+    //       case RESULTS.DENIED:
+    //         console.log(
+    //           'The permission has not been requested / is denied but requestable',
+    //         );
+    //         break;
+    //       case RESULTS.LIMITED:
+    //         console.log('The permission is limited: some actions are possible');
+    //         break;
+    //       case RESULTS.GRANTED:
+    //         console.log('The permission is granted');
+    //         break;
+    //       case RESULTS.BLOCKED:
+    //         console.log('The permission is denied and not requestable anymore');
+    //         break;
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+  }
 
   setTimePassed = () => {
     this.setState({timePassed: true});
@@ -2619,319 +2599,321 @@ class App extends React.Component {
     } else {
       return (
         //  <SafeAreaView><Text>aaaa</Text></SafeAreaView> )
-
-        <NavigationContainer>
-          {this.state.isLogin === true ? (
-            <Stack.Navigator
-              initialRouteName={'FormPatientList'}
-              screenOptions={{
-                gestureEnabled: false,
-                gestureDirection: 'horizontal',
-                ...TransitionPresets.SlideFromRightIOS,
-              }}>
-              <Stack.Screen
-                options={{headerShown: false}}
-                name="login"
-                component={FormLogin}
-              />
-
-              <Stack.Screen
-                name="FormPatientList"
-                component={FormPatientList}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormSearchPatient"
-                component={FormSearchPatient}
-                options={{
+        <>
+          <NavigationContainer>
+            {this.state.isLogin === true ? (
+              <Stack.Navigator
+                initialRouteName={'FormPatientList'}
+                screenOptions={{
+                  gestureEnabled: false,
                   gestureDirection: 'horizontal',
                   ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                }}>
+                <Stack.Screen
+                  options={{headerShown: false}}
+                  name="login"
+                  component={FormLogin}
+                />
 
-              <Stack.Screen
-                name="FormProfile"
-                component={FormProfile}
-                options={{
+                <Stack.Screen
+                  name="FormPatientList"
+                  component={FormPatientList}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormSearchPatient"
+                  component={FormSearchPatient}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormProfile"
+                  component={FormProfile}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormPatient"
+                  component={FormPatient}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormAddPatient"
+                  component={FormAddPatient}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormRegistrasi"
+                  component={FormRegistrasi}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormThankYou"
+                  component={FormThankYou}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormCephalometric"
+                  component={FormCephalometric}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormCompareResult"
+                  component={FormCompareResult}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormCephalometricAnalysis"
+                  component={sideBarNavigation}
+                  options={{
+                    // gestureEnabled: true,
+                    // gestureDirection: 'horizontal',
+                    // ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="FormPdfPreview"
+                  component={FormPdfPreview}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+              </Stack.Navigator>
+            ) : (
+              <Stack.Navigator
+                initialRouteName={'login'}
+                screenOptions={{
+                  gestureEnabled: true,
                   gestureDirection: 'horizontal',
                   ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                }}>
+                <Stack.Screen
+                  options={{headerShown: false}}
+                  name="login"
+                  component={FormLogin}
+                />
 
-              <Stack.Screen
-                name="FormPatient"
-                component={FormPatient}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormPatientList"
+                  component={FormPatientList}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormAddPatient"
-                component={FormAddPatient}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormSearchPatient"
+                  component={FormSearchPatient}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormRegistrasi"
-                component={FormRegistrasi}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormProfile"
+                  component={FormProfile}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormThankYou"
-                component={FormThankYou}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormPatient"
+                  component={FormPatient}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormCephalometric"
-                component={FormCephalometric}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormAddPatient"
+                  component={FormAddPatient}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormCompareResult"
-                component={FormCompareResult}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormRegistrasi"
+                  component={FormRegistrasi}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormCephalometricAnalysis"
-                component={sideBarNavigation}
-                options={{
-                  // gestureEnabled: true,
-                  // gestureDirection: 'horizontal',
-                  // ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormThankYou"
+                  component={FormThankYou}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormPdfPreview"
-                component={FormPdfPreview}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-            </Stack.Navigator>
-          ) : (
-            <Stack.Navigator
-              initialRouteName={'login'}
-              screenOptions={{
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                ...TransitionPresets.SlideFromRightIOS,
-              }}>
-              <Stack.Screen
-                options={{headerShown: false}}
-                name="login"
-                component={FormLogin}
-              />
+                <Stack.Screen
+                  name="FormCephalometric"
+                  component={FormCephalometric}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormPatientList"
-                component={FormPatientList}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormCephalometricAnalysis"
+                  component={sideBarNavigation}
+                  options={{
+                    // gestureDirection: 'horizontal',
+                    // ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormSearchPatient"
-                component={FormSearchPatient}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
+                <Stack.Screen
+                  name="FormCompareResult"
+                  component={FormCompareResult}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.SlideFromRightIOS,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen
-                name="FormProfile"
-                component={FormProfile}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormPatient"
-                component={FormPatient}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormAddPatient"
-                component={FormAddPatient}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormRegistrasi"
-                component={FormRegistrasi}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormThankYou"
-                component={FormThankYou}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormCephalometric"
-                component={FormCephalometric}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormCephalometricAnalysis"
-                component={sideBarNavigation}
-                options={{
-                  // gestureDirection: 'horizontal',
-                  // ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormCompareResult"
-                component={FormCompareResult}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.SlideFromRightIOS,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-
-              <Stack.Screen
-                name="FormPdfPreview"
-                component={FormPdfPreview}
-                options={{
-                  gestureDirection: 'horizontal',
-                  ...TransitionPresets.RevealFromBottomAndroid,
-                  headerStyle: {
-                    elevation: 0,
-                  },
-                  headerShown: false,
-                }}
-              />
-            </Stack.Navigator>
-          )}
-        </NavigationContainer>
+                <Stack.Screen
+                  name="FormPdfPreview"
+                  component={FormPdfPreview}
+                  options={{
+                    gestureDirection: 'horizontal',
+                    ...TransitionPresets.RevealFromBottomAndroid,
+                    headerStyle: {
+                      elevation: 0,
+                    },
+                    headerShown: false,
+                  }}
+                />
+              </Stack.Navigator>
+            )}
+          </NavigationContainer>
+          <Toast />
+        </>
       );
     }
   }
@@ -3007,6 +2989,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     set_press_analysis: (val) => dispatch(set_press_analysis(val)),
     set_press_save_analysis: (val) => dispatch(set_press_save_analysis(val)),
+    set_reset_scale_image: (val) => dispatch(set_reset_scale_image(val)),
     set_disable_pointer: (val) => dispatch(set_disable_pointer(val)),
     set_opacity_pointer: (val) => dispatch(set_opacity_pointer(val)),
     set_bantuMarker: (val) => dispatch(set_bantuMarker(val)),

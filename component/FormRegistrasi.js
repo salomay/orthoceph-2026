@@ -16,6 +16,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   PermissionsAndroid,
+  Linking,
 } from 'react-native';
 import {_viewCountries, _addDoctor, _cekEmail} from './networking/server';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -29,7 +30,7 @@ import Geolocation from '@react-native-community/geolocation';
 import {Appbar} from 'react-native-paper';
 import title_icon from './../assets/title.png';
 import logo_icon from './../assets/logo.png';
-import Permissions, {
+import RNPermissions, {
   check,
   request,
   PERMISSIONS,
@@ -59,6 +60,7 @@ export default class FormRegistrasi extends React.Component {
     dataGender: [],
     latitude: null,
     longitude: null,
+    statusGPS: false,
   };
 
   setCountry = (e) => {
@@ -79,25 +81,45 @@ export default class FormRegistrasi extends React.Component {
 
   componentDidMount() {
     this.viewCountries();
-    this.getPermission();
+    if (Platform.OS === 'ios') {
+      RNPermissions.requestMultiple(
+        [
+          'ios.permission.LOCATION_ALWAYS',
+          'ios.permission.LOCATION_WHEN_IN_USE',
+        ],
+        {
+          purposeKey: 'full-accuracy',
+        },
+      ).then((accuracy) => {
+        if (accuracy['ios.permission.LOCATION_ALWAYS'] == 'granted') {
+          this.setState({
+            statusGPS: true,
+          });
+        }
+        if (accuracy['ios.permission.LOCATION_WHEN_IN_USE'] == 'granted') {
+          this.setState({
+            statusGPS: true,
+          });
+        }
+      });
+    }
   }
 
   getPermission = async () => {
-    if (Platform.OS === 'ios') {
-      Geolocation.requestAuthorization();
-      Geolocation.setRNConfiguration({
-        skipPermissionRequests: false,
-        authorizationLevel: 'always',
-      });
-
+    if (Platform.OS == 'ios') {
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then((result) => {
-        console.log(result);
         if (result == 'granted') {
+          Geolocation.requestAuthorization();
+          Geolocation.setRNConfiguration({
+            skipPermissionRequests: false,
+            authorizationLevel: 'always',
+          });
           Geolocation.getCurrentPosition((info) => {
             this.setState(
               {
                 latitude: info.coords.latitude,
                 longitude: info.coords.longitude,
+                statusGPS: true,
               },
               () => {
                 console.log('longitude :' + this.state.longitude);
@@ -105,25 +127,49 @@ export default class FormRegistrasi extends React.Component {
               },
             );
           });
-        } else {
-          Alert.alert('Information', 'Please Turn On your GPS!!');
+          // Alert.alert(
+          //   'Permission Location Services',
+          //   'Do you want to share your location to use this app?',
+          //   [
+          //     {
+          //       text: 'No',
+          //       onPress: () =>
+          //         this.setState(
+          //           {
+          //             latitude: 0,
+          //             longitude: 0,
+          //             statusGPS: false,
+          //           },
+          //           () => {
+          //             this.registrasiNoGps();
+          //             console.log('longitude :' + this.state.longitude);
+          //             console.log('latitude :' + this.state.latitude);
+          //           },
+          //         ),
+          //       style: 'cancel',
+          //     },
+          //     {
+          //       text: 'Yes',
+          //       onPress: () => Linking.openURL('App-Prefs:Maps&path=LOCATION'),
+          //     },
+          //   ],
+          // );
         }
       });
-    }
-
-    if (Platform.OS === 'android') {
+    } else {
       let permition = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       );
-      console.log('permission :' + permition);
+
       if (permition == 'granted') {
         Geolocation.getCurrentPosition((info) => {
           this.setState({
             latitude: info.coords.latitude,
             longitude: info.coords.longitude,
+            statusGPS: true,
           });
         });
       }
@@ -195,140 +241,264 @@ export default class FormRegistrasi extends React.Component {
   };
 
   registrasi = async () => {
-    this.setState({
-      loading: true,
-    });
-
-    if (this.state.latitude && this.validationInput()) {
+    if (Platform.OS === 'ios') {
+      this.setState({
+        loading: true,
+      });
       let data = {
         email: this.state.email,
       };
+
+      if (this.state.statusGPS == true && this.validationInput()) {
+        this.getPermission();
+        _cekEmail(data)
+          .then(async (result) => {
+            if (result[0].jumlah > 0) {
+              Alert.alert('Warning!', 'Email Has Been Registered');
+              this.setState({loading: false});
+            } else {
+              await fetch(
+                'https://maps.googleapis.com/maps/api/geocode/json?address=' +
+                  this.state.latitude +
+                  ',' +
+                  this.state.longitude +
+                  '&key=AIzaSyDeGUzsJoi2ZfqJ94UboxdFgG0KIxg8hcs',
+              )
+                .then((response) => response.json())
+                .then((responseJson) => {
+                  console.log(
+                    'ADDRESS  => ' +
+                      JSON.stringify(responseJson.results[0].formatted_address),
+                  );
+                  this.setState(
+                    {
+                      address: responseJson.results[0].formatted_address,
+                    },
+                    () => {
+                      let data = {
+                        fullname: this.state.fullName,
+                        email: this.state.email,
+                        country: this.state.country,
+                        password: this.state.password,
+                        gender: this.state.gender,
+                        latitude: this.state.latitude,
+                        longitude: this.state.longitude,
+                        address: this.state.address,
+                      };
+
+                      _addDoctor(data)
+                        .then((result) => {
+                          if (result) {
+                            AsyncStorage.setItem(
+                              'doctorId',
+                              '' + result.insertId + '',
+                            );
+                            AsyncStorage.setItem(
+                              'fullName',
+                              '' + this.state.fullName + '',
+                            );
+                            AsyncStorage.setItem(
+                              'gender',
+                              '' + this.state.gender + '',
+                            );
+                            AsyncStorage.setItem(
+                              'country',
+                              '' + this.state.country + '',
+                            );
+                            AsyncStorage.setItem(
+                              'email',
+                              '' + this.state.email + '',
+                            );
+                            AsyncStorage.setItem(
+                              'longitude',
+                              '' + this.state.longitude + '',
+                            );
+                            AsyncStorage.setItem(
+                              'latitude',
+                              '' + this.state.latitude + '',
+                            );
+
+                            {
+                              Platform.OS == 'android'
+                                ? ToastAndroid.show(
+                                    'Registration Successfully',
+                                    ToastAndroid.SHORT,
+                                  )
+                                : Alert.alert(
+                                    'Information',
+                                    'Registration Successfully',
+                                  );
+                            }
+
+                            this.props.navigation.dispatch(
+                              CommonActions.reset({
+                                index: 0,
+                                routes: [{name: 'FormPatientList'}],
+                              }),
+                            );
+
+                            this.setState({
+                              loading: false,
+                              fullName: null,
+                              email: null,
+                              country: null,
+                              password: null,
+                              address: null,
+                              latitude: null,
+                              longitude: null,
+                              country: null,
+                              gender: null,
+                            });
+                          } else {
+                            {
+                              Platform.OS == 'android'
+                                ? ToastAndroid.show(
+                                    'Login Failed, Please Try Again!',
+                                    ToastAndroid.SHORT,
+                                  )
+                                : Alert.alert(
+                                    'Information',
+                                    'Login Failed, Please Try Again!',
+                                  );
+                            }
+
+                            this.setState({
+                              loading: false,
+                            });
+                          }
+                        })
+                        .catch((error) => {
+                          console.log(error);
+
+                          // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+                          this.setState({
+                            loading: false,
+                          });
+                        });
+                    },
+                  );
+                });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            this.setState({loading: false});
+          });
+      } else {
+        this.setState(
+          {
+            loading: false,
+            latitude: 0,
+            longitude: 0,
+            statusGPS: false,
+          },
+          () => {
+            this.registrasiNoGps();
+          },
+        );
+      }
+    }
+  };
+
+  registrasiNoGps = async () => {
+    this.setState({
+      loading: true,
+    });
+    let data = {
+      email: this.state.email,
+    };
+
+    if (this.state.statusGPS == false && this.validationInput()) {
       _cekEmail(data)
         .then(async (result) => {
           if (result[0].jumlah > 0) {
             Alert.alert('Warning!', 'Email Has Been Registered');
             this.setState({loading: false});
           } else {
-            await fetch(
-              'https://maps.googleapis.com/maps/api/geocode/json?address=' +
-                this.state.latitude +
-                ',' +
-                this.state.longitude +
-                '&key=AIzaSyDeGUzsJoi2ZfqJ94UboxdFgG0KIxg8hcs',
-            )
-              .then((response) => response.json())
-              .then((responseJson) => {
-                console.log(
-                  'ADDRESS  => ' +
-                    JSON.stringify(responseJson.results[0].formatted_address),
-                );
-                this.setState(
+            let data = {
+              fullname: this.state.fullName,
+              email: this.state.email,
+              country: this.state.country,
+              password: this.state.password,
+              gender: this.state.gender,
+              latitude: this.state.latitude,
+              longitude: this.state.longitude,
+              address: '',
+            };
+
+            _addDoctor(data)
+              .then((result) => {
+                if (result) {
+                  AsyncStorage.setItem('doctorId', '' + result.insertId + '');
+                  AsyncStorage.setItem(
+                    'fullName',
+                    '' + this.state.fullName + '',
+                  );
+                  AsyncStorage.setItem('gender', '' + this.state.gender + '');
+                  AsyncStorage.setItem('country', '' + this.state.country + '');
+                  AsyncStorage.setItem('email', '' + this.state.email + '');
+                  AsyncStorage.setItem(
+                    'longitude',
+                    '' + this.state.longitude + '',
+                  );
+                  AsyncStorage.setItem(
+                    'latitude',
+                    '' + this.state.latitude + '',
+                  );
+
                   {
-                    address: responseJson.results[0].formatted_address,
-                  },
-                  () => {
-                    let data = {
-                      fullname: this.state.fullName,
-                      email: this.state.email,
-                      country: this.state.country,
-                      password: this.state.password,
-                      gender: this.state.gender,
-                      latitude: this.state.latitude,
-                      longitude: this.state.longitude,
-                      address: this.state.address,
-                    };
+                    Platform.OS == 'android'
+                      ? ToastAndroid.show(
+                          'Registration Successfully',
+                          ToastAndroid.SHORT,
+                        )
+                      : Alert.alert('Information', 'Registration Successfully');
+                  }
 
-                    _addDoctor(data)
-                      .then((result) => {
-                        if (result) {
-                          AsyncStorage.setItem(
-                            'doctorId',
-                            '' + result.insertId + '',
-                          );
-                          AsyncStorage.setItem(
-                            'fullName',
-                            '' + this.state.fullName + '',
-                          );
-                          AsyncStorage.setItem(
-                            'gender',
-                            '' + this.state.gender + '',
-                          );
-                          AsyncStorage.setItem(
-                            'country',
-                            '' + this.state.country + '',
-                          );
-                          AsyncStorage.setItem(
-                            'email',
-                            '' + this.state.email + '',
-                          );
-                          AsyncStorage.setItem(
-                            'longitude',
-                            '' + this.state.longitude + '',
-                          );
-                          AsyncStorage.setItem(
-                            'latitude',
-                            '' + this.state.latitude + '',
-                          );
+                  this.props.navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [{name: 'FormPatientList'}],
+                    }),
+                  );
 
-                          {
-                            Platform.OS == 'android'
-                              ? ToastAndroid.show(
-                                  'Registration Successfully',
-                                  ToastAndroid.SHORT,
-                                )
-                              : Alert.alert(
-                                  'Information',
-                                  'Registration Successfully',
-                                );
-                          }
+                  this.setState({
+                    loading: false,
+                    fullName: null,
+                    email: null,
+                    country: null,
+                    password: null,
+                    address: null,
+                    latitude: null,
+                    longitude: null,
+                    country: null,
+                    gender: null,
+                  });
+                } else {
+                  {
+                    Platform.OS == 'android'
+                      ? ToastAndroid.show(
+                          'Login Failed, Please Try Again!',
+                          ToastAndroid.SHORT,
+                        )
+                      : Alert.alert(
+                          'Information',
+                          'Login Failed, Please Try Again!',
+                        );
+                  }
 
-                          this.props.navigation.dispatch(
-                            CommonActions.reset({
-                              index: 0,
-                              routes: [{name: 'FormPatientList'}],
-                            }),
-                          );
+                  this.setState({
+                    loading: false,
+                  });
+                }
+              })
+              .catch((error) => {
+                console.log(error);
 
-                          this.setState({
-                            loading: false,
-                            fullName: null,
-                            email: null,
-                            country: null,
-                            password: null,
-                            address: null,
-                            latitude: null,
-                            longitude: null,
-                            country: null,
-                            gender: null,
-                          });
-                        } else {
-                          {
-                            Platform.OS == 'android'
-                              ? ToastAndroid.show(
-                                  'Login Failed, Please Try Again!',
-                                  ToastAndroid.SHORT,
-                                )
-                              : Alert.alert(
-                                  'Information',
-                                  'Login Failed, Please Try Again!',
-                                );
-                          }
-
-                          this.setState({
-                            loading: false,
-                          });
-                        }
-                      })
-                      .catch((error) => {
-                        console.log(error);
-
-                        // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
-                        this.setState({
-                          loading: false,
-                        });
-                      });
-                  },
-                );
+                // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+                this.setState({
+                  loading: false,
+                });
               });
           }
         })
@@ -336,8 +506,6 @@ export default class FormRegistrasi extends React.Component {
           console.log(error);
           this.setState({loading: false});
         });
-    } else {
-      this.getPermission();
     }
   };
 
@@ -403,14 +571,14 @@ export default class FormRegistrasi extends React.Component {
             </Text>
             <DropDownPicker
               containerStyle={{
-                height: wp(8),
+                height: wp(10),
                 borderRadius: 15,
                 backgroundColor: '#224957',
                 zIndex: 999,
               }}
               style={{
                 backgroundColor: '#224957',
-                minHeight: wp(8),
+                minHeight: wp(10),
               }}
               listItemContainerStyle={{
                 backgroundColor: '#088A85',
@@ -453,14 +621,14 @@ export default class FormRegistrasi extends React.Component {
             </Text>
             <DropDownPicker
               containerStyle={{
-                height: wp(8),
+                height: wp(10),
                 borderRadius: 15,
                 backgroundColor: '#224957',
                 zIndex: 99,
               }}
               style={{
                 backgroundColor: '#224957',
-                minHeight: wp(8),
+                minHeight: wp(10),
               }}
               listItemContainerStyle={{
                 backgroundColor: '#088A85',

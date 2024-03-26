@@ -24,6 +24,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {_addPatient, _addPatientNoImage} from './networking/server';
 import {launchImageLibrary} from 'react-native-image-picker';
+import Toast from 'react-native-toast-message';
 
 class FormProfile extends React.Component {
   constructor(props) {
@@ -123,16 +124,40 @@ class FormProfile extends React.Component {
 
   validationInput = () => {
     if (this.state.fullName == '' || this.state.fullName == null) {
-      ToastAndroid.show('Require Full Name', ToastAndroid.SHORT);
+      Toast.show({
+        type: 'info',
+        text1: 'Require Full Name',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      // ToastAndroid.show('Require Full Name', ToastAndroid.SHORT);
       return false;
     } else if (this.state.gender == '' || this.state.gender == null) {
-      ToastAndroid.show('Require Gender', ToastAndroid.SHORT);
+      Toast.show({
+        type: 'info',
+        text1: 'Require Gender',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      // ToastAndroid.show('Require Gender', ToastAndroid.SHORT);
       return false;
     } else if (this.state.race == '' || this.state.race == null) {
-      ToastAndroid.show('Require Race', ToastAndroid.SHORT);
+      Toast.show({
+        type: 'info',
+        text1: 'Require Race',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      // ToastAndroid.show('Require Race', ToastAndroid.SHORT);
       return false;
     } else if (this.state.age == '' || this.state.age == null) {
-      ToastAndroid.show('Require Age', ToastAndroid.SHORT);
+      Toast.show({
+        type: 'info',
+        text1: 'Require Age',
+        autohide: true,
+        visibilityTime: 2500,
+      });
+      // ToastAndroid.show('Require Age', ToastAndroid.SHORT);
       return false;
     } else {
       return true;
@@ -140,94 +165,122 @@ class FormProfile extends React.Component {
   };
 
   savePatient = () => {
-    this.setState({
-      loading: true,
-    });
-
-    if (this.state.imageUri !== null && this.validationInput()) {
-      const data = new FormData();
-      data.append('fileImages', {
-        uri: this.state.imageUri,
-        type: this.state.imageType,
-        name: this.state.imageFilename,
+    if (this.validationInput()) {
+      this.setState({
+        loading: true,
       });
-
-      console.log(this.state.doctorId);
-
-      data.append('doctorid', this.state.doctorId);
-      data.append('fullname', this.state.fullName);
-      data.append('race', this.state.race);
-      data.append('gender', this.state.gender);
-      data.append('age', '' + this.state.age + '');
-
-      _addPatient(data)
-        .then((result) => {
-          console.log(result);
-
-          if (result == 200) {
-            ToastAndroid.show('Registration Successfully', ToastAndroid.SHORT);
-
-            this.props.navigation.navigate('FormPatientList');
-
-            this.setState({
-              loading: false,
-              fullName: null,
-            });
-          } else {
-            ToastAndroid.show(
-              'Input Patient Failed, Please Try Again!',
-              ToastAndroid.SHORT,
-            );
-            this.setState({
-              loading: false,
-            });
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
-          this.setState({
-            loading: false,
-          });
+      if (this.state.imageUri !== null) {
+        this.setState({
+          loading: true,
         });
-    } else {
-      let data = {
-        doctorid: this.state.doctorId,
-        fullname: this.state.fullName,
-        race: this.state.race,
-        gender: this.state.gender,
-        age: this.state.age,
-      };
-
-      _addPatientNoImage(data)
-        .then((result) => {
-          console.log(result);
-          if (result == 200) {
-            ToastAndroid.show('Registration Successfully', ToastAndroid.SHORT);
-
-            this.props.navigation.navigate('FormPatientList');
-
-            this.setState({
-              loading: false,
-              fullName: null,
-            });
-          } else {
-            ToastAndroid.show(
-              'Input Patient Failed, Please Try Again!',
-              ToastAndroid.SHORT,
-            );
-            this.setState({
-              loading: false,
-            });
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
-          this.setState({
-            loading: false,
-          });
+        const data = new FormData();
+        data.append('fileImages', {
+          uri: this.state.imageUri,
+          type: this.state.imageType,
+          name: this.state.imageFilename,
         });
+
+        console.log(this.state.doctorId);
+
+        data.append('doctorid', this.state.doctorId);
+        data.append('fullname', this.state.fullName);
+        data.append('race', this.state.race);
+        data.append('gender', this.state.gender);
+        data.append('age', '' + this.state.age + '');
+
+        _addPatient(data)
+          .then((result) => {
+            console.log(result);
+
+            if (result == 200) {
+              Toast.show({
+                type: 'success',
+                text1: 'Registration Successfully',
+                autohide: true,
+                visibilityTime: 2500,
+              });
+              // ToastAndroid.show('Registration Successfully', ToastAndroid.SHORT);
+
+              this.props.navigation.navigate('FormPatientList');
+
+              this.setState({
+                loading: false,
+                fullName: null,
+              });
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: 'Input Patient Failed, Please Try Again!',
+                autohide: true,
+                visibilityTime: 2500,
+              });
+              // ToastAndroid.show(
+              //   'Input Patient Failed, Please Try Again!',
+              //   ToastAndroid.SHORT,
+              // );
+              this.setState({
+                loading: false,
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+            this.setState({
+              loading: false,
+            });
+          });
+      } else {
+        let data = {
+          doctorid: this.state.doctorId,
+          fullname: this.state.fullName,
+          race: this.state.race,
+          gender: this.state.gender,
+          age: this.state.age,
+        };
+
+        _addPatientNoImage(data)
+          .then((result) => {
+            console.log(result);
+            if (result == 200) {
+              Toast.show({
+                type: 'success',
+                text1: 'Registration Successfully',
+                autohide: true,
+                visibilityTime: 2500,
+              });
+              // ToastAndroid.show('Registration Successfully', ToastAndroid.SHORT);
+
+              this.props.navigation.navigate('FormPatientList');
+
+              this.setState({
+                loading: false,
+                fullName: null,
+              });
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: 'Input Patient Failed, Please Try Again!',
+                autohide: true,
+                visibilityTime: 2500,
+              });
+              // ToastAndroid.show(
+              //   'Input Patient Failed, Please Try Again!',
+              //   ToastAndroid.SHORT,
+              // );
+              this.setState({
+                loading: false,
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
+            this.setState({
+              loading: false,
+            });
+          });
+      }
     }
   };
 
@@ -282,6 +335,8 @@ class FormProfile extends React.Component {
               />
               <Appbar.Action />
             </Appbar.Header>
+
+            <Toast />
 
             <View style={styles.containerList}>
               <TouchableOpacity
@@ -374,6 +429,7 @@ class FormProfile extends React.Component {
                   onSelectItem={(e) => {
                     this.setGender(e);
                   }}
+                  onOpen={() => Keyboard.dismiss()}
                 />
                 <View style={{margin: hp(1)}} />
                 <DropDownPicker

@@ -140,6 +140,7 @@ class FormCephalometric extends React.Component {
     await _viewResultAnalysis(data)
       .then(async (result) => {
         if (result.length > 0) {
+          // console.log('SNB = ' + result[1]?.snb);
           if (result[0]?.step == 1) {
             analysisC1 = {
               sna: JSON.parse(result[0]?.sna)
@@ -188,105 +189,8 @@ class FormCephalometric extends React.Component {
                 ? JSON.parse(result[0]?.lower_face)
                 : null,
             };
-          } else if (result[0].step == 2) {
-            analysisC2 = {
-              sna: JSON.parse(result[0]?.sna)
-                ? JSON.parse(result[0]?.sna)
-                : null,
-              snb: JSON.parse(result[0]?.snb)
-                ? JSON.parse(result[0]?.snb)
-                : null,
-              anb: JSON.parse(result[0]?.anb)
-                ? JSON.parse(result[0]?.anb)
-                : null,
-              pognb: JSON.parse(result[0]?.pognb)
-                ? JSON.parse(result[0]?.pognb)
-                : null,
-              snop: JSON.parse(result[0]?.snop)
-                ? JSON.parse(result[0]?.snop)
-                : null,
-              snmp: JSON.parse(result[0]?.snmp)
-                ? JSON.parse(result[0]?.snmp)
-                : null,
-              uina_angular: JSON.parse(result[0]?.uina_angular)
-                ? JSON.parse(result[0]?.uina_angular)
-                : null,
-              uina_linear: JSON.parse(result[0]?.uina_linear)
-                ? JSON.parse(result[0]?.uina_linear)
-                : null,
-              linb_angular: JSON.parse(result[0]?.linb_angular)
-                ? JSON.parse(result[0]?.linb_angular)
-                : null,
-              linb_linear: JSON.parse(result[0]?.linb_linear)
-                ? JSON.parse(result[0]?.linb_linear)
-                : null,
-              _iia: JSON.parse(result[0]?._iia)
-                ? JSON.parse(result[0]?._iia)
-                : null,
-              upper_lip: JSON.parse(result[0]?.upper_lip)
-                ? JSON.parse(result[0]?.upper_lip)
-                : null,
-              lower_lip: JSON.parse(result[0]?.lower_lip)
-                ? JSON.parse(result[0]?.lower_lip)
-                : null,
-              mid_face: JSON.parse(result[0]?.mid_face)
-                ? JSON.parse(result[0]?.mid_face)
-                : null,
-              lower_face: JSON.parse(result[0]?.lower_face)
-                ? JSON.parse(result[0]?.lower_face)
-                : null,
-            };
-          } else if (result[0].step == 3) {
-            analysisC3 = {
-              sna: JSON.parse(result[0]?.sna)
-                ? JSON.parse(result[0]?.sna)
-                : null,
-              snb: JSON.parse(result[0]?.snb)
-                ? JSON.parse(result[0]?.snb)
-                : null,
-              anb: JSON.parse(result[0]?.anb)
-                ? JSON.parse(result[0]?.anb)
-                : null,
-              pognb: JSON.parse(result[0]?.pognb)
-                ? JSON.parse(result[0]?.pognb)
-                : null,
-              snop: JSON.parse(result[0]?.snop)
-                ? JSON.parse(result[0]?.snop)
-                : null,
-              snmp: JSON.parse(result[0]?.snmp)
-                ? JSON.parse(result[0]?.snmp)
-                : null,
-              uina_angular: JSON.parse(result[0]?.uina_angular)
-                ? JSON.parse(result[0]?.uina_angular)
-                : null,
-              uina_linear: JSON.parse(result[0]?.uina_linear)
-                ? JSON.parse(result[0]?.uina_linear)
-                : null,
-              linb_angular: JSON.parse(result[0]?.linb_angular)
-                ? JSON.parse(result[0]?.linb_angular)
-                : null,
-              linb_linear: JSON.parse(result[0]?.linb_linear)
-                ? JSON.parse(result[0]?.linb_linear)
-                : null,
-              _iia: JSON.parse(result[0]?._iia)
-                ? JSON.parse(result[0]?._iia)
-                : null,
-              upper_lip: JSON.parse(result[0]?.upper_lip)
-                ? JSON.parse(result[0]?.upper_lip)
-                : null,
-              lower_lip: JSON.parse(result[0]?.lower_lip)
-                ? JSON.parse(result[0]?.lower_lip)
-                : null,
-              mid_face: JSON.parse(result[0]?.mid_face)
-                ? JSON.parse(result[0]?.mid_face)
-                : null,
-              lower_face: JSON.parse(result[0]?.lower_face)
-                ? JSON.parse(result[0]?.lower_face)
-                : null,
-            };
           }
-
-          if (result[1]?.step == '2') {
+          if (result[1]?.step == 2) {
             analysisC2 = {
               sna: JSON.parse(result[1]?.sna)
                 ? JSON.parse(result[1]?.sna)
@@ -294,55 +198,7 @@ class FormCephalometric extends React.Component {
               snb: JSON.parse(result[1]?.snb)
                 ? JSON.parse(result[1]?.snb)
                 : null,
-              snb: JSON.parse(result[1].anb)
-                ? JSON.parse(result[1]?.anb)
-                : null,
-              pognb: JSON.parse(result[1]?.pognb)
-                ? JSON.parse(result[1]?.pognb)
-                : null,
-              snop: JSON.parse(result[1]?.snop)
-                ? JSON.parse(result[1]?.snop)
-                : null,
-              snmp: JSON.parse(result[1]?.snmp)
-                ? JSON.parse(result[1]?.snmp)
-                : null,
-              uina_angular: JSON.parse(result[1]?.uina_angular)
-                ? JSON.parse(result[1]?.uina_angular)
-                : null,
-              uina_linear: JSON.parse(result[1]?.uina_linear)
-                ? JSON.parse(result[1]?.uina_linear)
-                : null,
-              linb_angular: JSON.parse(result[1]?.linb_angular)
-                ? JSON.parse(result[1]?.linb_angular)
-                : null,
-              linb_linear: JSON.parse(result[1]?.linb_linear)
-                ? JSON.parse(result[1]?.linb_linear)
-                : null,
-              _iia: JSON.parse(result[1]?._iia)
-                ? JSON.parse(result[1]?._iia)
-                : null,
-              upper_lip: JSON.parse(result[1]?.upper_lip)
-                ? JSON.parse(result[1]?.upper_lip)
-                : null,
-              lower_lip: JSON.parse(result[1]?.lower_lip)
-                ? JSON.parse(result[1]?.lower_lip)
-                : null,
-              mid_face: JSON.parse(result[1]?.mid_face)
-                ? JSON.parse(result[1]?.mid_face)
-                : null,
-              lower_face: JSON.parse(result[1]?.lower_face)
-                ? JSON.parse(result[1]?.lower_face)
-                : null,
-            };
-          } else if (result[1]?.step == '3') {
-            analysisC3 = {
-              sna: JSON.parse(result[1]?.sna)
-                ? JSON.parse(result[1]?.sna)
-                : null,
-              snb: JSON.parse(result[1]?.snb)
-                ? JSON.parse(result[1]?.snb)
-                : null,
-              snb: JSON.parse(result[1].anb)
+              anb: JSON.parse(result[1]?.anb)
                 ? JSON.parse(result[1]?.anb)
                 : null,
               pognb: JSON.parse(result[1]?.pognb)
@@ -383,8 +239,7 @@ class FormCephalometric extends React.Component {
                 : null,
             };
           }
-
-          if (result[2]?.step == '3') {
+          if (result[2]?.step == 3) {
             analysisC3 = {
               sna: JSON.parse(result[2]?.sna)
                 ? JSON.parse(result[2]?.sna)
@@ -392,7 +247,7 @@ class FormCephalometric extends React.Component {
               snb: JSON.parse(result[2]?.snb)
                 ? JSON.parse(result[2]?.snb)
                 : null,
-              snb: JSON.parse(result[2]?.anb)
+              anb: JSON.parse(result[2]?.anb)
                 ? JSON.parse(result[2]?.anb)
                 : null,
               pognb: JSON.parse(result[2]?.pognb)
@@ -434,6 +289,156 @@ class FormCephalometric extends React.Component {
             };
           }
 
+          // if (result[0]?.step == '1') {
+          //   analysisC1 = {
+          //     sna: JSON.parse(result[0]?.sna)
+          //       ? JSON.parse(result[0]?.sna)
+          //       : null,
+          //     snb: JSON.parse(result[0]?.snb)
+          //       ? JSON.parse(result[0]?.snb)
+          //       : null,
+          //     snb: JSON.parse(result[0].anb)
+          //       ? JSON.parse(result[0]?.anb)
+          //       : null,
+          //     pognb: JSON.parse(result[0]?.pognb)
+          //       ? JSON.parse(result[0]?.pognb)
+          //       : null,
+          //     snop: JSON.parse(result[0]?.snop)
+          //       ? JSON.parse(result[0]?.snop)
+          //       : null,
+          //     snmp: JSON.parse(result[0]?.snmp)
+          //       ? JSON.parse(result[0]?.snmp)
+          //       : null,
+          //     uina_angular: JSON.parse(result[0]?.uina_angular)
+          //       ? JSON.parse(result[0]?.uina_angular)
+          //       : null,
+          //     uina_linear: JSON.parse(result[0]?.uina_linear)
+          //       ? JSON.parse(result[0]?.uina_linear)
+          //       : null,
+          //     linb_angular: JSON.parse(result[0]?.linb_angular)
+          //       ? JSON.parse(result[0]?.linb_angular)
+          //       : null,
+          //     linb_linear: JSON.parse(result[0]?.linb_linear)
+          //       ? JSON.parse(result[0]?.linb_linear)
+          //       : null,
+          //     _iia: JSON.parse(result[0]?._iia)
+          //       ? JSON.parse(result[0]?._iia)
+          //       : null,
+          //     upper_lip: JSON.parse(result[0]?.upper_lip)
+          //       ? JSON.parse(result[0]?.upper_lip)
+          //       : null,
+          //     lower_lip: JSON.parse(result[0]?.lower_lip)
+          //       ? JSON.parse(result[0]?.lower_lip)
+          //       : null,
+          //     mid_face: JSON.parse(result[0]?.mid_face)
+          //       ? JSON.parse(result[0]?.mid_face)
+          //       : null,
+          //     lower_face: JSON.parse(result[0]?.lower_face)
+          //       ? JSON.parse(result[0]?.lower_face)
+          //       : null,
+          //   };
+          // }
+
+          // if (result[1]?.step == '2') {
+          //   analysisC2 = {
+          //     sna: JSON.parse(result[1]?.sna)
+          //       ? JSON.parse(result[1]?.sna)
+          //       : null,
+          //     snb: JSON.parse(result[1]?.snb)
+          //       ? JSON.parse(result[1]?.snb)
+          //       : null,
+          //     snb: JSON.parse(result[1].anb)
+          //       ? JSON.parse(result[1]?.anb)
+          //       : null,
+          //     pognb: JSON.parse(result[1]?.pognb)
+          //       ? JSON.parse(result[1]?.pognb)
+          //       : null,
+          //     snop: JSON.parse(result[1]?.snop)
+          //       ? JSON.parse(result[1]?.snop)
+          //       : null,
+          //     snmp: JSON.parse(result[1]?.snmp)
+          //       ? JSON.parse(result[1]?.snmp)
+          //       : null,
+          //     uina_angular: JSON.parse(result[1]?.uina_angular)
+          //       ? JSON.parse(result[1]?.uina_angular)
+          //       : null,
+          //     uina_linear: JSON.parse(result[1]?.uina_linear)
+          //       ? JSON.parse(result[1]?.uina_linear)
+          //       : null,
+          //     linb_angular: JSON.parse(result[1]?.linb_angular)
+          //       ? JSON.parse(result[1]?.linb_angular)
+          //       : null,
+          //     linb_linear: JSON.parse(result[1]?.linb_linear)
+          //       ? JSON.parse(result[1]?.linb_linear)
+          //       : null,
+          //     _iia: JSON.parse(result[1]?._iia)
+          //       ? JSON.parse(result[1]?._iia)
+          //       : null,
+          //     upper_lip: JSON.parse(result[1]?.upper_lip)
+          //       ? JSON.parse(result[1]?.upper_lip)
+          //       : null,
+          //     lower_lip: JSON.parse(result[1]?.lower_lip)
+          //       ? JSON.parse(result[1]?.lower_lip)
+          //       : null,
+          //     mid_face: JSON.parse(result[1]?.mid_face)
+          //       ? JSON.parse(result[1]?.mid_face)
+          //       : null,
+          //     lower_face: JSON.parse(result[1]?.lower_face)
+          //       ? JSON.parse(result[1]?.lower_face)
+          //       : null,
+          //   };
+          // }
+
+          // if (result[2]?.step == '3') {
+          //   analysisC3 = {
+          //     sna: JSON.parse(result[2]?.sna)
+          //       ? JSON.parse(result[2]?.sna)
+          //       : null,
+          //     snb: JSON.parse(result[2]?.snb)
+          //       ? JSON.parse(result[2]?.snb)
+          //       : null,
+          //     snb: JSON.parse(result[2]?.anb)
+          //       ? JSON.parse(result[2]?.anb)
+          //       : null,
+          //     pognb: JSON.parse(result[2]?.pognb)
+          //       ? JSON.parse(result[2]?.pognb)
+          //       : null,
+          //     snop: JSON.parse(result[2]?.snop)
+          //       ? JSON.parse(result[2]?.snop)
+          //       : null,
+          //     snmp: JSON.parse(result[2]?.snmp)
+          //       ? JSON.parse(result[2]?.snmp)
+          //       : null,
+          //     uina_angular: JSON.parse(result[2]?.uina_angular)
+          //       ? JSON.parse(result[2]?.uina_angular)
+          //       : null,
+          //     uina_linear: JSON.parse(result[2]?.uina_linear)
+          //       ? JSON.parse(result[2]?.uina_linear)
+          //       : null,
+          //     linb_angular: JSON.parse(result[2]?.linb_angular)
+          //       ? JSON.parse(result[2]?.linb_angular)
+          //       : null,
+          //     linb_linear: JSON.parse(result[2]?.linb_linear)
+          //       ? JSON.parse(result[2]?.linb_linear)
+          //       : null,
+          //     _iia: JSON.parse(result[2]?._iia)
+          //       ? JSON.parse(result[2]?._iia)
+          //       : null,
+          //     upper_lip: JSON.parse(result[2]?.upper_lip)
+          //       ? JSON.parse(result[2]?.upper_lip)
+          //       : null,
+          //     lower_lip: JSON.parse(result[2]?.lower_lip)
+          //       ? JSON.parse(result[2]?.lower_lip)
+          //       : null,
+          //     mid_face: JSON.parse(result[2]?.mid_face)
+          //       ? JSON.parse(result[2]?.mid_face)
+          //       : null,
+          //     lower_face: JSON.parse(result[2]?.lower_face)
+          //       ? JSON.parse(result[2]?.lower_face)
+          //       : null,
+          //   };
+          // }
+
           let patient = {
             fullname: this.state.fullName,
             gender: this.state.gender,
@@ -455,15 +460,15 @@ class FormCephalometric extends React.Component {
             fileName: 'CompareResult',
             base64: true,
             // directory: 'Orthoceph',
-            width: 792,
-            height: 500,
+            width: Platform.OS == 'ios' ? wp(140) : wp(160),
+            height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
           let file = await RNHTMLtoPDF.convert(options);
 
           this.props.navigation.navigate('FormCompareResult', {
             fileName: file.filePath,
-            fileBase64: 'data:application/pdf;base64,' + file.base64,
+            fileBase64: file.base64,
           });
         }
       })
