@@ -17,16 +17,8 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {
-  appleAuth,
-  appleAuthAndroid,
-  AppleButton,
-} from '@invertase/react-native-apple-authentication';
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
+
+
 import {_deleteDoctor} from './networking/server';
 
 class FormProfile extends React.Component {
@@ -63,8 +55,8 @@ class FormProfile extends React.Component {
 
   logOut = async () => {
     try {
-      // await GoogleSignin.signOut();
-      const appleSign = appleAuth.Operation.LOGOUT;
+
+    
       AsyncStorage.getAllKeys()
         .then((keys) => AsyncStorage.multiRemove(keys))
         .then(() =>

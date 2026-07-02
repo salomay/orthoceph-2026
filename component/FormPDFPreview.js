@@ -7,13 +7,16 @@ import {
   Modal,
   Platform,
 } from 'react-native';
-import PDFView from 'react-native-view-pdf';
+import Pdf from 'react-native-pdf';
 import {Appbar, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Share from 'react-native-share';
+import RNFS from 'react-native-fs';
+
+
 
 export default class FormPdfPreview extends React.Component {
   constructor(props) {
@@ -22,17 +25,14 @@ export default class FormPdfPreview extends React.Component {
   }
 
   componentWillMount() {
-    BackHandler.addEventListener(
+   this.backHandlerSubscription = BackHandler.addEventListener(
       'hardwareBackPress',
       this.handleBackButtonClick,
     );
   }
 
   componentWillUnmount() {
-    BackHandler.removeEventListener(
-      'hardwareBackPress',
-      this.handleBackButtonClick,
-    );
+   this.backHandlerSubscription?.remove?.();
   }
 
   handleBackButtonClick() {
@@ -42,39 +42,26 @@ export default class FormPdfPreview extends React.Component {
 
   _onShareReport = async () => {
     const _pdf = this.props.route.params.fileBase64;
+    const _fileName = this.props.route.params.fileName;
+    console.log(_fileName);
     if (_pdf) {
-      const shareOptions = {
-        title: 'Share file',
-        failOnCancel: false,
-        mimeType: 'application/pdf',
-        saveToFiles: true,
-        urls: [
-          'data:application/pdf;base64,' + this.props.route.params.fileBase64,
-        ],
+       const path = `${RNFS.CachesDirectoryPath}/${_fileName}.pdf`;
+  await RNFS.writeFile(path, _pdf, 'base64');
 
-        // url: this.props.route.params.fileName,
-        // fileName: _pdf.fileName,
-
-        // title: 'Share PDF Report Via',
-        // subject: '[OrthoCeph Generated Report]' + _pdf.fileName,
-      };
-      // console.log(this.state.reportViewer.pdf.file.filePath);
-
-      await Share.open(shareOptions)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          err && console.log(err);
-        });
-    } else {
-      Alert.alert('Oops! No file to be shared', 'PDF failed to generate');
+  await Share.open({
+    url: `file://${path}`,
+    type: 'application/pdf',
+  });
     }
   };
 
+  
+
   render() {
     const source = this.props.route.params.fileBase64;
+      
 
+   
     return (
       <>
         <View
@@ -87,13 +74,13 @@ export default class FormPdfPreview extends React.Component {
             style={{
               // position: 'absolute',
               backgroundColor: '#637363',
-              borderRadius: 10,
+                borderRadius: 0,
               justifyContent: 'center',
               alignContent: 'center',
               marginTop: 5,
               zIndex: 9999,
             }}>
-            <Appbar.BackAction onPress={() => this.props.navigation.goBack()} />
+            <Appbar.BackAction onPress={() => this.props.navigation.goBack()} color='white' />
             <Appbar.Content
               title="Report Viewer"
               subtitle=""
@@ -110,16 +97,11 @@ export default class FormPdfPreview extends React.Component {
             />
           </Appbar.Header>
           <View style={styles.container}>
-            <PDFView
-              fadeInDuration={500.0}
-              style={{flex: 1}}
-              resource={source}
-              resourceType={'base64'}
-              onLoad={() => {}}
-              onError={(e) => {
-                console.log(e);
-              }}
-            />
+           <Pdf
+  source={{ uri: `data:application/pdf;base64,${source}`, cache: true }}
+  onError={(error) => console.log(error)}
+  style={{ flex: 1 }}
+/>
           </View>
         </View>
       </>
@@ -130,11 +112,7 @@ export default class FormPdfPreview extends React.Component {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    width: Platform.OS == 'ios' ? '100%' : '100%',
-    height: Platform.OS == 'ios' ? '100%' : '40%',
-    // justifyContent: 'flex-start',
-    // alignItems: 'center',
-    marginTop: '10%',
+    flex: 1,
   },
   pdf: {
     // flex: 1,

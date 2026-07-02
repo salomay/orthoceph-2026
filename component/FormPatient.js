@@ -119,6 +119,7 @@ const formatDate = (date) => {
 };
 
 class FormPatient extends React.Component {
+  
   constructor(props) {
     super(props);
     this.state = {
@@ -233,12 +234,12 @@ class FormPatient extends React.Component {
         <Appbar.Header
           style={{
             backgroundColor: '#637363',
-            borderRadius: 10,
+            borderRadius: 0,
             marginTop: 5,
             zIndex: 9999,
             height: 'auto',
           }}>
-          <Appbar.BackAction onPress={() => this.props.navigation.goBack()} />
+          <Appbar.BackAction  color='white' onPress={() => this.props.navigation.goBack()} />
 
           <Appbar.Content
             title="Patient Worksheet"
@@ -448,6 +449,8 @@ const mapStateToProps = (state) => {
     mid_face: state.resultReducer.mid_face,
     lower_face: state.resultReducer.lower_face,
     wendellWylie: state.resultReducer.wendellWylie,
+      loadingGlobal: state.variabelReducer.loadingGlobal,
+    loading: state.variabelReducer.loading,
   };
 };
 

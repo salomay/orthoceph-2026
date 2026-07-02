@@ -214,21 +214,40 @@ class FormPatientList extends React.Component {
     this._refreshData();
   }
 
-  componentDidMount() {
-    this.backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      this.backAction,
-    );
+
+   screenFocus = () => {
+        // add back button listener or any other code you want to execute on screen focus
+        BackHandler.addEventListener('hardwareBackPress', this.backAction);
+    }
+
+    screenBlur = () => {
+        // remove back button listener or add any other code you want to execute on screen blur
+     const   backHandlerSubscription =   BackHandler.addEventListener('hardwareBackPress', this.backAction);
+     backHandlerSubscription.remove();
+    }
+
+    componentDidMount() {
+        this.props.navigation.addListener('focus', this.screenFocus);
+        this.props.navigation.addListener('blur', this.screenBlur);
+
+    //     this.backHandler = BackHandler.addEventListener(
+    //   'hardwareBackPress',
+    //   this.backAction,
+    // );
 
     const unsubscribe = this.props.navigation.addListener('focus', () => {
       this._refreshData();
     });
-  }
+    }
 
-  componentWillUnmount() {
-    this.backHandler.remove();
-  }
+    componentWillUnmount() {
+        this.props.navigation.removeListener('focus', this.screenFocus);
+        this.props.navigation.removeListener('blur', this.screenBlur);
+    }
 
+  
+
+  
   _refreshDataPagination = () => {
     // this.setState({isRefreshing : true});
 
@@ -417,13 +436,14 @@ class FormPatientList extends React.Component {
           <Appbar.Header
             style={{
               backgroundColor: '#637363',
-              borderRadius: 10,
+              borderRadius: 0,
               justifyContent: 'center',
               alignContent: 'center',
               marginTop: 5,
             }}>
             <Appbar.Action
               icon="account-circle"
+              color='white'
               onPress={() => {
                 this.props.navigation.navigate('FormProfile');
               }}
@@ -443,12 +463,14 @@ class FormPatientList extends React.Component {
             <Appbar.Action
               icon="magnify"
               size={wp(6.5)}
+               color='white'
               onPress={() => {
                 this.props.navigation.navigate('FormSearchPatient');
               }}
             />
             <Appbar.Action
               icon="plus-box-multiple"
+               color='white'
               onPress={() => {
                 this.props.navigation.navigate('FormAddPatient');
               }}

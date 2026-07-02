@@ -14,6 +14,8 @@ import {
   COMMON_TEXT_STYLE,
 } from './Constants';
 import ImgToBase64 from 'react-native-image-base64';
+import { useSelector, useDispatch } from 'react-redux';
+
 
 const RNFS = require('react-native-fs');
 
@@ -995,11 +997,13 @@ export async function generateCephHtml(
   title,
   patient,
   imgSource,
-  date,
-  analysis,
+  date,sna,snb,anb,pogNB,snop,snmp,uina_angular,uina_linear,linb_angular,linb_linear,_iia,upper_lip,lower_lip,wendellWylie
 ) {
-  // console.log(JSON.stringify(analysis));
-  const _SNA = analysis.sna;
+  
+   
+  
+
+  const _SNA = sna;
   const _SNA_DETAILS = getAnalysisDetailsByID(_SNA.id);
   const _SNA_NAME = `${_SNA_DETAILS.NAME}`;
   const _SNA_VALUE = `${_SNA.value}${_SNA_DETAILS.UNIT}`;
@@ -1007,7 +1011,7 @@ export async function generateCephHtml(
   const _SNA_CONS = `${_SNA_DETAILS.CONS.MIN}-${_SNA_DETAILS.CONS.MAX}${_SNA_DETAILS.UNIT}`;
   const _SNA_COLOR = getAnalysisColor(_SNA.status);
 
-  const _SNB = analysis.snb;
+  const _SNB = snb;
   const _SNB_DETAILS = getAnalysisDetailsByID(_SNB.id);
   const _SNB_NAME = `${_SNB_DETAILS.NAME}`;
   const _SNB_VALUE = `${_SNB.value}${_SNB_DETAILS.UNIT}`;
@@ -1015,7 +1019,7 @@ export async function generateCephHtml(
   const _SNB_CONS = `${_SNB_DETAILS.CONS.MIN}-${_SNB_DETAILS.CONS.MAX}${_SNB_DETAILS.UNIT}`;
   const _SNB_COLOR = getAnalysisColor(_SNB.status);
 
-  const _ANB = analysis.anb;
+  const _ANB = anb;
   const _ANB_DETAILS = getAnalysisDetailsByID(_ANB.id);
   const _ANB_NAME = `${_ANB_DETAILS.NAME}`;
   const _ANB_VALUE = `${_ANB.value}${_ANB_DETAILS.UNIT}`;
@@ -1023,7 +1027,7 @@ export async function generateCephHtml(
   const _ANB_CONS = `${_ANB_DETAILS.CONS.MIN}-${_ANB_DETAILS.CONS.MAX}${_ANB_DETAILS.UNIT}`;
   const _ANB_COLOR = getAnalysisColor(_ANB.status);
 
-  const _PogNB = analysis.pogNB;
+  const _PogNB = pogNB;
   const _PogNB_DETAILS = getAnalysisDetailsByID(_PogNB.id);
   const _PogNB_NAME = `${_PogNB_DETAILS.NAME}`;
   const _PogNB_VALUE = `${_PogNB.value}${_PogNB_DETAILS.UNIT}`;
@@ -1031,7 +1035,7 @@ export async function generateCephHtml(
   const _PogNB_CONS = `-`;
   const _PogNB_COLOR = getAnalysisColor(_PogNB.status);
 
-  const _SNOP = analysis.snop;
+  const _SNOP = snop;
   const _SNOP_DETAILS = getAnalysisDetailsByID(_SNOP.id);
   const _SNOP_NAME = `${_SNOP_DETAILS.NAME}`;
   const _SNOP_VALUE = `${_SNOP.value}${_SNOP_DETAILS.UNIT}`;
@@ -1039,7 +1043,7 @@ export async function generateCephHtml(
   const _SNOP_CONS = `${_SNOP_DETAILS.CONS.MIN}-${_SNOP_DETAILS.CONS.MAX}${_SNOP_DETAILS.UNIT}`;
   const _SNOP_COLOR = getAnalysisColor(_SNOP.status);
 
-  const _SNMP = analysis.snmp;
+  const _SNMP = snmp;
   const _SNMP_DETAILS = getAnalysisDetailsByID(_SNMP.id);
   const _SNMP_NAME = `${_SNMP_DETAILS.NAME}`;
   const _SNMP_VALUE = `${_SNMP.value}${_SNMP_DETAILS.UNIT}`;
@@ -1047,7 +1051,7 @@ export async function generateCephHtml(
   const _SNMP_CONS = `${_SNMP_DETAILS.CONS.MIN}-${_SNMP_DETAILS.CONS.MAX}${_SNMP_DETAILS.UNIT}`;
   const _SNMP_COLOR = getAnalysisColor(_SNMP.status);
 
-  const _UINA_ANGULAR = analysis.uina_angular;
+  const _UINA_ANGULAR = uina_angular;
   const _UINA_ANGULAR_DETAILS = getAnalysisDetailsByID(_UINA_ANGULAR.id);
   const _UINA_ANGULAR_NAME = `${_UINA_ANGULAR_DETAILS.NAME}`;
   const _UINA_ANGULAR_VALUE = `${_UINA_ANGULAR.value}${_UINA_ANGULAR_DETAILS.UNIT}`;
@@ -1055,7 +1059,7 @@ export async function generateCephHtml(
   const _UINA_ANGULAR_CONS = `${_UINA_ANGULAR_DETAILS.CONS.MIN}-${_UINA_ANGULAR_DETAILS.CONS.MAX}${_UINA_ANGULAR_DETAILS.UNIT}`;
   const _UINA_ANGULAR_COLOR = getAnalysisColor(_UINA_ANGULAR.status);
 
-  const _UINA_LINEAR = analysis.uina_linear;
+  const _UINA_LINEAR = uina_linear;
   const _UINA_LINEAR_DETAILS = getAnalysisDetailsByID(_UINA_LINEAR.id);
   const _UINA_LINEAR_NAME = `${_UINA_LINEAR_DETAILS.NAME}`;
   const _UINA_LINEAR_VALUE = `${_UINA_LINEAR.value}${_UINA_LINEAR_DETAILS.UNIT}`;
@@ -1063,7 +1067,7 @@ export async function generateCephHtml(
   const _UINA_LINEAR_CONS = `${_UINA_LINEAR_DETAILS.CONS.MIN}-${_UINA_LINEAR_DETAILS.CONS.MAX}${_UINA_LINEAR_DETAILS.UNIT}`;
   const _UINA_LINEAR_COLOR = getAnalysisColor(_UINA_LINEAR.status);
 
-  const _LINB_ANGULAR = analysis.linb_angular;
+  const _LINB_ANGULAR = linb_angular;
   const _LINB_ANGULAR_DETAILS = getAnalysisDetailsByID(_LINB_ANGULAR.id);
   const _LINB_ANGULAR_NAME = `${_LINB_ANGULAR_DETAILS.NAME}`;
   const _LINB_ANGULAR_VALUE = `${_LINB_ANGULAR.value}${_LINB_ANGULAR_DETAILS.UNIT}`;
@@ -1071,7 +1075,7 @@ export async function generateCephHtml(
   const _LINB_ANGULAR_CONS = `${_LINB_ANGULAR_DETAILS.CONS.MIN}-${_LINB_ANGULAR_DETAILS.CONS.MAX}${_LINB_ANGULAR_DETAILS.UNIT}`;
   const _LINB_ANGULAR_COLOR = getAnalysisColor(_LINB_ANGULAR.status);
 
-  const _LINB_LINEAR = analysis.linb_linear;
+  const _LINB_LINEAR = linb_linear;
   const _LINB_LINEAR_DETAILS = getAnalysisDetailsByID(_LINB_LINEAR.id);
   const _LINB_LINEAR_NAME = `${_LINB_LINEAR_DETAILS.NAME}`;
   const _LINB_LINEAR_VALUE = `${_LINB_LINEAR.value}${_LINB_LINEAR_DETAILS.UNIT}`;
@@ -1079,7 +1083,7 @@ export async function generateCephHtml(
   const _LINB_LINEAR_CONS = `${_LINB_LINEAR_DETAILS.CONS.MIN}-${_LINB_LINEAR_DETAILS.CONS.MAX}${_LINB_LINEAR_DETAILS.UNIT}`;
   const _LINB_LINEAR_COLOR = getAnalysisColor(_LINB_LINEAR.status);
 
-  const _IIA = analysis._iia;
+  const _IIA = _iia;
   const _IIA_DETAILS = getAnalysisDetailsByID(_IIA.id);
   const _IIA_NAME = `${_IIA_DETAILS.NAME}`;
   const _IIA_VALUE = `${_IIA.value}${_IIA_DETAILS.UNIT}`;
@@ -1087,7 +1091,7 @@ export async function generateCephHtml(
   const _IIA_CONS = `${_IIA_DETAILS.CONS.MIN}-${_IIA_DETAILS.CONS.MAX}${_IIA_DETAILS.UNIT}`;
   const _IIA_COLOR = getAnalysisColor(_IIA.status);
 
-  const _UPPER_LIP = analysis.upper_lip;
+  const _UPPER_LIP = upper_lip;
   const _UPPER_LIP_DETAILS = getAnalysisDetailsByID(_UPPER_LIP.id);
   const _UPPER_LIP_NAME = `${_UPPER_LIP_DETAILS.NAME}`;
   const _UPPER_LIP_VALUE = `${_UPPER_LIP.value}${_UPPER_LIP_DETAILS.UNIT}`;
@@ -1095,7 +1099,7 @@ export async function generateCephHtml(
   const _UPPER_LIP_CONS = `${_UPPER_LIP_DETAILS.CONS.MIN}-${_UPPER_LIP_DETAILS.CONS.MAX}${_UPPER_LIP_DETAILS.UNIT}`;
   const _UPPER_LIP_COLOR = getAnalysisColor(_UPPER_LIP.status);
 
-  const _LOWER_LIP = analysis.lower_lip;
+  const _LOWER_LIP = lower_lip;
   const _LOWER_LIP_DETAILS = getAnalysisDetailsByID(_LOWER_LIP.id);
   const _LOWER_LIP_NAME = `${_LOWER_LIP_DETAILS.NAME}`;
   const _LOWER_LIP_VALUE = `${_LOWER_LIP.value}${_LOWER_LIP_DETAILS.UNIT}`;
@@ -1104,7 +1108,7 @@ export async function generateCephHtml(
   const _LOWER_LIP_COLOR = getAnalysisColor(_LOWER_LIP.status);
 
   // Wendell - Wylie
-  const _MIDFACE = analysis.wendellWylie.MIDFACE;
+  const _MIDFACE = wendellWylie.MIDFACE;
   const _MIDFACE_DETAILS = getAnalysisDetailsByID(_MIDFACE.id);
   const _MIDFACE_NAME = `${_MIDFACE_DETAILS.NAME}`;
   const _MIDFACE_VALUE = `${_MIDFACE.distanceValue}mm (${_MIDFACE.value}${_MIDFACE_DETAILS.UNIT})`;
@@ -1112,7 +1116,7 @@ export async function generateCephHtml(
   const _MIDFACE_CONS = `-`;
   const _MIDFACE_COLOR = getAnalysisColor(_MIDFACE.status);
 
-  const _LOWERFACE = analysis.wendellWylie.LOWERFACE;
+  const _LOWERFACE = wendellWylie.LOWERFACE;
   const _LOWERFACE_DETAILS = getAnalysisDetailsByID(_LOWERFACE.id);
   const _LOWERFACE_NAME = `${_LOWERFACE_DETAILS.NAME}`;
   const _LOWERFACE_VALUE = `${_LOWERFACE.distanceValue}mm (${_LOWERFACE.value}${_LOWERFACE_DETAILS.UNIT})`;

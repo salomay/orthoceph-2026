@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   ActivityIndicator,
   Image,
@@ -34,19 +35,9 @@ import Permissions, {
   PERMISSIONS,
   RESULTS,
 } from 'react-native-permissions';
-import {
-  appleAuth,
-  appleAuthAndroid,
-  AppleButton,
-} from '@invertase/react-native-apple-authentication';
-// import 'react-native-get-random-values';
+
 import {v4 as uuid} from 'uuid';
 import AsyncStorage from '@react-native-community/async-storage';
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
 import Geolocation from '@react-native-community/geolocation';
 import {CommonActions} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -61,10 +52,7 @@ export default class FormLogin extends React.Component {
     this.authCredentialListener = null;
     this.user = null;
 
-    GoogleSignin.configure({
-      webClientId:
-        '986260111827-4ndq4rv4qu2l6rva1l5rtgr8fuc37j4e.apps.googleusercontent.com',
-    });
+  
   }
 
   state = {
@@ -371,91 +359,8 @@ export default class FormLogin extends React.Component {
       });
   };
 
-  onAppleButtonPress = async () => {
-    if (Platform.OS == 'ios') {
-      // performs login request
-      return await appleAuth
-        .performRequest({
-          requestedOperation: appleAuth.Operation.LOGIN,
-          requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
-        })
-        .then((appleAuthRequestResponse) => {
-          if (appleAuthRequestResponse) {
-            const {identityToken, fullName} = appleAuthRequestResponse;
-            const {email} = jwt_decode(identityToken);
-            console.log('identityToken : ' + identityToken);
-            console.log('fullName : ' + JSON.stringify(fullName.givenName));
-            console.log('email : ' + email);
-            this.AuthFunctionSosmed(email, fullName.givenName);
-          }
-        });
-    } else {
-      // Generate secure, random values for state and nonce
-      const rawNonce = uuid();
-      const state = uuid();
 
-      // Configure the request
-      appleAuthAndroid.configure({
-        // The Service ID you registered with Apple
-        clientId: 'com.orthoceph',
-
-        // Return URL added to your Apple dev console. We intercept this redirect, but it must still match
-        // the URL you provided to Apple. It can be an empty route on your backend as it's never called.
-        redirectUri: 'https://myredirecturi.com',
-
-        // The type of response requested - code, id_token, or both.
-        responseType: appleAuthAndroid.ResponseType.ALL,
-
-        // The amount of user information requested from Apple.
-        scope: appleAuthAndroid.Scope.ALL,
-
-        // Random nonce value that will be SHA256 hashed before sending to Apple.
-        nonce: rawNonce,
-
-        // Unique state value used to prevent CSRF attacks. A UUID will be generated if nothing is provided.
-        state,
-      });
-
-      // Open the browser window for user sign in
-      const response = await appleAuthAndroid.signIn();
-
-      // Send the authorization code to your backend for verification
-    }
-  };
-
-  signInGoogle = async () => {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      console.log('Id : ' + userInfo.user.id);
-      console.log('Name : ' + userInfo.user.name);
-      console.log('Email : ' + userInfo.user.email);
-      console.log('Photo : ' + userInfo.user.photo);
-      console.log('Id Token : ' + userInfo.idToken);
-
-      Geolocation.getCurrentPosition(
-        (result) => {
-          console.log('Latitude  :' + result.coords.latitude);
-          console.log('Longitude :' + result.coords.longitude);
-
-          this.AuthFunctionSosmed(userInfo.user.email, userInfo.user.name);
-        },
-        (error) =>
-          Alert.alert('GetCurrentPosition Error', JSON.stringify(error)),
-        {enableHighAccuracy: true},
-      );
-    } catch (error) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('Sign In cancel ' + error.code);
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('In Progress ' + error.code);
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log('Play Service ' + error.code);
-      } else {
-        console.log('ERROR : ' + JSON.stringify(error));
-      }
-    }
-  };
+  
 
   getPermission = async () => {
     if (Platform.OS === 'ios') {
@@ -670,53 +575,7 @@ export default class FormLogin extends React.Component {
               </Text>
             </TouchableOpacity>
             {/* ========================================================== */}
-            {/* <GoogleSigninButton
-              style={{
-                width: '100%',
-                height: wp(13),
-                marginTop: 20,
-              }}
-              size={GoogleSigninButton.Size.Wide}
-              color={GoogleSigninButton.Color.Light}
-              onPress={this.signInGoogle}
-              disabled={this.state.isSigninInProgress}
-            /> */}
-
-            {/* <LoginButton
-              style={{
-                width: '98%',
-                height: wp(11),
-                alignSelf: 'center',
-                marginTop: 10,
-              }}
-              onLoginFinished={(error, result) => {
-                if (error) {
-                  console.log('login has error: ' + result.error);
-                } else if (result.isCancelled) {
-                  console.log('login is cancelled.');
-                } else {
-                  AccessToken.getCurrentAccessToken().then((data) => {
-                    console.log(JSON.stringify(data));
-                    console.log(data.accessToken.toString());
-                  });
-                }
-              }}
-              onLogoutFinished={() => console.log('logout.')}
-            /> */}
-
-            {/* {Platform.OS == 'ios' ? (
-              <AppleButton
-                buttonStyle={AppleButton.Style.WHITE}
-                buttonType={AppleButton.Type.SIGN_IN}
-                style={{
-                  width: '98%',
-                  height: wp(11),
-                  alignSelf: 'center',
-                  marginTop: 10,
-                }}
-                onPress={() => this.onAppleButtonPress()}
-              />
-            ) : null} */}
+          
           </View>
         </View>
       </KeyboardAvoidingView>

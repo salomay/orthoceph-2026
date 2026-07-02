@@ -37,12 +37,16 @@ import RNPermissions, {
   RESULTS,
 } from 'react-native-permissions';
 
+
+
+
 export default class FormRegistrasi extends React.Component {
   constructor(props) {
     super(props);
     DropDownPicker.setMode('SIMPLE');
   }
 
+  
   state = {
     doctorId: '',
     fullName: '',
@@ -257,24 +261,8 @@ export default class FormRegistrasi extends React.Component {
               Alert.alert('Warning!', 'Email Has Been Registered');
               this.setState({loading: false});
             } else {
-              await fetch(
-                'https://maps.googleapis.com/maps/api/geocode/json?address=' +
-                  this.state.latitude +
-                  ',' +
-                  this.state.longitude +
-                  '&key=AIzaSyDeGUzsJoi2ZfqJ94UboxdFgG0KIxg8hcs',
-              )
-                .then((response) => response.json())
-                .then((responseJson) => {
-                  console.log(
-                    'ADDRESS  => ' +
-                      JSON.stringify(responseJson.results[0].formatted_address),
-                  );
-                  this.setState(
-                    {
-                      address: responseJson.results[0].formatted_address,
-                    },
-                    () => {
+             
+                
                       let data = {
                         fullname: this.state.fullName,
                         email: this.state.email,
@@ -283,7 +271,7 @@ export default class FormRegistrasi extends React.Component {
                         gender: this.state.gender,
                         latitude: this.state.latitude,
                         longitude: this.state.longitude,
-                        address: this.state.address,
+                        address: '',
                       };
 
                       _addDoctor(data)
@@ -375,9 +363,8 @@ export default class FormRegistrasi extends React.Component {
                             loading: false,
                           });
                         });
-                    },
-                  );
-                });
+                   
+                
             }
           })
           .catch((error) => {
@@ -517,12 +504,12 @@ export default class FormRegistrasi extends React.Component {
           <Appbar.Header
             style={{
               backgroundColor: '#637363',
-              borderRadius: 10,
+              borderRadius: 0,
               marginTop: 5,
               zIndex: 9999,
               height: 'auto',
             }}>
-            <Appbar.BackAction onPress={() => this.props.navigation.goBack()} />
+            <Appbar.BackAction onPress={() => this.props.navigation.goBack()} color='white' />
 
             <Appbar.Content
               title="Registration Users"
@@ -555,10 +542,6 @@ export default class FormRegistrasi extends React.Component {
               placeholderTextColor={'white'}
               maxLength={50}
               returnKeyType="next"
-              onSubmitEditing={() => {
-                this.txtPassword.focus();
-              }}
-              blurOnSubmit={false}
               style={styles.textInput}
               onChangeText={(text) => this.setState({fullName: text})}
               value={this.state.fullName}
@@ -668,10 +651,6 @@ export default class FormRegistrasi extends React.Component {
               placeholderTextColor={'white'}
               maxLength={50}
               returnKeyType="next"
-              onSubmitEditing={() => {
-                this.txtPassword.focus();
-              }}
-              blurOnSubmit={false}
               style={styles.textInput}
               onChangeText={(text) => this.setState({email: text})}
               value={this.state.email}
@@ -689,9 +668,6 @@ export default class FormRegistrasi extends React.Component {
               placeholderTextColor={'white'}
               maxLength={50}
               returnKeyType="done"
-              onSubmitEditing={() => {
-                this.txtPassword.focus();
-              }}
               style={styles.textInput}
               onChangeText={(text) => this.setState({password: text})}
               value={this.state.password}
@@ -715,7 +691,7 @@ export default class FormRegistrasi extends React.Component {
               </View>
             ) : (
               <TouchableOpacity
-                onPress={() => this.registrasi()}
+                onPress={() => this.registrasiNoGps()}
                 style={{
                   justifyContent: 'center',
                   backgroundColor: '#34A853',

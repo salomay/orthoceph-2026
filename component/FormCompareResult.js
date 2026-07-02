@@ -1,42 +1,28 @@
 import React from 'react';
 import {StyleSheet, Dimensions, View} from 'react-native';
-import PDFView from 'react-native-view-pdf';
 import {Appbar, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Share from 'react-native-share';
+import Pdf from 'react-native-pdf';
+import RNFS from 'react-native-fs';
+
 
 export default class FormCompareResult extends React.Component {
   _onShareReport = async () => {
     const _pdf = this.props.route.params.fileBase64;
+     const _fileName = this.props.route.params.fileName;
+
     if (_pdf) {
-      const shareOptions = {
-        title: 'Share file',
-        failOnCancel: false,
-        mimeType: 'application/pdf',
-        saveToFiles: true,
-        urls: [
-          'data:application/pdf;base64,' + this.props.route.params.fileBase64,
-        ],
-        // url: this.props.route.params.fileName,
-        // fileName: _pdf.fileName,
+       const path = `${RNFS.CachesDirectoryPath}/${_fileName}.pdf`;
+  await RNFS.writeFile(path, _pdf, 'base64');
 
-        // title: 'Share PDF Report Via',
-        // subject: '[OrthoCeph Generated Report]' + _pdf.fileName,
-      };
-      // console.log(this.state.reportViewer.pdf.file.filePath);
-
-      await Share.open(shareOptions)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          err && console.log(err);
-        });
-    } else {
-      Alert.alert('Oops! No file to be shared', 'PDF failed to generate');
+  await Share.open({
+    url: `file://${path}`,
+    type: 'application/pdf',
+  });
     }
   };
 
@@ -53,7 +39,7 @@ export default class FormCompareResult extends React.Component {
           style={{
             // position: 'absolute',
             backgroundColor: '#637363',
-            borderRadius: 10,
+            borderRadius: 0,
             justifyContent: 'center',
             alignContent: 'center',
             marginTop: 5,
@@ -77,16 +63,11 @@ export default class FormCompareResult extends React.Component {
         </Appbar.Header>
 
         <View style={styles.container}>
-          <PDFView
-            fadeInDuration={500.0}
-            style={{flex: 1}}
-            resource={source}
-            resourceType={'base64'}
-            onLoad={() => {}}
-            onError={(e) => {
-              console.log(e);
-            }}
-          />
+          <Pdf
+  source={{ uri: `data:application/pdf;base64,${source}`, cache: true }}
+  onError={(error) => console.log(error)}
+  style={{ flex: 1 }}
+/>
         </View>
       </View>
     );

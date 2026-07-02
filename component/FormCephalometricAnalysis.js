@@ -58,7 +58,7 @@ import Svg, {
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
-import {connect, useDispatch} from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import {
   set_markingdot,
@@ -201,11 +201,64 @@ var point_speed = 0.3;
 var marker = [21];
 var bantuClick = true;
 
-export const newAnalysis = (props) => {
-  props.props.set_loading(true);
-  props.props.navigation.closeDrawer();
-  props.props.set_headerText('Cephalometric Analysis');
-  props.props.set_bantuMarker(0);
+export const newAnalysis = ({navigation}) => {
+  
+    const dispatch = useDispatch();
+    const set_bantuMarker_handler = (val) => dispatch(set_bantuMarker(val));
+    const set_markingdot_handler = (val) => dispatch(set_markingdot(val));
+    const set_resultanalysis_handler = (val) => dispatch(set_resultanalysis(val));
+    const set_detailresult_handler = (val) => dispatch(set_detailresult(val));
+    const set_calibrationDistance_handler = (val) => dispatch(set_calibrationDistance(val));
+    const set_tempgambar_handler = (val) => dispatch(set_tempgambar(val));
+    const set_imageuri_handler = (val) => dispatch(set_imageuri(val));
+    const set_imagetype_handler = (val) => dispatch(set_imagetype(val));
+    const set_imagefilename_handler = (val) => dispatch(set_imagefilename(val));
+    const remove_startingPoint_handler = (val) => dispatch(remove_startingPoint(val));
+    const remove_endPoint_handler = (val) => dispatch(remove_endPoint(val));
+    const remove_sella_handler = (val) => dispatch(remove_sella(val));
+    const remove_nasion_handler = (val) => dispatch(remove_nasion(val));
+    const remove_pointa_handler = (val) => dispatch(remove_pointa(val));
+    const remove_pointb_handler = (val) => dispatch(remove_pointb(val));
+    const remove_u6_handler = (val) => dispatch(remove_u6(val));
+    const remove_u4_handler = (val) => dispatch(remove_u4(val));
+    const remove_gonion_handler = (val) => dispatch(remove_gonion(val));
+    const remove_gnathion_handler = (val) => dispatch(remove_gnathion(val));
+    const remove_isa_handler = (val) => dispatch(remove_isa(val));
+    const remove_isi_handler = (val) => dispatch(remove_isi(val));
+    const remove_iia_handler = (val) => dispatch(remove_iia(val));
+    const remove_iii_handler = (val) => dispatch(remove_iii(val));
+    const remove_ms_handler = (val) => dispatch(remove_ms(val));
+    const remove_pogs_handler = (val) => dispatch(remove_pogs(val));
+    const remove_ls_handler = (val) => dispatch(remove_ls(val));
+    const remove_li_handler = (val) => dispatch(remove_li(val));
+    const remove_pog_handler = (val) => dispatch(remove_pog(val));
+    const remove_ans_handler = (val) => dispatch(remove_ans(val));
+    const remove_menton_handler = (val) => dispatch(remove_menton(val));
+    const remove_sna_handler = (val) => dispatch(remove_sna(val));
+    const remove_snb_handler = (val) => dispatch(remove_snb(val));
+    const remove_anb_handler = (val) => dispatch(remove_anb(val));
+    const remove_pogNB_handler = (val) => dispatch(remove_pogNB(val));
+    const remove_snop_handler = (val) => dispatch(remove_snop(val));
+    const remove_snmp_handler = (val) => dispatch(remove_snmp(val));
+    const remove_uina_angular_handler = (val) => dispatch(remove_uina_angular(val));
+    const remove_uina_linear_handler = (val) => dispatch(remove_uina_linear(val));
+    const remove_linb_angular_handler = (val) => dispatch(remove_linb_angular(val));
+    const remove_linb_linear_handler = (val) => dispatch(remove_linb_linear(val));
+    const remove__iia_handler = (val) => dispatch(remove__iia(val));
+    const remove_upper_lip_handler = (val) => dispatch(remove_upper_lip(val));
+    const remove_lower_lip_handler = (val) => dispatch(remove_lower_lip(val));
+    const remove_wendellwylie_handler = (val) => dispatch(remove_wendellwylie(val));
+    const set_headerText_handler = (val) => dispatch(set_headerText(val));
+    const set_loading_handler = (val) => dispatch(set_loading(val));
+    const set_select_id_handler = (val) => dispatch(set_select_id(val));
+    const set_width_last_device_handler = (val) => dispatch(set_width_last_device(val));
+    const set_height_last_device_handler = (val) => dispatch(set_height_last_device(val));
+    
+    
+  set_loading_handler(true);
+  navigation.closeDrawer();
+  set_headerText_handler('Cephalometric Analysis');
+  set_bantuMarker_handler(0);
 
   const options = {
     title: 'Choose Your Image',
@@ -224,69 +277,73 @@ export const newAnalysis = (props) => {
   launchImageLibrary(options, (response) => {
     if (response.didCancel) {
       console.log('User cancelled image picker');
-      props.props.set_loading(false);
+      set_loading_handler(false);
     } else if (response.errorCode) {
       console.log('Image Picker Error: ', response.errorMessage);
-      props.props.set_loading(false);
+      set_loading_handler(false);
     } else {
       let source = {uri: response.assets[0].uri};
 
       marker = [];
 
-      props.props.set_tempgambar(source);
-      props.props.set_imageuri(response.assets[0].uri);
-      props.props.set_imagetype(response.assets[0].type);
-      props.props.set_imagefilename(response.assets[0].fileName);
+      set_tempgambar_handler(source);
+      set_imageuri_handler(response.assets[0].uri);
+      set_imagetype_handler(response.assets[0].type);
+      set_imagefilename_handler(response.assets[0].fileName);
 
-      props.props.remove_startingPoint([]);
-      props.props.remove_endPoint([]);
-      props.props.set_calibrationDistance(null);
-      props.props.remove_sella([]);
-      props.props.remove_nasion([]);
-      props.props.remove_pointa([]);
-      props.props.remove_pointb([]);
-      props.props.remove_u6([]);
-      props.props.remove_u4([]);
-      props.props.remove_gonion([]);
-      props.props.remove_gnathion([]);
-      props.props.remove_isa([]);
-      props.props.remove_isi([]);
-      props.props.remove_iia([]);
-      props.props.remove_iii([]);
-      props.props.remove_ms([]);
-      props.props.remove_pogs([]);
-      props.props.remove_li([]);
-      props.props.remove_ls([]);
-      props.props.remove_pog([]);
-      props.props.remove_ans([]);
-      props.props.remove_menton([]);
+      remove_startingPoint_handler([]);
+      remove_endPoint_handler([]);
+      set_calibrationDistance_handler(null);
+      remove_sella_handler([]);
+      remove_nasion_handler([]);
+      remove_pointa_handler([]);
+      remove_pointb_handler([]);
+      remove_u6_handler([]);
+      remove_u4_handler([]);
+      remove_gonion_handler([]);
+      remove_gnathion_handler([]);
+      remove_isa_handler([]);
+      remove_isi_handler([]);
+      remove_iia_handler([]);
+      remove_iii_handler([]);
+      remove_ms_handler([]);
+      remove_pogs_handler([]);
+      remove_li_handler([]);
+      remove_ls_handler([]);
+      remove_pog_handler([]);
+      remove_ans_handler([]);
+      remove_menton_handler([]);
 
-      props.props.remove_sna([]);
-      props.props.remove_snb([]);
-      props.props.remove_anb([]);
-      props.props.remove_pogNB([]);
-      props.props.remove_snop([]);
-      props.props.remove_snmp([]);
-      props.props.remove_uina_angular([]);
-      props.props.remove_uina_linear([]);
-      props.props.remove_linb_angular([]);
-      props.props.remove_linb_linear([]);
-      props.props.remove__iia([]);
-      props.props.remove_upper_lip([]);
-      props.props.remove_lower_lip([]);
-      props.props.remove_wendellwylie([]);
-      props.props.set_bantuMarker(1);
-      props.props.set_loading(false);
-      props.props.set_select_id(null);
-      props.props.set_markingdot(true);
-      props.props.set_detailresult(false);
-      props.props.set_resultanalysis(false);
+      remove_sna_handler([]);
+      remove_snb_handler([]);
+      remove_anb_handler([]);
+      remove_pogNB_handler([]);
+      remove_snop_handler([]);
+      remove_snmp_handler([]);
+      remove_uina_angular_handler([]);
+      remove_uina_linear_handler([]);
+      remove_linb_angular_handler([]);
+      remove_linb_linear_handler([]);
+      remove__iia_handler([]);
+      remove_upper_lip_handler([]);
+      remove_lower_lip_handler([]);
+      remove_wendellwylie_handler([]);
+      set_bantuMarker_handler(1);
+      set_loading_handler(false);
+      set_select_id_handler(null);
+      set_markingdot_handler(true);
+      set_detailresult_handler(false);
+      set_resultanalysis_handler(false);
     }
   });
 };
 
-export const saveAnalysis = (props) => {
-  props.props.set_press_save_analysis(true);
+export const saveAnalysis = () => {
+
+    const dispatch = useDispatch();
+    const set_press_save_analysis_handler = (val) => dispatch(set_press_save_analysis(val));
+
+  set_press_save_analysis_handler(true);
 };
 
 const {widthScreen, heightScreen} = Dimensions.get('screen');
@@ -296,7 +353,183 @@ let fadeIn = new Animated.Value(Dimensions.get('window').width);
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-const FormCephalometricAnalysis = (props, {navigation}) => {
+const FormCephalometricAnalysis = ({navigation,route}) => {
+
+      const bantuMarker = useSelector((state) => state.variabelReducer.bantuMarker);
+      const pressSaveAnalysis = useSelector((state) => state.variabelReducer.pressSaveAnalysis);
+      const pressAnalysis = useSelector((state) => state.variabelReducer.pressAnalysis);
+      const resetScaleImage = useSelector((state) => state.variabelReducer.resetScaleImage);
+      const headerText = useSelector((state) => state.variabelReducer.headerText);
+      const subHeaderText = useSelector((state) => state.variabelReducer.subHeaderText);
+      const loadingGlobal = useSelector((state) => state.variabelReducer.loadingGlobal);
+      const loading = useSelector((state) => state.variabelReducer.loading);
+      const disablePointer = useSelector((state) => state.variabelReducer.disablePointer);
+      const opacityPointer = useSelector((state) => state.variabelReducer.opacityPointer);
+      const startingPoint = useSelector((state) => state.variabelReducer.startingPoint);
+      const endPoint = useSelector((state) => state.variabelReducer.endPoint);
+      const calibrationDistance = useSelector((state) => state.variabelReducer.calibrationDistance);
+      const sella = useSelector((state) => state.variabelReducer.sella);
+      const nasion = useSelector((state) => state.variabelReducer.nasion);
+      const pointa = useSelector((state) => state.variabelReducer.pointa);
+      const pointb = useSelector((state) => state.variabelReducer.pointb);
+      const u6 = useSelector((state) => state.variabelReducer.u6);
+      const u4 = useSelector((state) => state.variabelReducer.u4);
+      const gonion = useSelector((state) => state.variabelReducer.gonion);
+      const gnathion = useSelector((state) => state.variabelReducer.gnathion);
+      const isa = useSelector((state) => state.variabelReducer.isa);
+      const isi = useSelector((state) => state.variabelReducer.isi);
+      const iia = useSelector((state) => state.variabelReducer.iia);
+      const iii = useSelector((state) => state.variabelReducer.iii);
+      const ms = useSelector((state) => state.variabelReducer.ms);
+      const pogs = useSelector((state) => state.variabelReducer.pogs);
+      const ls = useSelector((state) => state.variabelReducer.ls);
+      const li = useSelector((state) => state.variabelReducer.li);
+      const pog = useSelector((state) => state.variabelReducer.pog);
+      const ans = useSelector((state) => state.variabelReducer.ans);
+      const menton = useSelector((state) => state.variabelReducer.menton);
+      const markingDot = useSelector((state) => state.variabelReducer.markingDot);
+      const resultAnalysis = useSelector((state) => state.variabelReducer.resultAnalysis);
+      const detailResult = useSelector((state) => state.variabelReducer.detailResult);
+      const selectid = useSelector((state) => state.variabelReducer.selectid);
+      const widthLastDevice = useSelector((state) => state.variabelReducer.widthLastDevice);
+      const heightLastDevice = useSelector((state) => state.variabelReducer.heightLastDevice);
+
+      const sna = useSelector((state) => state.resultReducer.sna);
+      const snb = useSelector((state) => state.resultReducer.snb);
+      const anb = useSelector((state) => state.resultReducer.anb);
+      const pogNB = useSelector((state) => state.resultReducer.pogNB);
+      const snop = useSelector((state) => state.resultReducer.snop);
+      const snmp = useSelector((state) => state.resultReducer.snmp);
+      const uina_angular = useSelector((state) => state.resultReducer.uina_angular);
+      const uina_linear = useSelector((state) => state.resultReducer.uina_linear);
+      const linb_angular = useSelector((state) => state.resultReducer.linb_angular);
+      const linb_linear = useSelector((state) => state.resultReducer.linb_linear);
+      const _iia = useSelector((state) => state.resultReducer._iia);
+      const upper_lip = useSelector((state) => state.resultReducer.upper_lip);
+      const lower_lip = useSelector((state) => state.resultReducer.lower_lip);
+      const mid_face = useSelector((state) => state.resultReducer.mid_face);
+      const lower_face = useSelector((state) => state.resultReducer.lower_face);
+      const wendellWylie = useSelector((state) => state.resultReducer.wendellWylie);
+      const patientid = useSelector((state) => state.patientReducer.patientid);
+      const doctorid = useSelector((state) => state.patientReducer.doctorid);
+      const fullname = useSelector((state) => state.patientReducer.fullname);
+      const gender = useSelector((state) => state.patientReducer.gender);
+      const birthdate = useSelector((state) => state.patientReducer.birthdate);
+      const race = useSelector((state) => state.patientReducer.race);
+      const photo = useSelector((state) => state.patientReducer.photo);
+      const ageInYears = useSelector((state) => state.patientReducer.ageInYears);
+      const step = useSelector((state) => state.patientReducer.step);
+      const tempGambar = useSelector((state) => state.patientReducer.tempGambar);
+      const imageUri = useSelector((state) => state.patientReducer.imageUri);
+      const imageType = useSelector((state) => state.patientReducer.imageType);
+      const imageFileName = useSelector((state) => state.patientReducer.imageFileName);
+      const enableSave = useSelector((state) => state.patientReducer.enableSave);
+   
+    
+     
+  
+    const dispatch = useDispatch();
+    const set_press_analysis_handler = (val) => dispatch(set_press_analysis(val));
+    const set_press_save_analysis_handler = (val) => dispatch(set_press_save_analysis(val));
+    const set_reset_scale_image_handler = (val) => dispatch(set_reset_scale_image(val));
+    const set_disable_pointer_handler = (val) => dispatch(set_disable_pointer(val));
+    const set_opacity_pointer_handler = (val) => dispatch(set_opacity_pointer(val));
+    const set_bantuMarker_handler = (val) => dispatch(set_bantuMarker(val));
+    const set_markingdot_handler = (val) => dispatch(set_markingdot(val));
+    const set_resultanalysis_handler = (val) => dispatch(set_resultanalysis(val));
+    const set_detailresult_handler = (val) => dispatch(set_detailresult(val));
+    const set_startingPoint_handler = (val) => dispatch(set_startingPoint(val));
+    const set_endPoint_handler = (val) => dispatch(set_endPoint(val));
+    const set_calibrationDistance_handler = (val) => dispatch(set_calibrationDistance(val));
+    const set_sella_handler = (val) => dispatch(set_sella(val));
+    const set_nasion_handler = (val) => dispatch(set_nasion(val));
+    const set_pointa_handler = (val) => dispatch(set_pointa(val));
+    const set_pointb_handler = (val) => dispatch(set_pointb(val));
+    const set_u6_handler = (val) => dispatch(set_u6(val));
+    const set_u4_handler = (val) => dispatch(set_u4(val));
+    const set_gonion_handler = (val) => dispatch(set_gonion(val));
+    const set_gnathion_handler = (val) => dispatch(set_gnathion(val));
+    const set_isa_handler = (val) => dispatch(set_isa(val));
+    const set_isi_handler = (val) => dispatch(set_isi(val));
+    const set_iia_handler = (val) => dispatch(set_iia(val));
+    const set_iii_handler = (val) => dispatch(set_iii(val));
+    const set_ms_handler = (val) => dispatch(set_ms(val));
+    const set_pogs_handler = (val) => dispatch(set_pogs(val));
+    const set_ls_handler = (val) => dispatch(set_ls(val));
+    const set_li_handler = (val) => dispatch(set_li(val));
+    const set_pog_handler = (val) => dispatch(set_pog(val));
+    const set_ans_handler = (val) => dispatch(set_ans(val));
+    const set_menton_handler = (val) => dispatch(set_menton(val));
+    const set_sna_handler = (val) => dispatch(set_sna(val));
+    const set_snb_handler = (val) => dispatch(set_snb(val));
+    const set_anb_handler = (val) => dispatch(set_anb(val));
+    const set_pogNB_handler = (val) => dispatch(set_pogNB(val));
+    const set_snop_handler = (val) => dispatch(set_snop(val));
+    const set_snmp_handler = (val) => dispatch(set_snmp(val));
+    const set_uina_angular_handler = (val) => dispatch(set_uina_angular(val));
+    const set_uina_linear_handler = (val) => dispatch(set_uina_linear(val));
+    const set_linb_angular_handler = (val) => dispatch(set_linb_angular(val));
+    const set_linb_linear_handler = (val) => dispatch(set_linb_linear(val));
+    const set__iia_handler = (val) => dispatch(set__iia(val));
+    const set_upper_lip_handler = (val) => dispatch(set_upper_lip(val));
+    const set_lower_lip_handler = (val) => dispatch(set_lower_lip(val));
+    const set_wendellwylie_handler = (val) => dispatch(set_wendellwylie(val));
+    const set_patientid_handler = (val) => dispatch(set_patientid(val));
+    const set_doctorid_handler = (val) => dispatch(set_doctorid(val));
+    const set_fullname_handler = (val) => dispatch(set_fullname(val));
+    const set_gender_handler = (val) => dispatch(set_gender(val));
+    const set_birthdate_handler = (val) => dispatch(set_birthdate(val));
+    const set_race_handler = (val) => dispatch(set_race(val));
+    const set_photo_handler = (val) => dispatch(set_photo(val));
+    const set_tempgambar_handler = (val) => dispatch(set_tempgambar(val));
+    const set_imageuri_handler = (val) => dispatch(set_imageuri(val));
+    const set_imagetype_handler = (val) => dispatch(set_imagetype(val));
+    const set_imagefilename_handler = (val) => dispatch(set_imagefilename(val));
+    const set_enablesave_handler = (val) => dispatch(set_enablesave(val));
+    const remove_startingPoint_handler = (val) => dispatch(remove_startingPoint(val));
+    const remove_endPoint_handler = (val) => dispatch(remove_endPoint(val));
+    const remove_sella_handler = (val) => dispatch(remove_sella(val));
+    const remove_nasion_handler = (val) => dispatch(remove_nasion(val));
+    const remove_pointa_handler = (val) => dispatch(remove_pointa(val));
+    const remove_pointb_handler = (val) => dispatch(remove_pointb(val));
+    const remove_u6_handler = (val) => dispatch(remove_u6(val));
+    const remove_u4_handler = (val) => dispatch(remove_u4(val));
+    const remove_gonion_handler = (val) => dispatch(remove_gonion(val));
+    const remove_gnathion_handler = (val) => dispatch(remove_gnathion(val));
+    const remove_isa_handler = (val) => dispatch(remove_isa(val));
+    const remove_isi_handler = (val) => dispatch(remove_isi(val));
+    const remove_iia_handler = (val) => dispatch(remove_iia(val));
+    const remove_iii_handler = (val) => dispatch(remove_iii(val));
+    const remove_ms_handler = (val) => dispatch(remove_ms(val));
+    const remove_pogs_handler = (val) => dispatch(remove_pogs(val));
+    const remove_ls_handler = (val) => dispatch(remove_ls(val));
+    const remove_li_handler = (val) => dispatch(remove_li(val));
+    const remove_pog_handler = (val) => dispatch(remove_pog(val));
+    const remove_ans_handler = (val) => dispatch(remove_ans(val));
+    const remove_menton_handler = (val) => dispatch(remove_menton(val));
+    const remove_sna_handler = (val) => dispatch(remove_sna(val));
+    const remove_snb_handler = (val) => dispatch(remove_snb(val));
+    const remove_anb_handler = (val) => dispatch(remove_anb(val));
+    const remove_pogNB_handler = (val) => dispatch(remove_pogNB(val));
+    const remove_snop_handler = (val) => dispatch(remove_snop(val));
+    const remove_snmp_handler = (val) => dispatch(remove_snmp(val));
+    const remove_uina_angular_handler = (val) => dispatch(remove_uina_angular(val));
+    const remove_uina_linear_handler = (val) => dispatch(remove_uina_linear(val));
+    const remove_linb_angular_handler = (val) => dispatch(remove_linb_angular(val));
+    const remove_linb_linear_handler = (val) => dispatch(remove_linb_linear(val));
+    const remove__iia_handler = (val) => dispatch(remove__iia(val));
+    const remove_upper_lip_handler = (val) => dispatch(remove_upper_lip(val));
+    const remove_lower_lip_handler = (val) => dispatch(remove_lower_lip(val));
+    const remove_wendellwylie_handler = (val) => dispatch(remove_wendellwylie(val));
+    const set_headerText_handler = (val) => dispatch(set_headerText(val));
+    const set_subHeaderText_handler = (val) => dispatch(set_subHeaderText(val));
+    const set_loading_handler = (val) => dispatch(set_loading(val));
+    const set_loading_global_handler = (val) => dispatch(set_loading_global(val));
+    const set_select_id_handler = (val) => dispatch(set_select_id(val));
+    const set_width_last_device_handler = (val) => dispatch(set_width_last_device(val));
+    const set_height_last_device_handler = (val) => dispatch(set_height_last_device(val));
+    
+
   const ref_capture = useRef();
   const refImageZoom = useRef();
   const click_imageZoom = useRef(null);
@@ -306,7 +539,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   const [imageModal, setImageModal] = useState(null);
   const [textModal, setTextModal] = useState('');
   const [titleText, setTitleText] = useState('');
-  const [_headerText, set_headerText] = useState('');
+  // const [_headerText, set_headerText] = useState('');
   const [pinchToZoom, setPinchToZoom] = useState(false);
   const [scaleScreen, setScaleScreen] = useState(null);
   const [correctionPoint, setcorrectionPoint] = useState(null);
@@ -318,14 +551,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   const strokeBorderAnim = useRef(new Animated.Value(0.8)).current;
 
   const layoutWidth = PixelRatio.getPixelSizeForLayoutSize(
-    props.widthLastDevice,
+    widthLastDevice,
   );
   const layoutHeight = PixelRatio.getPixelSizeForLayoutSize(
-    props.heightLastDevice,
+    heightLastDevice,
   );
 
   //BACK HANDLER
   useEffect(() => {
+    
     const backAction = () => {
       Alert.alert(
         'Do you want to save before exiting?',
@@ -340,11 +574,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             text: 'DONT SAVE',
             onPress: () => {
               backHandler.remove();
-              props.navigation.goBack();
+              navigation.goBack();
             },
             style: 'cancel',
           },
-          {text: 'SAVE', onPress: () => props.set_press_save_analysis(true)},
+          {text: 'SAVE', onPress: () => set_press_save_analysis_handler(true)},
         ],
       );
       return true;
@@ -358,105 +592,108 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   }, []);
 
   useEffect(() => {
+    
     setTitleText('');
-    props.set_bantuMarker(0);
+    set_bantuMarker_handler(0);
 
     clearVaribleGlobal();
-    props.set_enablesave(false);
-
+    set_enablesave_handler(false);
+    
     return () => {
-      props.set_loading(true);
-      props.set_bantuMarker(0);
-      props.set_markingdot(true);
-      props.set_resultanalysis(false);
-      props.set_detailresult(false);
+      
+      set_loading_handler(true);
+      set_bantuMarker_handler(0);
+      set_markingdot_handler(true);
+      set_resultanalysis_handler(false);
+      set_detailresult_handler(false);
 
-      props.set_tempgambar(null);
-      props.set_imageuri(null);
-      props.set_imagetype(null);
-      props.set_imagefilename(null);
+      set_tempgambar_handler(null);
+      set_imageuri_handler(null);
+      set_imagetype_handler(null);
+      set_imagefilename_handler(null);
 
-      props.remove_startingPoint([]);
-      props.remove_endPoint([]);
-      props.set_calibrationDistance(null);
-      props.remove_sella([]);
-      props.remove_nasion([]);
-      props.remove_pointa([]);
-      props.remove_pointb([]);
-      props.remove_u6([]);
-      props.remove_u4([]);
-      props.remove_gonion([]);
-      props.remove_gnathion([]);
-      props.remove_isa([]);
-      props.remove_isi([]);
-      props.remove_iia([]);
-      props.remove_iii([]);
-      props.remove_ms([]);
-      props.remove_pogs([]);
-      props.remove_li([]);
-      props.remove_ls([]);
-      props.remove_pog([]);
-      props.remove_ans([]);
-      props.remove_menton([]);
+      remove_startingPoint_handler([]);
+      remove_endPoint_handler([]);
+      set_calibrationDistance_handler(null);
+      remove_sella_handler([]);
+      remove_nasion_handler([]);
+      remove_pointa_handler([]);
+      remove_pointb_handler([]);
+      remove_u6_handler([]);
+      remove_u4_handler([]);
+      remove_gonion_handler([]);
+      remove_gnathion_handler([]);
+      remove_isa_handler([]);
+      remove_isi_handler([]);
+      remove_iia_handler([]);
+      remove_iii_handler([]);
+      remove_ms_handler([]);
+      remove_pogs_handler([]);
+      remove_li_handler([]);
+      remove_ls_handler([]);
+      remove_pog_handler([]);
+      remove_ans_handler([]);
+      remove_menton_handler([]);
 
-      props.remove_sna([]);
-      props.remove_snb([]);
-      props.remove_anb([]);
-      props.remove_pogNB([]);
-      props.remove_snop([]);
-      props.remove_snmp([]);
-      props.remove_uina_angular([]);
-      props.remove_uina_linear([]);
-      props.remove_linb_angular([]);
-      props.remove_linb_linear([]);
-      props.remove__iia([]);
-      props.remove_upper_lip([]);
-      props.remove_lower_lip([]);
-      props.remove_wendellwylie([]);
-      props.set_headerText('Cephalometric Analysis');
-      props.set_subHeaderText('');
+      remove_sna_handler([]);
+      remove_snb_handler([]);
+      remove_anb_handler([]);
+      remove_pogNB_handler([]);
+      remove_snop_handler([]);
+      remove_snmp_handler([]);
+      remove_uina_angular_handler([]);
+      remove_uina_linear_handler([]);
+      remove_linb_angular_handler([]);
+      remove_linb_linear_handler([]);
+      remove__iia_handler([]);
+      remove_upper_lip_handler([]);
+      remove_lower_lip_handler([]);
+      remove_wendellwylie_handler([]);
+      set_headerText_handler('Cephalometric Analysis');
+      set_subHeaderText_handler('');
     };
   }, []);
 
   useEffect(() => {
-    console.log('bantumarker : ' + props.bantuMarker);
-    if (props.bantuMarker > 0 && props.tempGambar && props.bantuMarker < 23) {
-      props.set_disable_pointer('auto');
-      props.set_opacity_pointer(1);
+    
+    console.log('FormCephalometric analysis bantumarker : ' + bantuMarker);
+    if (bantuMarker > 0 && tempGambar && bantuMarker < 23) {
+      set_disable_pointer_handler('auto');
+      set_opacity_pointer_handler(1);
 
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
         useNativeDriver: true,
       }).reset();
-      console.log('###masuk edit point###' + props.bantuMarker);
-    } else if (props.bantuMarker === 23) {
-      props.navigation.openDrawer();
+      console.log('###masuk edit point###' + bantuMarker);
+    } else if (bantuMarker === 23) {
+      navigation.openDrawer();
 
-      // props.set_resultanalysis(false);
-      // props.set_detailresult(false);
-    } else if (props.bantuMarker === 24) {
-      props.set_disable_pointer('none');
-      props.set_opacity_pointer(0.5);
-      props.set_enablesave(false);
-      props.set_detailresult(false);
+      // set_resultanalysis_handler(false);
+      // set_detailresult_handler(false);
+    } else if (bantuMarker === 24) {
+      set_disable_pointer_handler('none');
+      set_opacity_pointer_handler(0.5);
+      set_enablesave_handler(false);
+      set_detailresult_handler(false);
       _analysis();
     }
 
     setTitle();
 
-    console.log('tempGambar' + props.tempGambar);
-    if (props.bantuMarker == 0 && props.tempGambar !== null) {
-      props.set_bantuMarker(1);
+    console.log('tempGambar' + JSON.stringify(tempGambar));
+    if (bantuMarker == 0 && tempGambar !== null) {
+      set_bantuMarker_handler(1);
     }
 
     if (
-      props.bantuMarker == 0 &&
-      props.headerText === 'Starting Point of Calibration'
+      bantuMarker == 0 &&
+      headerText === 'Starting Point of Calibration'
     ) {
-      props.set_bantuMarker(1);
+      set_bantuMarker_handler(1);
     }
-  }, [props.bantuMarker]);
+  }, [bantuMarker]);
 
   //existing load all data after loading
   useEffect(() => {
@@ -470,11 +707,13 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       duration: 100,
       useNativeDriver: true,
     }).start();
-    if (props.bantuMarker == 23 && props.loading == false) {
+    if (bantuMarker == 23 && loading == false) {
     }
-  }, [props.loading]);
+  }, [loading]);
 
   useEffect(() => {
+
+     
     if (pinchToZoom == false) {
       click_imageZoom.current?.touch;
       // setPinchToZoom(true);
@@ -489,88 +728,89 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   useLayoutEffect(() => {
     return () => {
-      props.set_bantuMarker(0);
-      props.set_markingdot(true);
-      props.set_resultanalysis(false);
-      props.set_detailresult(false);
-      props.set_enablesave(true);
-      props.set_tempgambar(null);
-      props.set_imageuri(null);
-      props.set_imagetype(null);
-      props.set_imagefilename(null);
+      set_bantuMarker_handler(0);
+      set_markingdot_handler(true);
+      set_resultanalysis_handler(false);
+      set_detailresult_handler(false);
+      set_enablesave_handler(true);
+      set_tempgambar_handler(null);
+      set_imageuri_handler(null);
+      set_imagetype_handler(null);
+      set_imagefilename_handler(null);
 
-      props.remove_startingPoint([]);
-      props.remove_endPoint([]);
-      props.set_calibrationDistance(null);
-      props.remove_sella([]);
-      props.remove_nasion([]);
-      props.remove_pointa([]);
-      props.remove_pointb([]);
-      props.remove_u6([]);
-      props.remove_u4([]);
-      props.remove_gonion([]);
-      props.remove_gnathion([]);
-      props.remove_isa([]);
-      props.remove_isi([]);
-      props.remove_iia([]);
-      props.remove_iii([]);
-      props.remove_ms([]);
-      props.remove_pogs([]);
-      props.remove_li([]);
-      props.remove_ls([]);
-      props.remove_pog([]);
-      props.remove_ans([]);
-      props.remove_menton([]);
+      remove_startingPoint_handler([]);
+      remove_endPoint_handler([]);
+      set_calibrationDistance_handler(null);
+      remove_sella_handler([]);
+      remove_nasion_handler([]);
+      remove_pointa_handler([]);
+      remove_pointb_handler([]);
+      remove_u6_handler([]);
+      remove_u4_handler([]);
+      remove_gonion_handler([]);
+      remove_gnathion_handler([]);
+      remove_isa_handler([]);
+      remove_isi_handler([]);
+      remove_iia_handler([]);
+      remove_iii_handler([]);
+      remove_ms_handler([]);
+      remove_pogs_handler([]);
+      remove_li_handler([]);
+      remove_ls_handler([]);
+      remove_pog_handler([]);
+      remove_ans_handler([]);
+      remove_menton_handler([]);
 
-      props.remove_sna([]);
-      props.remove_snb([]);
-      props.remove_anb([]);
-      props.remove_pogNB([]);
-      props.remove_snop([]);
-      props.remove_snmp([]);
-      props.remove_uina_angular([]);
-      props.remove_uina_linear([]);
-      props.remove_linb_angular([]);
-      props.remove_linb_linear([]);
-      props.remove__iia([]);
-      props.remove_upper_lip([]);
-      props.remove_lower_lip([]);
-      props.remove_wendellwylie([]);
-      props.set_headerText('Cephalometric Analysis');
-      props.set_subHeaderText('');
-      props.set_detailresult(false);
-      props.set_select_id(null);
+      remove_sna_handler([]);
+      remove_snb_handler([]);
+      remove_anb_handler([]);
+      remove_pogNB_handler([]);
+      remove_snop_handler([]);
+      remove_snmp_handler([]);
+      remove_uina_angular_handler([]);
+      remove_uina_linear_handler([]);
+      remove_linb_angular_handler([]);
+      remove_linb_linear_handler([]);
+      remove__iia_handler([]);
+      remove_upper_lip_handler([]);
+      remove_lower_lip_handler([]);
+      remove_wendellwylie_handler([]);
+      set_headerText_handler('Cephalometric Analysis');
+      set_subHeaderText_handler('');
+      set_detailresult_handler(false);
+      set_select_id_handler(null);
     };
   }, []);
 
   clearVaribleGlobal = () => {
-    props.set_loading(true);
+    set_loading_handler(true);
 
     checkData();
   };
 
   useEffect(() => {
-    if (props.widthLastDevice && props.heightLastDevice) {
-      console.log('width Last : ' + props.widthLastDevice);
-      console.log('height Last : ' + props.heightLastDevice);
+    if (widthLastDevice && heightLastDevice) {
+      console.log('width Last : ' + widthLastDevice);
+      console.log('height Last : ' + heightLastDevice);
       load_point();
     }
-  }, [props.widthLastDevice, props.heightLastDevice]);
+  }, [widthLastDevice, heightLastDevice]);
 
   checkData = async () => {
     marker = [];
 
     var data = {
-      patientid: props.patientid,
-      step: props.step,
+      patientid: patientid,
+      step: step,
     };
 
     await _viewExistingAnalysis(data)
       .then((result) => {
-        // console.log(result);
+        
+        console.log("load existing data ="+JSON.stringify(result));
         if (result[0].jumlah > 0) {
-          props.set_width_last_device(result[0].width);
-          props.set_height_last_device(result[0].height);
+          set_width_last_device_handler(result[0].width);
+          set_height_last_device_handler(result[0].height);
 
           let gambarnya = _openImage(result[0].images);
 
@@ -581,14 +821,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
           if (source) {
             console.log('load Source Image');
-            props.set_tempgambar(source);
-
+            set_tempgambar_handler(source);
+            // set_bantuMarker_handler(24);
             setTitleText('Load Image');
           }
         } else {
-          props.set_bantuMarker(0);
+          set_bantuMarker_handler(0);
           marker = [];
-          props.set_loading(false);
+          set_loading_handler(false);
           return false;
         }
       })
@@ -600,38 +840,39 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   load_point = () => {
     var data = {
-      patientid: props.patientid,
-      step: props.step,
+      patientid: patientid,
+      step: step,
     };
 
     _viewExistingAnalysis(data)
       .then((result) => {
         if (result[0].jumlah > 0) {
-          props.set_startingPoint(JSON.parse(result[0].startingPoint));
+          console.log('masuk _viewExistingAnalysis datanya ='+JSON.stringify(result));
+          set_startingPoint_handler(JSON.parse(result[0].startingPoint));
 
-          props.set_endPoint(JSON.parse(result[0].endPoint));
-          props.set_calibrationDistance(
+          set_endPoint_handler(JSON.parse(result[0].endPoint));
+          set_calibrationDistance_handler(
             '' + result[0].calibrationDistance + '',
           );
-          props.set_sella(JSON.parse(result[0].sella));
-          props.set_nasion(JSON.parse(result[0].nasion));
-          props.set_pointa(JSON.parse(result[0].pointA));
-          props.set_pointb(JSON.parse(result[0].pointB));
-          props.set_u6(JSON.parse(result[0].u6));
-          props.set_u4(JSON.parse(result[0].u4));
-          props.set_gonion(JSON.parse(result[0].gonion));
-          props.set_gnathion(JSON.parse(result[0].gnathion));
-          props.set_isa(JSON.parse(result[0].isa));
-          props.set_isi(JSON.parse(result[0].isi));
-          props.set_iia(JSON.parse(result[0].iia));
-          props.set_iii(JSON.parse(result[0].iii));
-          props.set_ms(JSON.parse(result[0].ms));
-          props.set_pogs(JSON.parse(result[0].pogs));
-          props.set_li(JSON.parse(result[0].li));
-          props.set_ls(JSON.parse(result[0].ls));
-          props.set_pog(JSON.parse(result[0].pog));
-          props.set_ans(JSON.parse(result[0].ans));
-          props.set_menton(JSON.parse(result[0].menton));
+          set_sella_handler(JSON.parse(result[0].sella));
+          set_nasion_handler(JSON.parse(result[0].nasion));
+          set_pointa_handler(JSON.parse(result[0].pointA));
+          set_pointb_handler(JSON.parse(result[0].pointB));
+          set_u6_handler(JSON.parse(result[0].u6));
+          set_u4_handler(JSON.parse(result[0].u4));
+          set_gonion_handler(JSON.parse(result[0].gonion));
+          set_gnathion_handler(JSON.parse(result[0].gnathion));
+          set_isa_handler(JSON.parse(result[0].isa));
+          set_isi_handler(JSON.parse(result[0].isi));
+          set_iia_handler(JSON.parse(result[0].iia));
+          set_iii_handler(JSON.parse(result[0].iii));
+          set_ms_handler(JSON.parse(result[0].ms));
+          set_pogs_handler(JSON.parse(result[0].pogs));
+          set_li_handler(JSON.parse(result[0].li));
+          set_ls_handler(JSON.parse(result[0].ls));
+          set_pog_handler(JSON.parse(result[0].pog));
+          set_ans_handler(JSON.parse(result[0].ans));
+          set_menton_handler(JSON.parse(result[0].menton));
 
           loadExistingMarker(JSON.parse(result[0].startingPoint));
           loadExistingMarker(JSON.parse(result[0].endPoint));
@@ -654,11 +895,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           loadExistingMarker(JSON.parse(result[0].pog));
           loadExistingMarker(JSON.parse(result[0].ans));
           loadExistingMarker(JSON.parse(result[0].menton));
-          props.set_bantuMarker(24);
+          set_bantuMarker_handler(24);
         } else {
-          props.set_bantuMarker(0);
+          set_bantuMarker_handler(0);
           marker = [];
-          props.set_loading(false);
+          set_loading_handler(false);
           return false;
         }
       })
@@ -683,8 +924,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     let data = null;
 
     data = {
-      x: scale(x_y_point.x, props.widthLastDevice),
-      y: scale(x_y_point.y, props.widthLastDevice),
+      x: scale(x_y_point.x, widthLastDevice),
+      y: scale(x_y_point.y, widthLastDevice),
     };
 
     return data;
@@ -721,40 +962,40 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     }
 
     //  Starting Point
-    if (props.bantuMarker == 1) {
+    if (bantuMarker == 1) {
       console.log('Added Starting Point');
 
       if (up == true) {
         newMarker = {
-          x: props.startingPoint[0].x,
+          x: startingPoint[0].x,
           y:
-            props.startingPoint[0].y - point_speed < 0
+            startingPoint[0].y - point_speed < 0
               ? 0
-              : props.startingPoint[0].y - point_speed,
+              : startingPoint[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.startingPoint[0].x,
-          y: props.startingPoint[0].y + point_speed,
+          x: startingPoint[0].x,
+          y: startingPoint[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.startingPoint[0].x + point_speed,
-          y: props.startingPoint[0].y,
+          x: startingPoint[0].x + point_speed,
+          y: startingPoint[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.startingPoint[0].x - point_speed,
-          y: props.startingPoint[0].y,
+          x: startingPoint[0].x - point_speed,
+          y: startingPoint[0].y,
           edit: true,
         };
       }
@@ -762,828 +1003,828 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       console.log(newMarker);
       marker[0] = newMarker;
 
-      props.set_startingPoint(newMarker);
+      set_startingPoint_handler(newMarker);
     }
     //  End Point
-    if (props.bantuMarker == 2) {
+    if (bantuMarker == 2) {
       console.log('Added End Point');
 
       if (up == true) {
         newMarker = {
-          x: props.endPoint[0].x,
-          y: props.endPoint[0].y - point_speed,
+          x: endPoint[0].x,
+          y: endPoint[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.endPoint[0].x,
-          y: props.endPoint[0].y + point_speed,
+          x: endPoint[0].x,
+          y: endPoint[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.endPoint[0].x + point_speed,
-          y: props.endPoint[0].y,
+          x: endPoint[0].x + point_speed,
+          y: endPoint[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.endPoint[0].x - point_speed,
-          y: props.endPoint[0].y,
+          x: endPoint[0].x - point_speed,
+          y: endPoint[0].y,
           edit: true,
         };
       }
 
       marker[1] = newMarker;
 
-      props.set_endPoint(newMarker);
+      set_endPoint_handler(newMarker);
     }
 
     //  Calibration Distance
-    if (props.bantuMarker == 3) {
+    if (bantuMarker == 3) {
       console.log('Added Calibration Distance');
     }
 
     //  Sella
-    if (props.bantuMarker == 4) {
+    if (bantuMarker == 4) {
       console.log('Added Sella');
 
       if (up == true) {
         newMarker = {
-          x: props.sella[0].x,
-          y: props.sella[0].y - point_speed,
+          x: sella[0].x,
+          y: sella[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.sella[0].x,
-          y: props.sella[0].y + point_speed,
+          x: sella[0].x,
+          y: sella[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.sella[0].x + point_speed,
-          y: props.sella[0].y,
+          x: sella[0].x + point_speed,
+          y: sella[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.sella[0].x - point_speed,
-          y: props.sella[0].y,
+          x: sella[0].x - point_speed,
+          y: sella[0].y,
           edit: true,
         };
       }
 
       marker[2] = newMarker;
 
-      props.set_sella(newMarker);
+      set_sella_handler(newMarker);
     }
     //  Nasion
-    if (props.bantuMarker == 5) {
+    if (bantuMarker == 5) {
       console.log('Added Nasion');
 
       if (up == true) {
         newMarker = {
-          x: props.nasion[0].x,
-          y: props.nasion[0].y - point_speed,
+          x: nasion[0].x,
+          y: nasion[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.nasion[0].x,
-          y: props.nasion[0].y + point_speed,
+          x: nasion[0].x,
+          y: nasion[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.nasion[0].x + point_speed,
-          y: props.nasion[0].y,
+          x: nasion[0].x + point_speed,
+          y: nasion[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.nasion[0].x - point_speed,
-          y: props.nasion[0].y,
+          x: nasion[0].x - point_speed,
+          y: nasion[0].y,
           edit: true,
         };
       }
 
       marker[3] = newMarker;
-      props.set_nasion(newMarker);
+      set_nasion_handler(newMarker);
     }
     //  POINTA
-    if (props.bantuMarker == 6) {
+    if (bantuMarker == 6) {
       console.log('Added Point A');
 
       if (up == true) {
         newMarker = {
-          x: props.pointa[0].x,
-          y: props.pointa[0].y - point_speed,
+          x: pointa[0].x,
+          y: pointa[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.pointa[0].x,
-          y: props.pointa[0].y + point_speed,
+          x: pointa[0].x,
+          y: pointa[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pointa[0].x + point_speed,
-          y: props.pointa[0].y,
+          x: pointa[0].x + point_speed,
+          y: pointa[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pointa[0].x - point_speed,
-          y: props.pointa[0].y,
+          x: pointa[0].x - point_speed,
+          y: pointa[0].y,
           edit: true,
         };
       }
 
       marker[4] = newMarker;
-      props.set_pointa(newMarker);
+      set_pointa_handler(newMarker);
     }
     //  POINTB
-    if (props.bantuMarker == 7) {
+    if (bantuMarker == 7) {
       console.log('Added Point B');
 
       if (up == true) {
         newMarker = {
-          x: props.pointb[0].x,
-          y: props.pointb[0].y - point_speed,
+          x: pointb[0].x,
+          y: pointb[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.pointb[0].x,
-          y: props.pointb[0].y + point_speed,
+          x: pointb[0].x,
+          y: pointb[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pointb[0].x + point_speed,
-          y: props.pointb[0].y,
+          x: pointb[0].x + point_speed,
+          y: pointb[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pointb[0].x - point_speed,
-          y: props.pointb[0].y,
+          x: pointb[0].x - point_speed,
+          y: pointb[0].y,
           edit: true,
         };
       }
 
       marker[5] = newMarker;
-      props.set_pointb(newMarker);
+      set_pointb_handler(newMarker);
     }
     //  U6
-    if (props.bantuMarker == 8) {
+    if (bantuMarker == 8) {
       console.log('Added U6');
 
       if (up == true) {
         newMarker = {
-          x: props.u6[0].x,
-          y: props.u6[0].y - point_speed,
+          x: u6[0].x,
+          y: u6[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.u6[0].x,
-          y: props.u6[0].y + point_speed,
+          x: u6[0].x,
+          y: u6[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.u6[0].x + point_speed,
-          y: props.u6[0].y,
+          x: u6[0].x + point_speed,
+          y: u6[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.u6[0].x - point_speed,
-          y: props.u6[0].y,
+          x: u6[0].x - point_speed,
+          y: u6[0].y,
           edit: true,
         };
       }
 
       marker[6] = newMarker;
-      props.set_u6(newMarker);
+      set_u6_handler(newMarker);
     }
     //  U4
-    if (props.bantuMarker == 9) {
+    if (bantuMarker == 9) {
       console.log('Added U4');
 
       if (up == true) {
         newMarker = {
-          x: props.u4[0].x,
-          y: props.u4[0].y - point_speed,
+          x: u4[0].x,
+          y: u4[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.u4[0].x,
-          y: props.u4[0].y + point_speed,
+          x: u4[0].x,
+          y: u4[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.u4[0].x + point_speed,
-          y: props.u4[0].y,
+          x: u4[0].x + point_speed,
+          y: u4[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.u4[0].x - point_speed,
-          y: props.u4[0].y,
+          x: u4[0].x - point_speed,
+          y: u4[0].y,
           edit: true,
         };
       }
 
       marker[7] = newMarker;
-      props.set_u4(newMarker);
+      set_u4_handler(newMarker);
     }
     //  GONION
-    if (props.bantuMarker == 10) {
+    if (bantuMarker == 10) {
       console.log('Added Gonion');
 
       if (up == true) {
         newMarker = {
-          x: props.gonion[0].x,
-          y: props.gonion[0].y - point_speed,
+          x: gonion[0].x,
+          y: gonion[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.gonion[0].x,
-          y: props.gonion[0].y + point_speed,
+          x: gonion[0].x,
+          y: gonion[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.gonion[0].x + point_speed,
-          y: props.gonion[0].y,
+          x: gonion[0].x + point_speed,
+          y: gonion[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.gonion[0].x - point_speed,
-          y: props.gonion[0].y,
+          x: gonion[0].x - point_speed,
+          y: gonion[0].y,
           edit: true,
         };
       }
 
       marker[8] = newMarker;
-      props.set_gonion(newMarker);
+      set_gonion_handler(newMarker);
     }
     //  GNATHION
-    if (props.bantuMarker == 11) {
+    if (bantuMarker == 11) {
       console.log('Added Gnathion');
 
       if (up == true) {
         newMarker = {
-          x: props.gnathion[0].x,
-          y: props.gnathion[0].y - point_speed,
+          x: gnathion[0].x,
+          y: gnathion[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.gnathion[0].x,
-          y: props.gnathion[0].y + point_speed,
+          x: gnathion[0].x,
+          y: gnathion[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.gnathion[0].x + point_speed,
-          y: props.gnathion[0].y,
+          x: gnathion[0].x + point_speed,
+          y: gnathion[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.gnathion[0].x - point_speed,
-          y: props.gnathion[0].y,
+          x: gnathion[0].x - point_speed,
+          y: gnathion[0].y,
           edit: true,
         };
       }
 
       marker[9] = newMarker;
-      props.set_gnathion(newMarker);
+      set_gnathion_handler(newMarker);
     }
     //  ISA
-    if (props.bantuMarker == 12) {
+    if (bantuMarker == 12) {
       console.log('Added ISA');
 
       if (up == true) {
         newMarker = {
-          x: props.isa[0].x,
-          y: props.isa[0].y - point_speed,
+          x: isa[0].x,
+          y: isa[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.isa[0].x,
-          y: props.isa[0].y + point_speed,
+          x: isa[0].x,
+          y: isa[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.isa[0].x + point_speed,
-          y: props.isa[0].y,
+          x: isa[0].x + point_speed,
+          y: isa[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.isa[0].x - point_speed,
-          y: props.isa[0].y,
+          x: isa[0].x - point_speed,
+          y: isa[0].y,
           edit: true,
         };
       }
       marker[10] = newMarker;
-      props.set_isa(newMarker);
+      set_isa_handler(newMarker);
     }
     //  ISI
-    if (props.bantuMarker == 13) {
+    if (bantuMarker == 13) {
       console.log('Added ISI');
 
       if (up == true) {
         newMarker = {
-          x: props.isi[0].x,
-          y: props.isi[0].y - point_speed,
+          x: isi[0].x,
+          y: isi[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.isi[0].x,
-          y: props.isi[0].y + point_speed,
+          x: isi[0].x,
+          y: isi[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.isi[0].x + point_speed,
-          y: props.isi[0].y,
+          x: isi[0].x + point_speed,
+          y: isi[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.isi[0].x - point_speed,
-          y: props.isi[0].y,
+          x: isi[0].x - point_speed,
+          y: isi[0].y,
           edit: true,
         };
       }
 
       marker[11] = newMarker;
-      props.set_isi(newMarker);
+      set_isi_handler(newMarker);
     }
     //  IIA
-    if (props.bantuMarker == 14) {
+    if (bantuMarker == 14) {
       console.log('Added IIA');
 
       if (up == true) {
         newMarker = {
-          x: props.iia[0].x,
-          y: props.iia[0].y - point_speed,
+          x: iia[0].x,
+          y: iia[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.iia[0].x,
-          y: props.iia[0].y + point_speed,
+          x: iia[0].x,
+          y: iia[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.iia[0].x + point_speed,
-          y: props.iia[0].y,
+          x: iia[0].x + point_speed,
+          y: iia[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.iia[0].x - point_speed,
-          y: props.iia[0].y,
+          x: iia[0].x - point_speed,
+          y: iia[0].y,
           edit: true,
         };
       }
 
       marker[12] = newMarker;
-      props.set_iia(newMarker);
+      set_iia_handler(newMarker);
     }
     //  III
-    if (props.bantuMarker == 15) {
+    if (bantuMarker == 15) {
       console.log('Added III');
 
       if (up == true) {
         newMarker = {
-          x: props.iii[0].x,
-          y: props.iii[0].y - point_speed,
+          x: iii[0].x,
+          y: iii[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.iii[0].x,
-          y: props.iii[0].y + point_speed,
+          x: iii[0].x,
+          y: iii[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.iii[0].x + point_speed,
-          y: props.iii[0].y,
+          x: iii[0].x + point_speed,
+          y: iii[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.iii[0].x - point_speed,
-          y: props.iii[0].y,
+          x: iii[0].x - point_speed,
+          y: iii[0].y,
           edit: true,
         };
       }
 
       marker[13] = newMarker;
-      props.set_iii(newMarker);
+      set_iii_handler(newMarker);
     }
     //  MS
-    if (props.bantuMarker == 16) {
+    if (bantuMarker == 16) {
       console.log('Added MS');
 
       if (up == true) {
         newMarker = {
-          x: props.ms[0].x,
-          y: props.ms[0].y - point_speed,
+          x: ms[0].x,
+          y: ms[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.ms[0].x,
-          y: props.ms[0].y + point_speed,
+          x: ms[0].x,
+          y: ms[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.ms[0].x + point_speed,
-          y: props.ms[0].y,
+          x: ms[0].x + point_speed,
+          y: ms[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.ms[0].x - point_speed,
-          y: props.ms[0].y,
+          x: ms[0].x - point_speed,
+          y: ms[0].y,
           edit: true,
         };
       }
 
       marker[14] = newMarker;
-      props.set_ms(newMarker);
+      set_ms_handler(newMarker);
     }
     //  POGS
-    if (props.bantuMarker == 17) {
+    if (bantuMarker == 17) {
       console.log('Added Pogs');
 
       if (up == true) {
         newMarker = {
-          x: props.pogs[0].x,
-          y: props.pogs[0].y - point_speed,
+          x: pogs[0].x,
+          y: pogs[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.pogs[0].x,
-          y: props.pogs[0].y + point_speed,
+          x: pogs[0].x,
+          y: pogs[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pogs[0].x + point_speed,
-          y: props.pogs[0].y,
+          x: pogs[0].x + point_speed,
+          y: pogs[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pogs[0].x - point_speed,
-          y: props.pogs[0].y,
+          x: pogs[0].x - point_speed,
+          y: pogs[0].y,
           edit: true,
         };
       }
 
       marker[15] = newMarker;
 
-      props.set_pogs(newMarker);
+      set_pogs_handler(newMarker);
     }
     //  LS
-    if (props.bantuMarker == 18) {
+    if (bantuMarker == 18) {
       console.log('Added LS');
 
       if (up == true) {
         newMarker = {
-          x: props.ls[0].x,
-          y: props.ls[0].y - point_speed,
+          x: ls[0].x,
+          y: ls[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.ls[0].x,
-          y: props.ls[0].y + point_speed,
+          x: ls[0].x,
+          y: ls[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.ls[0].x + point_speed,
-          y: props.ls[0].y,
+          x: ls[0].x + point_speed,
+          y: ls[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.ls[0].x - point_speed,
-          y: props.ls[0].y,
+          x: ls[0].x - point_speed,
+          y: ls[0].y,
           edit: true,
         };
       }
 
       marker[16] = newMarker;
-      props.set_ls(newMarker);
+      set_ls_handler(newMarker);
     }
     //  LI
-    if (props.bantuMarker == 19) {
+    if (bantuMarker == 19) {
       console.log('Added LI');
 
       if (up == true) {
         newMarker = {
-          x: props.li[0].x,
-          y: props.li[0].y - point_speed,
+          x: li[0].x,
+          y: li[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.li[0].x,
-          y: props.li[0].y + point_speed,
+          x: li[0].x,
+          y: li[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.li[0].x + point_speed,
-          y: props.li[0].y,
+          x: li[0].x + point_speed,
+          y: li[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.li[0].x - point_speed,
-          y: props.li[0].y,
+          x: li[0].x - point_speed,
+          y: li[0].y,
           edit: true,
         };
       }
 
       marker[17] = newMarker;
-      props.set_li(newMarker);
+      set_li_handler(newMarker);
     }
     //  POG
-    if (props.bantuMarker == 20) {
+    if (bantuMarker == 20) {
       console.log('Added Pog');
 
       if (up == true) {
         newMarker = {
-          x: props.pog[0].x,
-          y: props.pog[0].y - point_speed,
+          x: pog[0].x,
+          y: pog[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.pog[0].x,
-          y: props.pog[0].y + point_speed,
+          x: pog[0].x,
+          y: pog[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.pog[0].x + point_speed,
-          y: props.pog[0].y,
+          x: pog[0].x + point_speed,
+          y: pog[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.pog[0].x - point_speed,
-          y: props.pog[0].y,
+          x: pog[0].x - point_speed,
+          y: pog[0].y,
           edit: true,
         };
       }
 
       marker[18] = newMarker;
 
-      props.set_pog(newMarker);
+      set_pog_handler(newMarker);
     }
     //  ANS
-    if (props.bantuMarker == 21) {
+    if (bantuMarker == 21) {
       console.log('Added ANS');
 
       if (up == true) {
         newMarker = {
-          x: props.ans[0].x,
-          y: props.ans[0].y - point_speed,
+          x: ans[0].x,
+          y: ans[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.ans[0].x,
-          y: props.ans[0].y + point_speed,
+          x: ans[0].x,
+          y: ans[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.ans[0].x + point_speed,
-          y: props.ans[0].y,
+          x: ans[0].x + point_speed,
+          y: ans[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.ans[0].x - point_speed,
-          y: props.ans[0].y,
+          x: ans[0].x - point_speed,
+          y: ans[0].y,
           edit: true,
         };
       }
 
       marker[19] = newMarker;
 
-      props.set_ans(newMarker);
+      set_ans_handler(newMarker);
     }
     //  MENTON
-    if (props.bantuMarker == 22) {
+    if (bantuMarker == 22) {
       console.log('Added Menton');
 
       if (up == true) {
         newMarker = {
-          x: props.menton[0].x,
-          y: props.menton[0].y - point_speed,
+          x: menton[0].x,
+          y: menton[0].y - point_speed,
           edit: true,
         };
       }
 
       if (down == true) {
         newMarker = {
-          x: props.menton[0].x,
-          y: props.menton[0].y + point_speed,
+          x: menton[0].x,
+          y: menton[0].y + point_speed,
           edit: true,
         };
       }
 
       if (right == true) {
         newMarker = {
-          x: props.menton[0].x + point_speed,
-          y: props.menton[0].y,
+          x: menton[0].x + point_speed,
+          y: menton[0].y,
           edit: true,
         };
       }
 
       if (left == true) {
         newMarker = {
-          x: props.menton[0].x - point_speed,
-          y: props.menton[0].y,
+          x: menton[0].x - point_speed,
+          y: menton[0].y,
           edit: true,
         };
       }
 
       marker[20] = newMarker;
 
-      props.set_menton(newMarker);
+      set_menton_handler(newMarker);
     }
   }
 
   function _prevClick() {
-    if (props.bantuMarker > 4 && props.bantuMarker <= 22) {
-      props.set_bantuMarker(props.bantuMarker - 1);
+    if (bantuMarker > 4 && bantuMarker <= 22) {
+      set_bantuMarker_handler(bantuMarker - 1);
     }
 
-    if (props.bantuMarker > 1 && props.bantuMarker <= 3) {
-      props.set_bantuMarker(props.bantuMarker - 1);
+    if (bantuMarker > 1 && bantuMarker <= 3) {
+      set_bantuMarker_handler(bantuMarker - 1);
     }
   }
   function _nextClick() {
-    if (props.bantuMarker >= 1 && props.bantuMarker <= 2) {
-      props.set_bantuMarker(props.bantuMarker + 1);
-      props.set_disable_pointer('auto');
-      props.set_opacity_pointer(1);
+    if (bantuMarker >= 1 && bantuMarker <= 2) {
+      set_bantuMarker_handler(bantuMarker + 1);
+      set_disable_pointer_handler('auto');
+      set_opacity_pointer_handler(1);
     }
 
-    if (props.bantuMarker > 3 && props.bantuMarker <= 22) {
-      props.set_bantuMarker(props.bantuMarker + 1);
-      props.set_disable_pointer('auto');
-      props.set_opacity_pointer(1);
+    if (bantuMarker > 3 && bantuMarker <= 22) {
+      set_bantuMarker_handler(bantuMarker + 1);
+      set_disable_pointer_handler('auto');
+      set_opacity_pointer_handler(1);
     }
 
-    if (props.bantuMarker == 3) {
-      props.navigation.openDrawer();
-      props.set_bantuMarker(25);
-      props.set_disable_pointer('none');
-      props.set_opacity_pointer(0.5);
+    if (bantuMarker == 3) {
+      navigation.openDrawer();
+      set_bantuMarker_handler(25);
+      set_disable_pointer_handler('none');
+      set_opacity_pointer_handler(0.5);
     }
   }
   function _upClick() {
@@ -1604,15 +1845,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   // =============================
 
   function setTitle() {
-    if (props.bantuMarker == 0) {
-      props.set_headerText('Cephalometric Analysis');
-      props.set_subHeaderText('');
+    if (bantuMarker == 0) {
+      set_headerText_handler('Cephalometric Analysis');
+      set_subHeaderText_handler('');
     }
 
-    if (props.bantuMarker == 1) {
+    if (bantuMarker == 1) {
       setTitleText(CALIBRATION_DETAILS[0].HELP[0].INFO);
-      props.set_headerText(CALIBRATION_DETAILS[0].NAME);
-      props.set_subHeaderText('');
+      set_headerText_handler(CALIBRATION_DETAILS[0].NAME);
+      set_subHeaderText_handler('');
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1620,10 +1861,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  End Point
-    if (props.bantuMarker == 2) {
+    if (bantuMarker == 2) {
       setTitleText(CALIBRATION_DETAILS[1].HELP[0].INFO);
-      props.set_headerText(CALIBRATION_DETAILS[1].NAME);
-      props.set_subHeaderText('');
+      set_headerText_handler(CALIBRATION_DETAILS[1].NAME);
+      set_subHeaderText_handler('');
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1632,9 +1873,9 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     }
 
     //  Calibration Distance
-    if (props.bantuMarker == 3) {
+    if (bantuMarker == 3) {
       setTitleText(CALIBRATION_DETAILS[2].HELP[0].INFO);
-      // set_headerText(CALIBRATION_DETAILS[2].NAME);
+      // set_headerText_handler(CALIBRATION_DETAILS[2].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1643,10 +1884,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     }
 
     //  Sella
-    if (props.bantuMarker == 4) {
+    if (bantuMarker == 4) {
       setTitleText(MARK_DETAILS[0].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[0].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[0].NAME);
+      set_headerText_handler(MARK_DETAILS[0].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[0].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1654,10 +1895,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  Nasion
-    if (props.bantuMarker == 5) {
+    if (bantuMarker == 5) {
       setTitleText(MARK_DETAILS[1].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[1].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[1].NAME);
+      set_headerText_handler(MARK_DETAILS[1].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[1].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1665,10 +1906,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  POINTA
-    if (props.bantuMarker == 6) {
+    if (bantuMarker == 6) {
       setTitleText(MARK_DETAILS[2].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[2].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[2].NAME);
+      set_headerText_handler(MARK_DETAILS[2].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[2].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1676,10 +1917,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  POINTB
-    if (props.bantuMarker == 7) {
+    if (bantuMarker == 7) {
       setTitleText(MARK_DETAILS[3].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[3].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[3].NAME);
+      set_headerText_handler(MARK_DETAILS[3].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[3].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1687,10 +1928,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  U6
-    if (props.bantuMarker == 8) {
+    if (bantuMarker == 8) {
       setTitleText(MARK_DETAILS[4].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[4].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[4].NAME);
+      set_headerText_handler(MARK_DETAILS[4].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[4].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1698,10 +1939,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  U4
-    if (props.bantuMarker == 9) {
+    if (bantuMarker == 9) {
       setTitleText(MARK_DETAILS[5].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[5].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[5].NAME);
+      set_headerText_handler(MARK_DETAILS[5].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[5].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1709,10 +1950,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  GONION
-    if (props.bantuMarker == 10) {
+    if (bantuMarker == 10) {
       setTitleText(MARK_DETAILS[6].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[6].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[6].NAME);
+      set_headerText_handler(MARK_DETAILS[6].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[6].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1720,10 +1961,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  GNATHION
-    if (props.bantuMarker == 11) {
+    if (bantuMarker == 11) {
       setTitleText(MARK_DETAILS[7].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[7].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[7].NAME);
+      set_headerText_handler(MARK_DETAILS[7].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[7].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1731,10 +1972,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  ISA
-    if (props.bantuMarker == 12) {
+    if (bantuMarker == 12) {
       setTitleText(MARK_DETAILS[8].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[8].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[8].NAME);
+      set_headerText_handler(MARK_DETAILS[8].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[8].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1742,10 +1983,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  ISI
-    if (props.bantuMarker == 13) {
+    if (bantuMarker == 13) {
       setTitleText(MARK_DETAILS[9].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[9].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[9].NAME);
+      set_headerText_handler(MARK_DETAILS[9].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[9].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1753,10 +1994,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  IIA
-    if (props.bantuMarker == 14) {
+    if (bantuMarker == 14) {
       setTitleText(MARK_DETAILS[10].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[10].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[10].NAME);
+      set_headerText_handler(MARK_DETAILS[10].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[10].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1764,10 +2005,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  III
-    if (props.bantuMarker == 15) {
+    if (bantuMarker == 15) {
       setTitleText(MARK_DETAILS[11].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[11].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[11].NAME);
+      set_headerText_handler(MARK_DETAILS[11].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[11].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1775,10 +2016,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  MS
-    if (props.bantuMarker == 16) {
+    if (bantuMarker == 16) {
       setTitleText(MARK_DETAILS[12].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[12].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[12].NAME);
+      set_headerText_handler(MARK_DETAILS[12].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[12].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1786,10 +2027,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  POGS
-    if (props.bantuMarker == 17) {
+    if (bantuMarker == 17) {
       setTitleText(MARK_DETAILS[13].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[13].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[13].NAME);
+      set_headerText_handler(MARK_DETAILS[13].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[13].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1797,10 +2038,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  LS
-    if (props.bantuMarker == 18) {
+    if (bantuMarker == 18) {
       setTitleText(MARK_DETAILS[14].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[14].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[14].NAME);
+      set_headerText_handler(MARK_DETAILS[14].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[14].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1808,10 +2049,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  LI
-    if (props.bantuMarker == 19) {
+    if (bantuMarker == 19) {
       setTitleText(MARK_DETAILS[15].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[15].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[15].NAME);
+      set_headerText_handler(MARK_DETAILS[15].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[15].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1819,10 +2060,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  POG
-    if (props.bantuMarker == 20) {
+    if (bantuMarker == 20) {
       setTitleText(MARK_DETAILS[16].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[16].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[16].NAME);
+      set_headerText_handler(MARK_DETAILS[16].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[16].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1830,11 +2071,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  ANS
-    if (props.bantuMarker == 21) {
+    if (bantuMarker == 21) {
       console.log('masuk 21');
       setTitleText(MARK_DETAILS[17].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[17].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[17].NAME);
+      set_headerText_handler(MARK_DETAILS[17].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[17].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1842,11 +2083,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
     //  MENTON
-    if (props.bantuMarker == 22) {
+    if (bantuMarker == 22) {
       console.log('masuk 22');
       setTitleText(MARK_DETAILS[18].HELP[0].INFO);
-      props.set_headerText(MARK_DETAILS[18].INITIAL);
-      props.set_subHeaderText(MARK_DETAILS[18].NAME);
+      set_headerText_handler(MARK_DETAILS[18].INITIAL);
+      set_subHeaderText_handler(MARK_DETAILS[18].NAME);
       Animated.timing(fadeIn, {
         toValue: 0,
         duration: 500,
@@ -1854,15 +2095,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       }).start();
     }
 
-    if (props.bantuMarker == 23) {
-      props.set_headerText('Cephalometric ' + props.step);
-      props.set_subHeaderText('');
+    if (bantuMarker == 23) {
+      set_headerText_handler('Cephalometric ' + step);
+      set_subHeaderText_handler('');
       setTitleText('-');
     }
 
-    if (props.bantuMarker == 24) {
-      props.set_headerText('Cephalometric Analysis');
-      props.set_subHeaderText('');
+    if (bantuMarker == 24) {
+      set_headerText_handler('Cephalometric Analysis');
+      set_subHeaderText_handler('');
     }
   }
 
@@ -1979,8 +2220,8 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   // download image
   async function exportToPdf() {
-    props.set_loading_global(true);
-    props.navigation.closeDrawer();
+    set_loading_global_handler(true);
+    navigation.closeDrawer();
 
     try {
       // react-native-view-shot caputures component
@@ -1993,11 +2234,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           // const res = await AesGcmCrypto.encrypt(uri, true, key);
 
           let patient = {
-            fullname: props.fullname,
-            gender: props.gender,
-            birthdate: props.birthdate,
-            ageInYears: props.ageInYears,
-            race: props.race,
+            fullname: fullname,
+            gender: gender,
+            birthdate: birthdate,
+            ageInYears: ageInYears,
+            race: race,
           };
 
           var htmlnya = await generateCephHtml(
@@ -2005,7 +2246,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             patient,
             'data:image/png;base64,' + uri + '',
             new Date(),
-            props,
+            sna,snb,anb,pogNB,snop,snmp,uina_angular,uina_linear,linb_angular,linb_linear,_iia,upper_lip,lower_lip,wendellWylie
           );
 
           console.log('####' + 'Masuk Report Viewer Ceph PDF');
@@ -2021,11 +2262,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
           let file = await RNHTMLtoPDF.convert(options);
 
-          props.navigation.navigate('FormPdfPreview', {
-            fileName: file.filePath,
+          navigation.navigate('FormPdfPreview', {
+            fileName: fullname,
             fileBase64: file.base64,
           });
-          props.set_loading_global(false);
+          set_loading_global_handler(false);
         },
         (error) => console.error('Oops, snapshot failed', error),
       );
@@ -2036,10 +2277,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   const newAnalysis__ = () => {
     console.log('Masuk New Analysis');
-    props.set_headerText('Cephalometric Analysis');
-    props.set_bantuMarker(0);
-    props.set_loading(true);
-    props.navigation.closeDrawer();
+    set_headerText_handler('Cephalometric Analysis');
+    set_bantuMarker_handler(0);
+    set_loading_handler(true);
+    navigation.closeDrawer();
 
     const options = {
       title: 'Choose Your Image',
@@ -2058,10 +2299,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     launchImageLibrary(options, (response) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
-        props.set_loading(false);
+        set_loading_handler(false);
       } else if (response.errorCode) {
         console.log('Image Picker Error: ', response.errorMessage);
-        props.set_loading(false);
+        set_loading_handler(false);
       } else {
         let source = {uri: response.assets[0].uri};
 
@@ -2071,60 +2312,60 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         console.log('width :' + JSON.stringify(width_image));
         console.log('height :' + JSON.stringify(height_image));
 
-        props.set_width_last_device(width_image.uri);
-        props.set_height_last_device(height_image.uri);
+        set_width_last_device_handler(width_image.uri);
+        set_height_last_device_handler(height_image.uri);
 
-        props.set_tempgambar(source);
-        props.set_imageuri(response.assets[0].uri);
-        props.set_imagetype(response.assets[0].type);
-        props.set_imagefilename(response.assets[0].fileName);
-        props.navigation.closeDrawer();
+        set_tempgambar_handler(source);
+        set_imageuri_handler(response.assets[0].uri);
+        set_imagetype_handler(response.assets[0].type);
+        set_imagefilename_handler(response.assets[0].fileName);
+        navigation.closeDrawer();
 
         marker = [];
 
-        props.remove_startingPoint([]);
-        props.remove_endPoint([]);
-        props.set_calibrationDistance(null);
-        props.remove_sella([]);
-        props.remove_nasion([]);
-        props.remove_pointa([]);
-        props.remove_pointb([]);
-        props.remove_u6([]);
-        props.remove_u4([]);
-        props.remove_gonion([]);
-        props.remove_gnathion([]);
-        props.remove_isa([]);
-        props.remove_isi([]);
-        props.remove_iia([]);
-        props.remove_iii([]);
-        props.remove_ms([]);
-        props.remove_pogs([]);
-        props.remove_li([]);
-        props.remove_ls([]);
-        props.remove_pog([]);
-        props.remove_ans([]);
-        props.remove_menton([]);
+        remove_startingPoint_handler([]);
+        remove_endPoint_handler([]);
+        set_calibrationDistance_handler(null);
+        remove_sella_handler([]);
+        remove_nasion_handler([]);
+        remove_pointa_handler([]);
+        remove_pointb_handler([]);
+        remove_u6_handler([]);
+        remove_u4_handler([]);
+        remove_gonion_handler([]);
+        remove_gnathion_handler([]);
+        remove_isa_handler([]);
+        remove_isi_handler([]);
+        remove_iia_handler([]);
+        remove_iii_handler([]);
+        remove_ms_handler([]);
+        remove_pogs_handler([]);
+        remove_li_handler([]);
+        remove_ls_handler([]);
+        remove_pog_handler([]);
+        remove_ans_handler([]);
+        remove_menton_handler([]);
 
-        props.remove_sna([]);
-        props.remove_snb([]);
-        props.remove_anb([]);
-        props.remove_pogNB([]);
-        props.remove_snop([]);
-        props.remove_snmp([]);
-        props.remove_uina_angular([]);
-        props.remove_uina_linear([]);
-        props.remove_linb_angular([]);
-        props.remove_linb_linear([]);
-        props.remove__iia([]);
-        props.remove_upper_lip([]);
-        props.remove_lower_lip([]);
-        props.remove_wendellwylie([]);
-        props.set_bantuMarker(1);
-        props.set_loading(false);
-        props.set_select_id(null);
-        props.set_markingdot(true);
-        props.set_detailresult(false);
-        props.set_resultanalysis(false);
+        remove_sna_handler([]);
+        remove_snb_handler([]);
+        remove_anb_handler([]);
+        remove_pogNB_handler([]);
+        remove_snop_handler([]);
+        remove_snmp_handler([]);
+        remove_uina_angular_handler([]);
+        remove_uina_linear_handler([]);
+        remove_linb_angular_handler([]);
+        remove_linb_linear_handler([]);
+        remove__iia_handler([]);
+        remove_upper_lip_handler([]);
+        remove_lower_lip_handler([]);
+        remove_wendellwylie_handler([]);
+        set_bantuMarker_handler(1);
+        set_loading_handler(false);
+        set_select_id_handler(null);
+        set_markingdot_handler(true);
+        set_detailresult_handler(false);
+        set_resultanalysis_handler(false);
       }
     });
   };
@@ -2133,25 +2374,25 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   // === Save Data Analysis
   useFocusEffect(
     React.useCallback(() => {
-      if (props.pressSaveAnalysis == true) {
+      if (pressSaveAnalysis == true) {
         saveAnalysis();
       }
 
-      return () => props.pressSaveAnalysis;
-    }, [props.pressSaveAnalysis]),
+      return () => pressSaveAnalysis;
+    }, [pressSaveAnalysis]),
   );
 
   // ==========
   // === Reset Scale
   useFocusEffect(
     React.useCallback(() => {
-      if (props.resetScaleImage == true) {
-        props.set_reset_scale_image(false);
+      if (resetScaleImage == true) {
+        set_reset_scale_image_handler(false);
         refImageZoom.current?.resetScale();
       }
 
-      return () => props.resetScaleImage;
-    }, [props.resetScaleImage]),
+      return () => resetScaleImage;
+    }, [resetScaleImage]),
   );
 
   function saveAnalysis() {
@@ -2170,14 +2411,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
     //   useNativeDriver: true,
     // }).start();
 
-    props.set_loading_global(true);
+    set_loading_global_handler(true);
 
-    props.navigation.closeDrawer();
+    navigation.closeDrawer();
 
     setTimeout(async () => {
       try {
         // react-native-view-shot caputures component
-        const uri = await captureRef(ref_capture, {
+        const uri = await captureRef(ref_capture.current, {
           format: 'jpg',
           quality: 1.0,
           result: 'base64',
@@ -2185,11 +2426,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           async (uri) => {
             if (uri) {
               let patient = {
-                fullname: props.fullname,
-                gender: props.gender,
-                birthdate: props.birthdate,
-                ageInYears: props.ageInYears,
-                race: props.race,
+                fullname: fullname,
+                gender: gender,
+                birthdate: birthdate,
+                ageInYears: ageInYears,
+                race: race,
               };
 
               var htmlnya = await generateCephHtml(
@@ -2197,7 +2438,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                 patient,
                 'data:image/png;base64,' + uri + '',
                 new Date(),
-                props,
+               sna,snb,anb,pogNB,snop,snmp,uina_angular,uina_linear,linb_angular,linb_linear,_iia,upper_lip,lower_lip,wendellWylie
               );
 
               let options = {
@@ -2212,24 +2453,24 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               let file = await RNHTMLtoPDF.convert(options);
 
               if (
-                props.imageUri !== null &&
-                props.tempGambar !== null &&
+                imageUri !== null &&
+                tempGambar !== null &&
                 file.base64 !== null
               ) {
                 const data = new FormData();
 
                 var data2 = {
-                  patient_name: props.fullname,
-                  patientid: props.patientid,
+                  patient_name: fullname,
+                  patientid: patientid,
                   pdf_base64: file.base64,
-                  step: props.step,
+                  step: step,
                 };
 
                 var data3 = {
-                  patient_name: props.fullname,
-                  patientid: props.patientid,
+                  patient_name: fullname,
+                  patientid: patientid,
                   image_analysis: uri,
-                  step: props.step,
+                  step: step,
                 };
 
                 _addImageAnalysis(data3)
@@ -2241,14 +2482,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                           console.log(result2);
                           if (result2 == 200) {
                             data.append('fileImages', {
-                              uri: props.imageUri,
-                              type: props.imageType,
-                              name: props.imageFileName,
+                              uri: imageUri,
+                              type: imageType,
+                              name: imageFileName,
                             });
 
-                            data.append('patientid', props.patientid);
+                            data.append('patientid', patientid);
                             data.append('platform', Platform.OS);
-                            data.append('patient_name', props.fullname);
+                            data.append('patient_name', fullname);
                             data.append(
                               'width',
                               Dimensions.get('screen').width,
@@ -2260,95 +2501,95 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                             data.append(
                               'startingPoint',
-                              JSON.stringify(props.startingPoint[0]),
+                              JSON.stringify(startingPoint[0]),
                             );
                             data.append(
                               'endPoint',
-                              JSON.stringify(props.endPoint[0]),
+                              JSON.stringify(endPoint[0]),
                             );
                             data.append(
                               'calibrationDistance',
-                              '' + props.calibrationDistance + '',
+                              '' + calibrationDistance + '',
                             );
                             data.append(
                               'sella',
-                              JSON.stringify(props.sella[0]),
+                              JSON.stringify(sella[0]),
                             );
                             data.append(
                               'nasion',
-                              JSON.stringify(props.nasion[0]),
+                              JSON.stringify(nasion[0]),
                             );
                             data.append(
                               'pointA',
-                              JSON.stringify(props.pointa[0]),
+                              JSON.stringify(pointa[0]),
                             );
                             data.append(
                               'pointB',
-                              JSON.stringify(props.pointb[0]),
+                              JSON.stringify(pointb[0]),
                             );
-                            data.append('u6', JSON.stringify(props.u6[0]));
-                            data.append('u4', JSON.stringify(props.u4[0]));
+                            data.append('u6', JSON.stringify(u6[0]));
+                            data.append('u4', JSON.stringify(u4[0]));
                             data.append(
                               'gonion',
-                              JSON.stringify(props.gonion[0]),
+                              JSON.stringify(gonion[0]),
                             );
                             data.append(
                               'gnathion',
-                              JSON.stringify(props.gnathion[0]),
+                              JSON.stringify(gnathion[0]),
                             );
-                            data.append('isa', JSON.stringify(props.isa[0]));
-                            data.append('isi', JSON.stringify(props.isi[0]));
-                            data.append('iia', JSON.stringify(props.iia[0]));
-                            data.append('iii', JSON.stringify(props.iii[0]));
-                            data.append('ms', JSON.stringify(props.ms[0]));
-                            data.append('pogs', JSON.stringify(props.pogs[0]));
-                            data.append('ls', JSON.stringify(props.ls[0]));
-                            data.append('li', JSON.stringify(props.li[0]));
-                            data.append('pog', JSON.stringify(props.pog[0]));
-                            data.append('ans', JSON.stringify(props.ans[0]));
+                            data.append('isa', JSON.stringify(isa[0]));
+                            data.append('isi', JSON.stringify(isi[0]));
+                            data.append('iia', JSON.stringify(iia[0]));
+                            data.append('iii', JSON.stringify(iii[0]));
+                            data.append('ms', JSON.stringify(ms[0]));
+                            data.append('pogs', JSON.stringify(pogs[0]));
+                            data.append('ls', JSON.stringify(ls[0]));
+                            data.append('li', JSON.stringify(li[0]));
+                            data.append('pog', JSON.stringify(pog[0]));
+                            data.append('ans', JSON.stringify(ans[0]));
                             data.append(
                               'menton',
-                              JSON.stringify(props.menton[0]),
+                              JSON.stringify(menton[0]),
                             );
-                            data.append('step', props.step);
-                            data.append('sna', JSON.stringify(props.sna));
-                            data.append('snb', JSON.stringify(props.snb));
-                            data.append('anb', JSON.stringify(props.anb));
-                            data.append('pognb', JSON.stringify(props.pogNB));
-                            data.append('snop', JSON.stringify(props.snop));
-                            data.append('snmp', JSON.stringify(props.snmp));
+                            data.append('step', step);
+                            data.append('sna', JSON.stringify(sna));
+                            data.append('snb', JSON.stringify(snb));
+                            data.append('anb', JSON.stringify(anb));
+                            data.append('pognb', JSON.stringify(pogNB));
+                            data.append('snop', JSON.stringify(snop));
+                            data.append('snmp', JSON.stringify(snmp));
                             data.append(
                               'uina_angular',
-                              JSON.stringify(props.uina_angular),
+                              JSON.stringify(uina_angular),
                             );
                             data.append(
                               'uina_linear',
-                              JSON.stringify(props.uina_linear),
+                              JSON.stringify(uina_linear),
                             );
                             data.append(
                               'linb_angular',
-                              JSON.stringify(props.linb_angular),
+                              JSON.stringify(linb_angular),
                             );
                             data.append(
                               'linb_linear',
-                              JSON.stringify(props.linb_linear),
+                              JSON.stringify(linb_linear),
                             );
-                            data.append('_iia', JSON.stringify(props._iia));
+                            data.append('_iia', JSON.stringify(_iia));
                             data.append(
                               'upper_lip',
-                              JSON.stringify(props.upper_lip),
+                              JSON.stringify(upper_lip),
                             );
                             data.append(
                               'lower_lip',
-                              JSON.stringify(props.lower_lip),
+                              JSON.stringify(lower_lip),
                             );
                             data.append(
                               'mid_face',
-                              JSON.stringify(props.wendellWylie?.MIDFACE),
+                              JSON.stringify(wendellWylie?.MIDFACE),
                             );
                             data.append(
                               'lower_face',
-                              JSON.stringify(props.wendellWylie?.LOWERFACE),
+                              JSON.stringify(wendellWylie?.LOWERFACE),
                             );
 
                             _addAnalysisPatient(data)
@@ -2361,10 +2602,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     autohide: true,
                                     visibilityTime: 2500,
                                   });
-                                  props.set_loading_global(false);
-                                  props.set_press_save_analysis(false);
+                                  set_loading_global_handler(false);
+                                  set_press_save_analysis_handler(false);
                                   setTimeout(() => {
-                                    props.navigation.goBack();
+                                    navigation.goBack();
                                   }, 1000);
                                 } else {
                                   Toast.show({
@@ -2373,50 +2614,50 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     autohide: true,
                                     visibilityTime: 2500,
                                   });
-                                  props.set_loading_global(false);
-                                  props.set_press_save_analysis(false);
+                                  set_loading_global_handler(false);
+                                  set_press_save_analysis_handler(false);
                                 }
                               })
                               .catch((errornya) => {
                                 console.log('ERROR ### 1 :' + errornya);
-                                props.set_loading_global(false);
-                                props.set_press_save_analysis(false);
+                                set_loading_global_handler(false);
+                                set_press_save_analysis_handler(false);
                                 // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
                               });
                           }
                         })
                         .catch((error) => {
                           console.log(error);
-                          props.set_loading_global(false);
-                          props.set_press_save_analysis(false);
+                          set_loading_global_handler(false);
+                          set_press_save_analysis_handler(false);
                         });
                     }
                   })
                   .catch((errornya) => {
                     console.log('ERROR ### 1 :' + errornya);
-                    props.set_loading_global(false);
-                    props.set_press_save_analysis(false);
+                    set_loading_global_handler(false);
+                    set_press_save_analysis_handler(false);
                     // ToastAndroid.show('LOG Error : ' + error, ToastAndroid.SHORT);
                   });
               }
 
               if (
-                props.imageUri == null &&
-                props.tempGambar !== null &&
+                imageUri == null &&
+                tempGambar !== null &&
                 file.base64 !== null
               ) {
                 var data2 = {
-                  patient_name: props.fullname,
-                  patientid: props.patientid,
+                  patient_name: fullname,
+                  patientid: patientid,
                   pdf_base64: file.base64,
-                  step: props.step,
+                  step: step,
                 };
 
                 var data3 = {
-                  patient_name: props.fullname,
-                  patientid: props.patientid,
+                  patient_name: fullname,
+                  patientid: patientid,
                   image_analysis: uri,
-                  step: props.step,
+                  step: step,
                 };
 
                 _addImageAnalysis(data3)
@@ -2428,72 +2669,72 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                           console.log(result2);
                           if (result2 == 200) {
                             var data = {
-                              patient_name: props.fullname,
-                              patientid: props.patientid,
+                              patient_name: fullname,
+                              patientid: patientid,
                               platform: Platform.OS,
-                              width: props.widthLastDevice,
-                              height: props.heightLastDevice,
+                              width: widthLastDevice,
+                              height: heightLastDevice,
                               image_analysis: uri,
                               startingPoint: JSON.stringify(
-                                props.startingPoint[0],
+                                startingPoint[0],
                               ),
-                              endPoint: JSON.stringify(props.endPoint[0]),
+                              endPoint: JSON.stringify(endPoint[0]),
                               calibrationDistance:
-                                '' + props.calibrationDistance + '',
-                              sella: JSON.stringify(props.sella[0]),
-                              nasion: JSON.stringify(props.nasion[0]),
-                              pointA: JSON.stringify(props.pointa[0]),
-                              pointB: JSON.stringify(props.pointb[0]),
-                              u6: JSON.stringify(props.u6[0]),
-                              u4: JSON.stringify(props.u4[0]),
-                              gonion: JSON.stringify(props.gonion[0]),
-                              gnathion: JSON.stringify(props.gnathion[0]),
-                              isa: JSON.stringify(props.isa[0]),
-                              isi: JSON.stringify(props.isi[0]),
-                              iia: JSON.stringify(props.iia[0]),
-                              iii: JSON.stringify(props.iii[0]),
-                              ms: JSON.stringify(props.ms[0]),
-                              pogs: JSON.stringify(props.pogs[0]),
-                              ls: JSON.stringify(props.ls[0]),
-                              li: JSON.stringify(props.li[0]),
-                              pog: JSON.stringify(props.pog[0]),
-                              ans: JSON.stringify(props.ans[0]),
-                              menton: JSON.stringify(props.menton[0]),
-                              step: props.step,
-                              sna: JSON.stringify(props.sna),
-                              snb: JSON.stringify(props.snb),
-                              anb: JSON.stringify(props.anb),
-                              pognb: JSON.stringify(props.pogNB),
-                              snop: JSON.stringify(props.snop),
-                              snmp: JSON.stringify(props.snmp),
+                                '' + calibrationDistance + '',
+                              sella: JSON.stringify(sella[0]),
+                              nasion: JSON.stringify(nasion[0]),
+                              pointA: JSON.stringify(pointa[0]),
+                              pointB: JSON.stringify(pointb[0]),
+                              u6: JSON.stringify(u6[0]),
+                              u4: JSON.stringify(u4[0]),
+                              gonion: JSON.stringify(gonion[0]),
+                              gnathion: JSON.stringify(gnathion[0]),
+                              isa: JSON.stringify(isa[0]),
+                              isi: JSON.stringify(isi[0]),
+                              iia: JSON.stringify(iia[0]),
+                              iii: JSON.stringify(iii[0]),
+                              ms: JSON.stringify(ms[0]),
+                              pogs: JSON.stringify(pogs[0]),
+                              ls: JSON.stringify(ls[0]),
+                              li: JSON.stringify(li[0]),
+                              pog: JSON.stringify(pog[0]),
+                              ans: JSON.stringify(ans[0]),
+                              menton: JSON.stringify(menton[0]),
+                              step: step,
+                              sna: JSON.stringify(sna),
+                              snb: JSON.stringify(snb),
+                              anb: JSON.stringify(anb),
+                              pognb: JSON.stringify(pogNB),
+                              snop: JSON.stringify(snop),
+                              snmp: JSON.stringify(snmp),
 
-                              uina_angular: JSON.stringify(props.uina_angular),
+                              uina_angular: JSON.stringify(uina_angular),
 
-                              uina_linear: JSON.stringify(props.uina_linear),
+                              uina_linear: JSON.stringify(uina_linear),
 
-                              linb_angular: JSON.stringify(props.linb_angular),
+                              linb_angular: JSON.stringify(linb_angular),
 
-                              linb_linear: JSON.stringify(props.linb_linear),
+                              linb_linear: JSON.stringify(linb_linear),
 
-                              _iia: JSON.stringify(props._iia),
+                              _iia: JSON.stringify(_iia),
 
-                              upper_lip: JSON.stringify(props.upper_lip)
-                                ? JSON.stringify(props.upper_lip)
+                              upper_lip: JSON.stringify(upper_lip)
+                                ? JSON.stringify(upper_lip)
                                 : null,
 
-                              lower_lip: JSON.stringify(props.lower_lip)
-                                ? JSON.stringify(props.lower_lip)
+                              lower_lip: JSON.stringify(lower_lip)
+                                ? JSON.stringify(lower_lip)
                                 : null,
 
                               mid_face: JSON.stringify(
-                                props.wendellWylie.MIDFACE,
+                                wendellWylie.MIDFACE,
                               )
-                                ? JSON.stringify(props.wendellWylie.MIDFACE)
+                                ? JSON.stringify(wendellWylie.MIDFACE)
                                 : null,
                               lower_face: JSON.stringify(
-                                props.wendellWylie.LOWERFACE,
+                                wendellWylie.LOWERFACE,
                               )
-                                ? JSON.stringify(props.wendellWylie.LOWERFACE)
+                                ? JSON.stringify(wendellWylie.LOWERFACE)
                                 : null,
                             };
 
@@ -2508,10 +2749,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     // visibilityTime: 2500,
                                   });
 
-                                  props.set_loading_global(false);
-                                  props.set_press_save_analysis(false);
+                                  set_loading_global_handler(false);
+                                  set_press_save_analysis_handler(false);
                                   setTimeout(() => {
-                                    props.navigation.goBack();
+                                    navigation.goBack();
                                   }, 1000);
                                 } else {
                                   Toast.show({
@@ -2520,14 +2761,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     autohide: true,
                                     visibilityTime: 2500,
                                   });
-                                  props.set_loading_global(false);
-                                  props.set_press_save_analysis(false);
+                                  set_loading_global_handler(false);
+                                  set_press_save_analysis_handler(false);
                                 }
                               })
                               .catch((error) => {
                                 console.log(error);
-                                props.set_loading_global(false);
-                                props.set_press_save_analysis(false);
+                                set_loading_global_handler(false);
+                                set_press_save_analysis_handler(false);
                               });
                           } else {
                             Toast.show({
@@ -2536,14 +2777,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               autohide: true,
                               visibilityTime: 2500,
                             });
-                            props.set_loading_global(false);
-                            props.set_press_save_analysis(false);
+                            set_loading_global_handler(false);
+                            set_press_save_analysis_handler(false);
                           }
                         })
                         .catch((error) => {
                           console.log(error);
-                          props.set_loading_global(false);
-                          props.set_press_save_analysis(false);
+                          set_loading_global_handler(false);
+                          set_press_save_analysis_handler(false);
                         });
                     } else {
                       Toast.show({
@@ -2552,171 +2793,187 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                         autohide: true,
                         visibilityTime: 2500,
                       });
-                      props.set_loading_global(false);
-                      props.set_press_save_analysis(false);
+                      set_loading_global_handler(false);
+                      set_press_save_analysis_handler(false);
                     }
                   })
                   .catch((error) => {
                     console.log(error);
-                    props.set_loading_global(false);
-                    props.set_press_save_analysis(false);
+                    set_loading_global_handler(false);
+                    set_press_save_analysis_handler(false);
                   });
               }
             }
           },
-          (error) => console.error('Oops, snapshot failed', error),
+          (error) => {
+            console.error('Oops, snapshot failed', error);
+            Toast.show({
+               type: 'error',
+               text1: 'Save data failed, please try again later!',
+               autohide: true,
+               visibilityTime: 2500,
+            });
+            set_loading_global_handler(false);
+          },
         );
       } catch (error) {
         console.log('error', error);
+         Toast.show({
+               type: 'error',
+               text1: 'Save data failed, please try again later!',
+               autohide: true,
+               visibilityTime: 2500,
+            });
+            set_loading_global_handler(false);
       }
     }, 500);
   }
 
   async function _analysis() {
     console.log('ANALYSIS Form');
-    props.navigation.closeDrawer();
+    navigation.closeDrawer();
 
-    if (props.startingPoint.length === 0) {
+    if (startingPoint.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Starting Point!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.endPoint.length === 0) {
+    } else if (endPoint.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position End Point!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.sella.length === 0) {
+    } else if (sella.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Sella!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.nasion.length === 0) {
+    } else if (nasion.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Nasion!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.pointa.length === 0) {
+    } else if (pointa.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Point A!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.pointb.length === 0) {
+    } else if (pointb.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Point B!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.u6.length === 0) {
+    } else if (u6.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position U6!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.u4.length === 0) {
+    } else if (u4.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position U4!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.gonion.length === 0) {
+    } else if (gonion.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Gonion!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.gnathion.length === 0) {
+    } else if (gnathion.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Gnathion!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.isa.length === 0) {
+    } else if (isa.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position ISA!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.isi.length === 0) {
+    } else if (isi.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position ISI!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.iia.length === 0) {
+    } else if (iia.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position IIA!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.iii.length === 0) {
+    } else if (iii.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position III!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.ms.length === 0) {
+    } else if (ms.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position MS!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.pogs.length === 0) {
+    } else if (pogs.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Soft Pogonion (Pog`)!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.ls.length === 0) {
+    } else if (ls.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position LS!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.li.length === 0) {
+    } else if (li.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position LI!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.pog.length === 0) {
+    } else if (pog.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Pogonion (Pog)!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.ans.length === 0) {
+    } else if (ans.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position ANS!',
         autohide: true,
         visibilityTime: 2500,
       });
-    } else if (props.menton.length === 0) {
+    } else if (menton.length === 0) {
       Toast.show({
         type: 'info',
         text1: 'Please select position Menton!',
@@ -2724,6 +2981,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         visibilityTime: 2500,
       });
     } else {
+      console.log('masuk else');
       let _SNA = null;
       let _SNB = null;
       let _ANB = null;
@@ -2740,14 +2998,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       let _WendellWylie = null;
 
       console.log('ANALYSIS Ceph');
-      props.set_loading_global(true);
-      props.set_markingdot(false);
-      props.set_resultanalysis(true);
+      set_loading_global_handler(true);
+      set_markingdot_handler(false);
+      set_resultanalysis_handler(true);
 
-      const _calibrationDistance = Number(props.calibrationDistance);
+      const _calibrationDistance = Number(calibrationDistance);
       const _calibrationPointDistance = await distanceBetween(
-        props.startingPoint[0],
-        props.endPoint[0],
+        startingPoint[0],
+        endPoint[0],
       );
 
       let _calibrationRatio = 0;
@@ -2757,96 +3015,96 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
       )
         _calibrationRatio = _calibrationDistance / _calibrationPointDistance;
 
-      _SNA = await SNA(props.sella[0], props.nasion[0], props.pointa[0]);
-      props.set_sna(_SNA);
+      _SNA = await SNA(sella[0], nasion[0], pointa[0]);
+      set_sna_handler(_SNA);
 
-      _SNB = await SNB(props.sella[0], props.nasion[0], props.pointb[0]);
-      props.set_snb(_SNB);
-      _ANB = await ANB(props.pointa[0], props.nasion[0], props.pointb[0]);
-      props.set_anb(_ANB);
+      _SNB = await SNB(sella[0], nasion[0], pointb[0]);
+      set_snb_handler(_SNB);
+      _ANB = await ANB(pointa[0], nasion[0], pointb[0]);
+      set_anb_handler(_ANB);
       _PogNB = await PogNB(
-        props.pog[0],
-        props.nasion[0],
-        props.pointb[0],
+        pog[0],
+        nasion[0],
+        pointb[0],
         _calibrationRatio,
       );
-      props.set_pogNB(_PogNB);
+      set_pogNB_handler(_PogNB);
       _SNOP = await SNOP(
-        props.sella[0],
-        props.nasion[0],
-        props.u6[0],
-        props.u4[0],
+        sella[0],
+        nasion[0],
+        u6[0],
+        u4[0],
       );
-      props.set_snop(_SNOP);
+      set_snop_handler(_SNOP);
       _SNMP = await SNMP(
-        props.sella[0],
-        props.nasion[0],
-        props.gonion[0],
-        props.gnathion[0],
+        sella[0],
+        nasion[0],
+        gonion[0],
+        gnathion[0],
       );
-      props.set_snmp(_SNMP);
+      set_snmp_handler(_SNMP);
       _UINA_Angular = await UINA_ANGULAR(
-        props.nasion[0],
-        props.pointa[0],
-        props.isa[0],
-        props.isi[0],
+        nasion[0],
+        pointa[0],
+        isa[0],
+        isi[0],
       );
-      props.set_uina_angular(_UINA_Angular);
+      set_uina_angular_handler(_UINA_Angular);
       _UINA_Linear = await UINA_LINEAR(
-        props.nasion[0],
-        props.pointa[0],
-        props.isa[0],
-        props.isi[0],
+        nasion[0],
+        pointa[0],
+        isa[0],
+        isi[0],
         _calibrationRatio,
       );
-      props.set_uina_linear(_UINA_Linear);
+      set_uina_linear_handler(_UINA_Linear);
       _LINB_Angular = await LINB_ANGULAR(
-        props.nasion[0],
-        props.pointb[0],
-        props.iia[0],
-        props.iii[0],
+        nasion[0],
+        pointb[0],
+        iia[0],
+        iii[0],
       );
-      props.set_linb_angular(_LINB_Angular);
+      set_linb_angular_handler(_LINB_Angular);
       _LINB_Linear = await LINB_LINEAR(
-        props.nasion[0],
-        props.pointb[0],
-        props.iia[0],
-        props.iii[0],
+        nasion[0],
+        pointb[0],
+        iia[0],
+        iii[0],
         _calibrationRatio,
       );
-      props.set_linb_linear(_LINB_Linear);
-      __IIA = await IIA(props.isa[0], props.isi[0], props.iia[0], props.iii[0]);
-      props.set__iia(__IIA);
+      set_linb_linear_handler(_LINB_Linear);
+      __IIA = await IIA(isa[0], isi[0], iia[0], iii[0]);
+      set__iia_handler(__IIA);
       _Upper_Lip = await UPPER_LIP(
-        props.ms[0],
-        props.pogs[0],
-        props.ls[0],
+        ms[0],
+        pogs[0],
+        ls[0],
         _calibrationRatio,
       );
-      props.set_upper_lip(_Upper_Lip);
+      set_upper_lip_handler(_Upper_Lip);
       _Lower_Lip = await LOWER_LIP(
-        props.ms[0],
-        props.pogs[0],
-        props.li[0],
+        ms[0],
+        pogs[0],
+        li[0],
         _calibrationRatio,
       );
-      props.set_lower_lip(_Lower_Lip);
+      set_lower_lip_handler(_Lower_Lip);
       _WendellWylie = await WendellWylie(
-        props.nasion[0],
-        props.ans[0],
-        props.menton[0],
+        nasion[0],
+        ans[0],
+        menton[0],
         _calibrationRatio,
       );
 
-      props.set_wendellwylie(_WendellWylie);
+      set_wendellwylie_handler(_WendellWylie);
 
-      props.set_reset_scale_image(true);
+      set_reset_scale_image_handler(true);
 
       if (_WendellWylie.LOWERFACE.value) {
-        props.set_enablesave(true);
-        props.set_loading(false);
-        props.set_loading_global(false);
-        props.navigation.openDrawer();
+        set_enablesave_handler(true);
+        set_loading_handler(false);
+        set_loading_global_handler(false);
+        navigation.openDrawer();
       }
 
       return null;
@@ -2915,26 +3173,26 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         {
           text: 'DONT SAVE',
           onPress: () => {
-            props.navigation.goBack();
+            navigation.goBack();
           },
           style: 'cancel',
         },
-        {text: 'SAVE', onPress: () => props.set_press_save_analysis(true)},
+        {text: 'SAVE', onPress: () => set_press_save_analysis_handler(true)},
       ],
     );
     return true;
   }
 
   useEffect(() => {
-    if (props.pressAnalysis == true) {
+    if (pressAnalysis == true) {
       exportToPdf();
-      props.set_press_analysis(false);
+      set_press_analysis_handler(false);
     }
 
     return () => {
-      props.set_press_analysis(false);
+      set_press_analysis_handler(false);
     };
-  }, [props.pressAnalysis]);
+  }, [pressAnalysis]);
 
   const STATUS_BAR_HEIGHT =
     Platform.OS === 'ios' ? 20 : StatusBar.currentHeight;
@@ -2954,12 +3212,13 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
   return (
     <>
+   
       <ActivityIndicator
-        animating={props.loadingGlobal}
+       animating={loadingGlobal}
         size={'large'}
         style={{
           position: 'absolute',
-          zIndex: props.loadingGlobal == true ? 9999 : 0,
+            zIndex: loadingGlobal == true ? 9999 : 0,
           bottom: 0,
           top: 0,
           right: 0,
@@ -2967,7 +3226,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           justifyContent: 'center',
           alignSelf: 'center',
           backgroundColor: 'rgba(52, 52, 52, 0.8)',
-          display: props.loadingGlobal == true ? 'flex' : 'none',
+          display: loadingGlobal == true ? 'flex' : 'none',
         }}
       />
       <View
@@ -2980,10 +3239,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           // height: 844,
           flex: 1,
         }}>
-        <StatusBarPlaceHolder />
+      { Platform.OS === 'ios' ?  <StatusBarPlaceHolder /> : null} 
 
         <Appbar.Header
           style={{
+            height:hp(7),
             backgroundColor: '#637363',
             // position: 'absolute',
             // top: 0,
@@ -2993,15 +3253,18 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
           }}>
           <Appbar.BackAction
             onPress={() =>
-              props.tempGambar ? backActionHeader() : props.navigation.goBack()
+              tempGambar ? backActionHeader() : navigation.goBack()
             }
+            color='white'
           />
 
-          {props.bantuMarker == 3 ? (
+          {bantuMarker == 3 ? (
+
+            
             <TextInput
-              value={props.calibrationDistance ? props.calibrationDistance : ''}
+              value={calibrationDistance ? calibrationDistance : ''}
               onChangeText={(val) =>
-                props.set_calibrationDistance(val.replace(/,/g, '.'))
+                set_calibrationDistance_handler(val.replace(/,/g, '.'))
               }
               label={''}
               keyboardType="decimal-pad"
@@ -3010,51 +3273,60 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               underlineColor="transparent"
               activeUnderlineColor="transparent"
               underlineColorAndroid={'transparent'}
-              onSubmitEditing={() => props.navigation.openDrawer()}
+              onSubmitEditing={() => navigation.openDrawer()}
+             textAlignVertical="center"
+               verticalAlign='middle'
+              mode='flat'
+ contentStyle={{paddingVertical:0}}
               style={{
-                flex: 1,
+                flex:1,
+            height:50,
+              justifyContent:'center',             
                 borderTopRightRadius: 5,
                 borderTopLeftRadius: 5,
                 borderBottomRightRadius: 5,
                 borderBottomLeftRadius: 5,
-                height: hp(5),
-                marginHorizontal: '7%',
+                 fontSize: 16,
+                 
+    borderWidth: 1,
+    borderColor: '#ccc',
+    verticalAlign: 'center', 
               }}
             />
           ) : (
             <Appbar.Content
-              title={props.headerText}
-              subtitle={props.subHeaderText}
-              titleStyle={{
-                textAlign: 'center',
-                flexWrap: 'wrap',
-                fontSize: wp(3.5),
-              }}
-              subtitleStyle={{
-                textAlign: 'center',
-                flexWrap: 'wrap',
-                fontSize: wp(2.5),
-              }}
-              // style={{marginLeft: props.tempGambar ? 0 : wp(-18)}}
-              color="white"
+              title={  <>
+                    <Text variant="titleMedium" 
+                          style={{ textAlign: 'center',
+                          flexWrap: 'wrap',
+                          fontSize: wp(3.5),color:'white'}}>{headerText}</Text>
+                    <Text variant="bodySmall" style={{ textAlign: 'center',
+                          flexWrap: 'wrap',
+                          fontSize: wp(2.5),color:'white'}}>
+                      {subHeaderText}
+                    </Text>
+                  </>}
+              
             />
+
+           
           )}
 
-          {props.disablePointer !== 'none' ? (
+          {disablePointer !== 'none' ? (
             <>
-              {props.tempGambar ? (
+              {tempGambar ? (
                 <>
                   <Appbar.Action
                     style={{
                       display:
-                        props.bantuMarker >= 1 && props.bantuMarker < 23
+                        bantuMarker >= 1 && bantuMarker < 23
                           ? 'flex'
                           : 'none',
                     }}
                     size={wp(6)}
                     icon={'help-circle-outline'}
                     onPress={() => {
-                      helpPopUp(props.bantuMarker);
+                      helpPopUp(bantuMarker);
                     }}
                     color="white"
                   />
@@ -3062,7 +3334,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                   <Appbar.Action
                     icon="menu"
                     onPress={() => {
-                      props.navigation.openDrawer();
+                      navigation.openDrawer();
                     }}
                     color="white"
                   />
@@ -3074,7 +3346,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               icon={'menu'}
               size={wp(6)}
               onPress={() => {
-                props.navigation.openDrawer();
+                navigation.openDrawer();
               }}
               color="white"
             />
@@ -3088,10 +3360,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
         {/* ======================================================================== */}
 
-        {props.bantuMarker > 0 && props.bantuMarker <= 22 ? (
+        {bantuMarker > 0 && bantuMarker <= 22 ? (
           <Animated.View
             style={{
-              display: props.tempGambar ? 'flex' : 'none',
+              display: tempGambar ? 'flex' : 'none',
               // width: '100%',
               // height: wp(50),
               backgroundColor: 'black',
@@ -3100,7 +3372,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
               zIndex: 1,
               left: 0,
               right: 0,
-              top: Platform.OS == 'ios' ? wp(25) : wp(13),
+              top: Platform.OS == 'ios' ? wp(25) : wp(14),
               // flexShrink: 1,
             }}>
             <Text
@@ -3121,10 +3393,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         <View style={styles.container}>
           {titleText ? (
             <>
-              {props.loading ? (
+              {loading ? (
                 <>
                   <ActivityIndicator
-                    animating={props.loading}
+                    animating={loading}
                     style={{alignSelf: 'center', marginTop: wp(-50)}}
                     size="large"
                     color="white"
@@ -3161,7 +3433,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                     // centerOn={scaleScreen}
                   >
                     <ImageBackground
-                      source={props.tempGambar}
+                      source={tempGambar}
                       resizeMode="contain"
                       style={{
                         minWidth: 375,
@@ -3208,23 +3480,23 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                             minWidth: 375,
                             minHeight: 667,
                           }}>
-                          {/* {props.bantuMarker > 0 &&
+                          {/* {bantuMarker > 0 &&
                           marker.length > 0 &&
-                          props.selectid == null &&
+                          selectid == null &&
                           bantuClick == true
                             ? marker.map((value, index) => {
                                 if (value?.x && value?.y) {
                                   if (
-                                    props.bantuMarker > 3 &&
-                                    props.bantuMarker <= 22
+                                    bantuMarker > 3 &&
+                                    bantuMarker <= 22
                                   ) {
                                     console.log(
                                       parseInt(index + 2) +
                                         ' ==== ' +
-                                        props.bantuMarker,
+                                        bantuMarker,
                                     );
                                     if (
-                                      parseInt(index + 2) == props.bantuMarker
+                                      parseInt(index + 2) == bantuMarker
                                     ) {
                                       console.log('###### MASUK #####');
                                       return (
@@ -3251,7 +3523,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                         />
                                       );
                                     }
-                                  } else if (props.bantuMarker === 3) {
+                                  } else if (bantuMarker === 3) {
                                     return (
                                       <AnimatedCircle
                                         key={index}
@@ -3265,7 +3537,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                     );
                                   } else {
                                     if (
-                                      parseInt(index + 1) == props.bantuMarker
+                                      parseInt(index + 1) == bantuMarker
                                     ) {
                                       return (
                                         <AnimatedCircle
@@ -3297,17 +3569,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                             : null} */}
 
                           {/* {console.log(
-                            actuatedNormalize(props.startingPoint[0]?.x),
+                            actuatedNormalize(startingPoint[0]?.x),
                           )} */}
-                          {props.startingPoint[0]?.x ? (
+                          {startingPoint[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.startingPoint[0]?.x}
-                              cy={props.startingPoint[0]?.y}
+                              cx={startingPoint[0]?.x}
+                              cy={startingPoint[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 1 &&
-                                props.startingPoint.length > 0
+                                bantuMarker == 1 &&
+                                startingPoint.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3315,15 +3587,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.endPoint[0]?.x ? (
+                          {endPoint[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.endPoint[0]?.x}
-                              cy={props.endPoint[0]?.y}
+                              cx={endPoint[0]?.x}
+                              cy={endPoint[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 2 &&
-                                props.endPoint.length > 0
+                                bantuMarker == 2 &&
+                                endPoint.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3332,14 +3604,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                             />
                           ) : null}
 
-                          {props.sella[0]?.x ? (
+                          {sella[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.sella[0]?.x}
-                              cy={props.sella[0]?.y}
+                              cx={sella[0]?.x}
+                              cy={sella[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 4 && props.sella.length > 0
+                                bantuMarker == 4 && sella.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3347,15 +3619,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.nasion[0]?.x ? (
+                          {nasion[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.nasion[0]?.x}
-                              cy={props.nasion[0]?.y}
+                              cx={nasion[0]?.x}
+                              cy={nasion[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 5 &&
-                                props.nasion.length > 0
+                                bantuMarker == 5 &&
+                                nasion.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3363,15 +3635,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.pointa[0]?.x ? (
+                          {pointa[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.pointa[0]?.x}
-                              cy={props.pointa[0]?.y}
+                              cx={pointa[0]?.x}
+                              cy={pointa[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 6 &&
-                                props.pointa.length > 0
+                                bantuMarker == 6 &&
+                                pointa.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3379,15 +3651,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.pointb[0]?.x ? (
+                          {pointb[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.pointb[0]?.x}
-                              cy={props.pointb[0]?.y}
+                              cx={pointb[0]?.x}
+                              cy={pointb[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 7 &&
-                                props.pointb.length > 0
+                                bantuMarker == 7 &&
+                                pointb.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3395,14 +3667,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.u6[0]?.x ? (
+                          {u6[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.u6[0]?.x}
-                              cy={props.u6[0]?.y}
+                              cx={u6[0]?.x}
+                              cy={u6[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 8 && props.u6.length > 0
+                                bantuMarker == 8 && u6.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3410,14 +3682,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.u4[0]?.x ? (
+                          {u4[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.u4[0]?.x}
-                              cy={props.u4[0]?.y}
+                              cx={u4[0]?.x}
+                              cy={u4[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 9 && props.u4.length > 0
+                                bantuMarker == 9 && u4.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3425,15 +3697,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.gonion[0]?.x ? (
+                          {gonion[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.gonion[0]?.x}
-                              cy={props.gonion[0]?.y}
+                              cx={gonion[0]?.x}
+                              cy={gonion[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 10 &&
-                                props.gonion.length > 0
+                                bantuMarker == 10 &&
+                                gonion.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3441,15 +3713,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.gnathion[0]?.x ? (
+                          {gnathion[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.gnathion[0]?.x}
-                              cy={props.gnathion[0]?.y}
+                              cx={gnathion[0]?.x}
+                              cy={gnathion[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 11 &&
-                                props.gnathion.length > 0
+                                bantuMarker == 11 &&
+                                gnathion.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3457,14 +3729,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.isa[0]?.x ? (
+                          {isa[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.isa[0]?.x}
-                              cy={props.isa[0]?.y}
+                              cx={isa[0]?.x}
+                              cy={isa[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 12 && props.isa.length > 0
+                                bantuMarker == 12 && isa.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3472,14 +3744,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.isi[0]?.x ? (
+                          {isi[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.isi[0]?.x}
-                              cy={props.isi[0]?.y}
+                              cx={isi[0]?.x}
+                              cy={isi[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 13 && props.isi.length > 0
+                                bantuMarker == 13 && isi.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3487,14 +3759,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.iia[0]?.x ? (
+                          {iia[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.iia[0]?.x}
-                              cy={props.iia[0]?.y}
+                              cx={iia[0]?.x}
+                              cy={iia[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 14 && props.iia.length > 0
+                                bantuMarker == 14 && iia.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3502,14 +3774,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.iii[0]?.x ? (
+                          {iii[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.iii[0]?.x}
-                              cy={props.iii[0]?.y}
+                              cx={iii[0]?.x}
+                              cy={iii[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 15 && props.iii.length > 0
+                                bantuMarker == 15 && iii.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3517,14 +3789,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.ms[0]?.x ? (
+                          {ms[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.ms[0]?.x}
-                              cy={props.ms[0]?.y}
+                              cx={ms[0]?.x}
+                              cy={ms[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 16 && props.ms.length > 0
+                                bantuMarker == 16 && ms.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3532,14 +3804,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.pogs[0]?.x ? (
+                          {pogs[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.pogs[0]?.x}
-                              cy={props.pogs[0]?.y}
+                              cx={pogs[0]?.x}
+                              cy={pogs[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 17 && props.pogs.length > 0
+                                bantuMarker == 17 && pogs.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3547,14 +3819,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.ls[0]?.x ? (
+                          {ls[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.ls[0]?.x}
-                              cy={props.ls[0]?.y}
+                              cx={ls[0]?.x}
+                              cy={ls[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 18 && props.ls.length > 0
+                                bantuMarker == 18 && ls.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3562,14 +3834,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.li[0]?.x ? (
+                          {li[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.li[0]?.x}
-                              cy={props.li[0]?.y}
+                              cx={li[0]?.x}
+                              cy={li[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 19 && props.li.length > 0
+                                bantuMarker == 19 && li.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3577,14 +3849,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.pog[0]?.x ? (
+                          {pog[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.pog[0]?.x}
-                              cy={props.pog[0]?.y}
+                              cx={pog[0]?.x}
+                              cy={pog[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 20 && props.pog.length > 0
+                                bantuMarker == 20 && pog.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3592,14 +3864,14 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.ans[0]?.x ? (
+                          {ans[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.ans[0]?.x}
-                              cy={props.ans[0]?.y}
+                              cx={ans[0]?.x}
+                              cy={ans[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 21 && props.ans.length > 0
+                                bantuMarker == 21 && ans.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3607,15 +3879,15 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.menton[0]?.x ? (
+                          {menton[0]?.x ? (
                             <AnimatedCircle
                               key={Math.random()}
-                              cx={props.menton[0]?.x}
-                              cy={props.menton[0]?.y}
+                              cx={menton[0]?.x}
+                              cy={menton[0]?.y}
                               r={fadeAnim}
                               fill={
-                                props.bantuMarker == 22 &&
-                                props.menton.length > 0
+                                bantuMarker == 22 &&
+                                menton.length > 0
                                   ? 'red'
                                   : 'green'
                               }
@@ -3623,35 +3895,35 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               strokeWidth={strokeBorderAnim}
                             />
                           ) : null}
-                          {props.startingPoint[0]?.x && props.endPoint[0]?.x ? (
+                          {startingPoint[0]?.x && endPoint[0]?.x ? (
                             <Line
-                              x1={props.startingPoint[0]?.x}
-                              y1={props.startingPoint[0]?.y}
-                              x2={props.endPoint[0]?.x}
-                              y2={props.endPoint[0]?.y}
+                              x1={startingPoint[0]?.x}
+                              y1={startingPoint[0]?.y}
+                              x2={endPoint[0]?.x}
+                              y2={endPoint[0]?.y}
                               stroke="#8AFF06"
                               strokeWidth="0.8"
                             />
                           ) : null}
-                          {props.markingDot !== true ? (
+                          {markingDot !== true ? (
                             <>
-                              {props.selectid == null ? (
+                              {selectid == null ? (
                                 <>
                                   {/* ==== SNA ==== */}
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
 
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointa[0]?.x}
-                                    y2={props.pointa[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointa[0]?.x}
+                                    y2={pointa[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -3659,17 +3931,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   {/* <Polygon
                                     points={
                                       '' +
-                                      props.nasion[0]?.x +
+                                      nasion[0]?.x +
                                       ',' +
-                                      props.nasion[0]?.y +
+                                      nasion[0]?.y +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x) +
+                                      parseFloat(nasion[0]?.x) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      parseFloat(nasion[0]?.y + 5) +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      parseFloat(nasion[0]?.x - 5) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      parseFloat(nasion[0]?.y + 1) +
                                       ''
                                     }
                                     fill="yellow"
@@ -3681,19 +3953,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== SNB ==== */}
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
 
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -3701,17 +3973,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   <Polygon
                                     points={
                                       '' +
-                                      props.nasion[0]?.x +
+                                      nasion[0]?.x +
                                       ',' +
-                                      props.nasion[0]?.y +
+                                      nasion[0]?.y +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x) +
+                                      parseFloat(nasion[0]?.x) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      parseFloat(nasion[0]?.y + 5) +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      parseFloat(nasion[0]?.x - 5) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      parseFloat(nasion[0]?.y + 1) +
                                       ''
                                     }
                                     fill="yellow"
@@ -3723,18 +3995,18 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== ANB ==== */}
                                   <Line
-                                    x1={props.pointa[0]?.x}
-                                    y1={props.pointa[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={pointa[0]?.x}
+                                    y1={pointa[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -3742,17 +4014,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   {/* <Polygon
                                     points={
                                       '' +
-                                      props.nasion[0]?.x +
+                                      nasion[0]?.x +
                                       ',' +
-                                      props.nasion[0]?.y +
+                                      nasion[0]?.y +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x) +
+                                      parseFloat(nasion[0]?.x) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      parseFloat(nasion[0]?.y + 5) +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      parseFloat(nasion[0]?.x - 5) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      parseFloat(nasion[0]?.y + 1) +
                                       ''
                                     }
                                     fill="yellow"
@@ -3764,28 +4036,28 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== PogNB ==== */}
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.pogNB.analysis?.lines[0].startX}
-                                    y1={props.pogNB.analysis?.lines[0].startY}
-                                    x2={props.pogNB.analysis?.lines[0].endX}
-                                    y2={props.pogNB.analysis?.lines[0].endY}
+                                    x1={pogNB.analysis?.lines[0].startX}
+                                    y1={pogNB.analysis?.lines[0].startY}
+                                    x2={pogNB.analysis?.lines[0].endX}
+                                    y2={pogNB.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2"
                                   />
                                   <Line
-                                    x1={props.pogNB.analysis?.lines[1].startX}
-                                    y1={props.pogNB.analysis?.lines[1].startY}
-                                    x2={props.pogNB.analysis?.lines[1].endX}
-                                    y2={props.pogNB.analysis?.lines[1].endY}
+                                    x1={pogNB.analysis?.lines[1].startX}
+                                    y1={pogNB.analysis?.lines[1].startY}
+                                    x2={pogNB.analysis?.lines[1].endX}
+                                    y2={pogNB.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -3793,36 +4065,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   {/* ==== SNOP ==== */}
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.u6[0]?.x}
-                                    y1={props.u6[0]?.y}
-                                    x2={props.u4[0]?.x}
-                                    y2={props.u4[0]?.y}
+                                    x1={u6[0]?.x}
+                                    y1={u6[0]?.y}
+                                    x2={u4[0]?.x}
+                                    y2={u4[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.snop.analysis?.lines[0].startX}
-                                    y1={props.snop.analysis?.lines[0].startY}
-                                    x2={props.snop.analysis?.lines[0].endX}
-                                    y2={props.snop.analysis?.lines[0].endY}
+                                    x1={snop.analysis?.lines[0].startX}
+                                    y1={snop.analysis?.lines[0].startY}
+                                    x2={snop.analysis?.lines[0].endX}
+                                    y2={snop.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2,2"
                                   />
                                   <Line
-                                    x1={props.snop.analysis?.lines[1].startX}
-                                    y1={props.snop.analysis?.lines[1].startY}
-                                    x2={props.snop.analysis?.lines[1].endX}
-                                    y2={props.snop.analysis?.lines[1].endY}
+                                    x1={snop.analysis?.lines[1].startX}
+                                    y1={snop.analysis?.lines[1].startY}
+                                    x2={snop.analysis?.lines[1].endX}
+                                    y2={snop.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -3832,75 +4104,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   {/* ==== SNMP ==== */}
 
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.gonion[0]?.x}
-                                    y1={props.gonion[0]?.y}
-                                    x2={props.gnathion[0]?.x}
-                                    y2={props.gnathion[0]?.y}
+                                    x1={gonion[0]?.x}
+                                    y1={gonion[0]?.y}
+                                    x2={gnathion[0]?.x}
+                                    y2={gnathion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.snmp.analysis?.lines[0].startX}
-                                    y1={props.snmp.analysis?.lines[0].startY}
-                                    x2={props.snmp.analysis?.lines[0].endX}
-                                    y2={props.snmp.analysis?.lines[0].endY}
+                                    x1={snmp.analysis?.lines[0].startX}
+                                    y1={snmp.analysis?.lines[0].startY}
+                                    x2={snmp.analysis?.lines[0].endX}
+                                    y2={snmp.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2"
                                   />
                                   <Line
-                                    x1={props.snmp.analysis?.lines[1].startX}
-                                    y1={props.snmp.analysis?.lines[1].startY}
-                                    x2={props.snmp.analysis?.lines[1].endX}
-                                    y2={props.snmp.analysis?.lines[1].endY}
-                                    stroke="yellow"
-                                    strokeWidth="0.8"
-                                    stroke-linecap="round"
-                                    strokeDasharray="2"
-                                  />
-
-                                  {/* ==== UINA LINEAR ==== */}
-
-                                  <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointa[0]?.x}
-                                    y2={props.pointa[0]?.y}
-                                    stroke="#8AFF06"
-                                    strokeWidth="0.8"
-                                  />
-                                  <Line
-                                    x1={props.isa[0]?.x}
-                                    y1={props.isa[0]?.y}
-                                    x2={props.isi[0]?.x}
-                                    y2={props.isi[0]?.y}
-                                    stroke="#8AFF06"
-                                    strokeWidth="0.8"
-                                  />
-                                  <Line
-                                    x1={
-                                      props.uina_angular.analysis?.lines[0]
-                                        .startX
-                                    }
-                                    y1={
-                                      props.uina_angular.analysis?.lines[0]
-                                        .startY
-                                    }
-                                    x2={
-                                      props.uina_angular.analysis?.lines[0].endX
-                                    }
-                                    y2={
-                                      props.uina_angular.analysis?.lines[0].endY
-                                    }
+                                    x1={snmp.analysis?.lines[1].startX}
+                                    y1={snmp.analysis?.lines[1].startY}
+                                    x2={snmp.analysis?.lines[1].endX}
+                                    y2={snmp.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -3908,36 +4141,75 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
 
                                   {/* ==== UINA LINEAR ==== */}
+
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointa[0]?.x}
-                                    y2={props.pointa[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointa[0]?.x}
+                                    y2={pointa[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.isa[0]?.x}
-                                    y1={props.isa[0]?.y}
-                                    x2={props.isi[0]?.x}
-                                    y2={props.isi[0]?.y}
+                                    x1={isa[0]?.x}
+                                    y1={isa[0]?.y}
+                                    x2={isi[0]?.x}
+                                    y2={isi[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.uina_linear.analysis?.lines[0]
+                                      uina_angular.analysis?.lines[0]
                                         .startX
                                     }
                                     y1={
-                                      props.uina_linear.analysis?.lines[0]
+                                      uina_angular.analysis?.lines[0]
                                         .startY
                                     }
                                     x2={
-                                      props.uina_linear.analysis?.lines[0].endX
+                                      uina_angular.analysis?.lines[0].endX
                                     }
                                     y2={
-                                      props.uina_linear.analysis?.lines[0].endY
+                                      uina_angular.analysis?.lines[0].endY
+                                    }
+                                    stroke="yellow"
+                                    strokeWidth="0.8"
+                                    stroke-linecap="round"
+                                    strokeDasharray="2"
+                                  />
+
+                                  {/* ==== UINA LINEAR ==== */}
+                                  <Line
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointa[0]?.x}
+                                    y2={pointa[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={isa[0]?.x}
+                                    y1={isa[0]?.y}
+                                    x2={isi[0]?.x}
+                                    y2={isi[0]?.y}
+                                    stroke="#8AFF06"
+                                    strokeWidth="0.8"
+                                  />
+                                  <Line
+                                    x1={
+                                      uina_linear.analysis?.lines[0]
+                                        .startX
+                                    }
+                                    y1={
+                                      uina_linear.analysis?.lines[0]
+                                        .startY
+                                    }
+                                    x2={
+                                      uina_linear.analysis?.lines[0].endX
+                                    }
+                                    y2={
+                                      uina_linear.analysis?.lines[0].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -3946,18 +4218,18 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.uina_linear.analysis?.lines[1]
+                                      uina_linear.analysis?.lines[1]
                                         .startX
                                     }
                                     y1={
-                                      props.uina_linear.analysis?.lines[1]
+                                      uina_linear.analysis?.lines[1]
                                         .startY
                                     }
                                     x2={
-                                      props.uina_linear.analysis?.lines[1].endX
+                                      uina_linear.analysis?.lines[1].endX
                                     }
                                     y2={
-                                      props.uina_linear.analysis?.lines[1].endY
+                                      uina_linear.analysis?.lines[1].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -3967,53 +4239,53 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== LINB ANGULAR ==== */}
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.iii[0]?.x}
-                                    y1={props.iii[0]?.y}
-                                    x2={props.iia[0]?.x}
-                                    y2={props.iia[0]?.y}
+                                    x1={iii[0]?.x}
+                                    y1={iii[0]?.y}
+                                    x2={iia[0]?.x}
+                                    y2={iia[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
 
                                   {/* ==== LINB Linear ==== */}
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.iii[0]?.x}
-                                    y1={props.iii[0]?.y}
-                                    x2={props.iia[0]?.x}
-                                    y2={props.iia[0]?.y}
+                                    x1={iii[0]?.x}
+                                    y1={iii[0]?.y}
+                                    x2={iia[0]?.x}
+                                    y2={iia[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.linb_linear.analysis?.lines[0]
+                                      linb_linear.analysis?.lines[0]
                                         .startX
                                     }
                                     y1={
-                                      props.linb_linear.analysis?.lines[0]
+                                      linb_linear.analysis?.lines[0]
                                         .startY
                                     }
                                     x2={
-                                      props.linb_linear.analysis?.lines[0].endX
+                                      linb_linear.analysis?.lines[0].endX
                                     }
                                     y2={
-                                      props.linb_linear.analysis?.lines[0].endY
+                                      linb_linear.analysis?.lines[0].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -4023,36 +4295,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== IIA  ==== */}
                                   <Line
-                                    x1={props.iii[0]?.x}
-                                    y1={props.iii[0]?.y}
-                                    x2={props.iia[0]?.x}
-                                    y2={props.iia[0]?.y}
+                                    x1={iii[0]?.x}
+                                    y1={iii[0]?.y}
+                                    x2={iia[0]?.x}
+                                    y2={iia[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.isa[0]?.x}
-                                    y1={props.isa[0]?.y}
-                                    x2={props.isi[0]?.x}
-                                    y2={props.isi[0]?.y}
+                                    x1={isa[0]?.x}
+                                    y1={isa[0]?.y}
+                                    x2={isi[0]?.x}
+                                    y2={isi[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props._iia.analysis?.lines[0].startX}
-                                    y1={props._iia.analysis?.lines[0].startY}
-                                    x2={props._iia.analysis?.lines[0].endX}
-                                    y2={props._iia.analysis?.lines[0].endY}
+                                    x1={_iia.analysis?.lines[0].startX}
+                                    y1={_iia.analysis?.lines[0].startY}
+                                    x2={_iia.analysis?.lines[0].endX}
+                                    y2={_iia.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2"
                                   />
                                   <Line
-                                    x1={props._iia.analysis?.lines[1].startX}
-                                    y1={props._iia.analysis?.lines[1].startY}
-                                    x2={props._iia.analysis?.lines[1].endX}
-                                    y2={props._iia.analysis?.lines[1].endY}
+                                    x1={_iia.analysis?.lines[1].startX}
+                                    y1={_iia.analysis?.lines[1].startY}
+                                    x2={_iia.analysis?.lines[1].endX}
+                                    y2={_iia.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -4061,22 +4333,22 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== UPPER LIP ==== */}
                                   <Line
-                                    x1={props.ms[0]?.x}
-                                    y1={props.ms[0]?.y}
-                                    x2={props.pogs[0]?.x}
-                                    y2={props.pogs[0]?.y}
+                                    x1={ms[0]?.x}
+                                    y1={ms[0]?.y}
+                                    x2={pogs[0]?.x}
+                                    y2={pogs[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.upper_lip.analysis?.lines[1].startX
+                                      upper_lip.analysis?.lines[1].startX
                                     }
                                     y1={
-                                      props.upper_lip.analysis?.lines[1].startY
+                                      upper_lip.analysis?.lines[1].startY
                                     }
-                                    x2={props.upper_lip.analysis?.lines[1].endX}
-                                    y2={props.upper_lip.analysis?.lines[1].endY}
+                                    x2={upper_lip.analysis?.lines[1].endX}
+                                    y2={upper_lip.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -4085,22 +4357,22 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== LOWER LIP ==== */}
                                   <Line
-                                    x1={props.ms[0]?.x}
-                                    y1={props.ms[0]?.y}
-                                    x2={props.pogs[0]?.x}
-                                    y2={props.pogs[0]?.y}
+                                    x1={ms[0]?.x}
+                                    y1={ms[0]?.y}
+                                    x2={pogs[0]?.x}
+                                    y2={pogs[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.lower_lip.analysis?.lines[1].startX
+                                      lower_lip.analysis?.lines[1].startX
                                     }
                                     y1={
-                                      props.lower_lip.analysis?.lines[1].startY
+                                      lower_lip.analysis?.lines[1].startY
                                     }
-                                    x2={props.lower_lip.analysis?.lines[1].endX}
-                                    y2={props.lower_lip.analysis?.lines[1].endY}
+                                    x2={lower_lip.analysis?.lines[1].endX}
+                                    y2={lower_lip.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -4109,36 +4381,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== MID FACE ==== */}
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.ans[0]?.x}
-                                    y2={props.ans[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={ans[0]?.x}
+                                    y2={ans[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.ans[0]?.x}
-                                    y1={props.ans[0]?.y}
-                                    x2={props.menton[0]?.x}
-                                    y2={props.menton[0]?.y}
+                                    x1={ans[0]?.x}
+                                    y1={ans[0]?.y}
+                                    x2={menton[0]?.x}
+                                    y2={menton[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].startX
                                     }
                                     y1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].startY
                                     }
                                     x2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].endX
                                     }
                                     y2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].endY
                                     }
                                     stroke="yellow"
@@ -4148,19 +4420,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].startX
                                     }
                                     y1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].startY
                                     }
                                     x2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].endX
                                     }
                                     y2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].endY
                                     }
                                     stroke="yellow"
@@ -4170,19 +4442,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].startX
                                     }
                                     y1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].startY
                                     }
                                     x2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].endX
                                     }
                                     y2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].endY
                                     }
                                     stroke="yellow"
@@ -4193,36 +4465,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
 
                                   {/* ==== LOWER FACE ==== */}
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.ans[0]?.x}
-                                    y2={props.ans[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={ans[0]?.x}
+                                    y2={ans[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.ans[0]?.x}
-                                    y1={props.ans[0]?.y}
-                                    x2={props.menton[0]?.x}
-                                    y2={props.menton[0]?.y}
+                                    x1={ans[0]?.x}
+                                    y1={ans[0]?.y}
+                                    x2={menton[0]?.x}
+                                    y2={menton[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].startX
                                     }
                                     y1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].startY
                                     }
                                     x2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].endX
                                     }
                                     y2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].endY
                                     }
                                     stroke="yellow"
@@ -4232,19 +4504,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].startX
                                     }
                                     y1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].startY
                                     }
                                     x2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].endX
                                     }
                                     y2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].endY
                                     }
                                     stroke="yellow"
@@ -4254,19 +4526,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].startX
                                     }
                                     y1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].startY
                                     }
                                     x2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].endX
                                     }
                                     y2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].endY
                                     }
                                     stroke="yellow"
@@ -4277,46 +4549,46 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                 </>
                               ) : null}
                               {/* ==== SNA ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/SNA' ? (
+                              {selectid == 'IDS/ANALYSIS/SNA' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.sella[0]?.x}
-                                    cy={props.sella[0]?.y}
+                                    cx={sella[0]?.x}
+                                    cy={sella[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointa[0]?.x}
-                                    cy={props.pointa[0]?.y}
+                                    cx={pointa[0]?.x}
+                                    cy={pointa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
 
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointa[0]?.x}
-                                    y2={props.pointa[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointa[0]?.x}
+                                    y2={pointa[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -4324,37 +4596,37 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== SNB ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/SNB' ? (
+                              {selectid == 'IDS/ANALYSIS/SNB' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.sella[0]?.x}
-                                    cy={props.sella[0]?.y}
+                                    cx={sella[0]?.x}
+                                    cy={sella[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointb[0]?.x}
-                                    cy={props.pointb[0]?.y}
+                                    cx={pointb[0]?.x}
+                                    cy={pointb[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -4362,17 +4634,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   {/* <Polygon
                                     points={
                                       '' +
-                                      props.nasion[0]?.x +
+                                      nasion[0]?.x +
                                       ',' +
-                                      props.nasion[0]?.y +
+                                      nasion[0]?.y +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x) +
+                                      parseFloat(nasion[0]?.x) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      parseFloat(nasion[0]?.y + 5) +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x - 5) +
+                                      parseFloat(nasion[0]?.x - 5) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      parseFloat(nasion[0]?.y + 1) +
                                       ''
                                     }
                                     fill="yellow"
@@ -4383,10 +4655,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   /> */}
 
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -4394,45 +4666,45 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== ANB ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/ANB' ? (
+                              {selectid == 'IDS/ANALYSIS/ANB' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.pointa[0]?.x}
-                                    cy={props.pointa[0]?.y}
+                                    cx={pointa[0]?.x}
+                                    cy={pointa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointb[0]?.x}
-                                    cy={props.pointb[0]?.y}
+                                    cx={pointb[0]?.x}
+                                    cy={pointb[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.pointa[0]?.x}
-                                    y1={props.pointa[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={pointa[0]?.x}
+                                    y1={pointa[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -4440,17 +4712,17 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   {/* <Polygon
                                     points={
                                       '' +
-                                      props.nasion[0]?.x +
+                                      nasion[0]?.x +
                                       ',' +
-                                      props.nasion[0]?.y +
+                                      nasion[0]?.y +
                                       ' ' +
-                                      parseFloat(props.nasion[0]?.x) +
+                                      parseFloat(nasion[0]?.x) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 5) +
+                                      parseFloat(nasion[0]?.y + 5) +
                                       ' ' +
-                                      parseFloat(props.pointb[0]?.x - 5) +
+                                      parseFloat(pointb[0]?.x - 5) +
                                       ',' +
-                                      parseFloat(props.nasion[0]?.y + 1) +
+                                      parseFloat(nasion[0]?.y + 1) +
                                       ''
                                     }
                                     fill="yellow"
@@ -4463,55 +4735,55 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== PogNB ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/POGNB' ? (
+                              {selectid == 'IDS/ANALYSIS/POGNB' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.pog[0]?.x}
-                                    cy={props.pog[0]?.y}
+                                    cx={pog[0]?.x}
+                                    cy={pog[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointb[0]?.x}
-                                    cy={props.pointb[0]?.y}
+                                    cx={pointb[0]?.x}
+                                    cy={pointb[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.pogNB.analysis?.lines[0].startX}
-                                    y1={props.pogNB.analysis?.lines[0].startY}
-                                    x2={props.pogNB.analysis?.lines[0].endX}
-                                    y2={props.pogNB.analysis?.lines[0].endY}
+                                    x1={pogNB.analysis?.lines[0].startX}
+                                    y1={pogNB.analysis?.lines[0].startY}
+                                    x2={pogNB.analysis?.lines[0].endX}
+                                    y2={pogNB.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2"
                                   />
                                   <Line
-                                    x1={props.pogNB.analysis?.lines[1].startX}
-                                    y1={props.pogNB.analysis?.lines[1].startY}
-                                    x2={props.pogNB.analysis?.lines[1].endX}
-                                    y2={props.pogNB.analysis?.lines[1].endY}
+                                    x1={pogNB.analysis?.lines[1].startX}
+                                    y1={pogNB.analysis?.lines[1].startY}
+                                    x2={pogNB.analysis?.lines[1].endX}
+                                    y2={pogNB.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -4521,71 +4793,71 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== SNOP ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/SNOP' ? (
+                              {selectid == 'IDS/ANALYSIS/SNOP' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.sella[0]?.x}
-                                    cy={props.sella[0]?.y}
+                                    cx={sella[0]?.x}
+                                    cy={sella[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.u6[0]?.x}
-                                    cy={props.u6[0]?.y}
+                                    cx={u6[0]?.x}
+                                    cy={u6[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.u4[0]?.x}
-                                    cy={props.u4[0]?.y}
+                                    cx={u4[0]?.x}
+                                    cy={u4[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.u6[0]?.x}
-                                    y1={props.u6[0]?.y}
-                                    x2={props.u4[0]?.x}
-                                    y2={props.u4[0]?.y}
+                                    x1={u6[0]?.x}
+                                    y1={u6[0]?.y}
+                                    x2={u4[0]?.x}
+                                    y2={u4[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.snop.analysis?.lines[0].startX}
-                                    y1={props.snop.analysis?.lines[0].startY}
-                                    x2={props.snop.analysis?.lines[0].endX}
-                                    y2={props.snop.analysis?.lines[0].endY}
+                                    x1={snop.analysis?.lines[0].startX}
+                                    y1={snop.analysis?.lines[0].startY}
+                                    x2={snop.analysis?.lines[0].endX}
+                                    y2={snop.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2,2"
                                   />
                                   <Line
-                                    x1={props.snop.analysis?.lines[1].startX}
-                                    y1={props.snop.analysis?.lines[1].startY}
-                                    x2={props.snop.analysis?.lines[1].endX}
-                                    y2={props.snop.analysis?.lines[1].endY}
+                                    x1={snop.analysis?.lines[1].startX}
+                                    y1={snop.analysis?.lines[1].startY}
+                                    x2={snop.analysis?.lines[1].endX}
+                                    y2={snop.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -4595,35 +4867,35 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== SNMP ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/SNMP' ? (
+                              {selectid == 'IDS/ANALYSIS/SNMP' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.sella[0]?.x}
-                                    cy={props.sella[0]?.y}
+                                    cx={sella[0]?.x}
+                                    cy={sella[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.gonion[0]?.x}
-                                    cy={props.gonion[0]?.y}
+                                    cx={gonion[0]?.x}
+                                    cy={gonion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.gnathion[0]?.x}
-                                    cy={props.gnathion[0]?.y}
+                                    cx={gnathion[0]?.x}
+                                    cy={gnathion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
@@ -4631,36 +4903,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
 
                                   <Line
-                                    x1={props.sella[0]?.x}
-                                    y1={props.sella[0]?.y}
-                                    x2={props.nasion[0]?.x}
-                                    y2={props.nasion[0]?.y}
+                                    x1={sella[0]?.x}
+                                    y1={sella[0]?.y}
+                                    x2={nasion[0]?.x}
+                                    y2={nasion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.gonion[0]?.x}
-                                    y1={props.gonion[0]?.y}
-                                    x2={props.gnathion[0]?.x}
-                                    y2={props.gnathion[0]?.y}
+                                    x1={gonion[0]?.x}
+                                    y1={gonion[0]?.y}
+                                    x2={gnathion[0]?.x}
+                                    y2={gnathion[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.snmp.analysis?.lines[0].startX}
-                                    y1={props.snmp.analysis?.lines[0].startY}
-                                    x2={props.snmp.analysis?.lines[0].endX}
-                                    y2={props.snmp.analysis?.lines[0].endY}
+                                    x1={snmp.analysis?.lines[0].startX}
+                                    y1={snmp.analysis?.lines[0].startY}
+                                    x2={snmp.analysis?.lines[0].endX}
+                                    y2={snmp.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2"
                                   />
                                   <Line
-                                    x1={props.snmp.analysis?.lines[1].startX}
-                                    y1={props.snmp.analysis?.lines[1].startY}
-                                    x2={props.snmp.analysis?.lines[1].endX}
-                                    y2={props.snmp.analysis?.lines[1].endY}
+                                    x1={snmp.analysis?.lines[1].startX}
+                                    y1={snmp.analysis?.lines[1].startY}
+                                    x2={snmp.analysis?.lines[1].endX}
+                                    y2={snmp.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -4670,78 +4942,78 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== UINA ANGULAR ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/UINA_ANGULAR' ? (
+                              {selectid == 'IDS/ANALYSIS/UINA_ANGULAR' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointa[0]?.x}
-                                    cy={props.pointa[0]?.y}
+                                    cx={pointa[0]?.x}
+                                    cy={pointa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.isa[0]?.x}
-                                    cy={props.isa[0]?.y}
+                                    cx={isa[0]?.x}
+                                    cy={isa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.isi[0]?.x}
-                                    cy={props.isi[0]?.y}
+                                    cx={isi[0]?.x}
+                                    cy={isi[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.sella[0]?.x}
-                                    cy={props.sella[0]?.y}
+                                    cx={sella[0]?.x}
+                                    cy={sella[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointa[0]?.x}
-                                    y2={props.pointa[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointa[0]?.x}
+                                    y2={pointa[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.isa[0]?.x}
-                                    y1={props.isa[0]?.y}
-                                    x2={props.isi[0]?.x}
-                                    y2={props.isi[0]?.y}
+                                    x1={isa[0]?.x}
+                                    y1={isa[0]?.y}
+                                    x2={isi[0]?.x}
+                                    y2={isi[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.uina_angular.analysis?.lines[0]
+                                      uina_angular.analysis?.lines[0]
                                         .startX
                                     }
                                     y1={
-                                      props.uina_angular.analysis?.lines[0]
+                                      uina_angular.analysis?.lines[0]
                                         .startY
                                     }
                                     x2={
-                                      props.uina_angular.analysis?.lines[0].endX
+                                      uina_angular.analysis?.lines[0].endX
                                     }
                                     y2={
-                                      props.uina_angular.analysis?.lines[0].endY
+                                      uina_angular.analysis?.lines[0].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -4752,27 +5024,27 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== UINA LINEAR ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/UINA_LINEAR' ? (
+                              {selectid == 'IDS/ANALYSIS/UINA_LINEAR' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointa[0]?.x}
-                                    cy={props.pointa[0]?.y}
+                                    cx={pointa[0]?.x}
+                                    cy={pointa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.isa[0]?.x}
-                                    cy={props.isa[0]?.y}
+                                    cx={isa[0]?.x}
+                                    cy={isa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
@@ -4780,43 +5052,43 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
 
                                   <AnimatedCircle
-                                    cx={props.isi[0]?.x}
-                                    cy={props.isi[0]?.y}
+                                    cx={isi[0]?.x}
+                                    cy={isi[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointa[0]?.x}
-                                    y2={props.pointa[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointa[0]?.x}
+                                    y2={pointa[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.isa[0]?.x}
-                                    y1={props.isa[0]?.y}
-                                    x2={props.isi[0]?.x}
-                                    y2={props.isi[0]?.y}
+                                    x1={isa[0]?.x}
+                                    y1={isa[0]?.y}
+                                    x2={isi[0]?.x}
+                                    y2={isi[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.uina_linear.analysis?.lines[0]
+                                      uina_linear.analysis?.lines[0]
                                         .startX
                                     }
                                     y1={
-                                      props.uina_linear.analysis?.lines[0]
+                                      uina_linear.analysis?.lines[0]
                                         .startY
                                     }
                                     x2={
-                                      props.uina_linear.analysis?.lines[0].endX
+                                      uina_linear.analysis?.lines[0].endX
                                     }
                                     y2={
-                                      props.uina_linear.analysis?.lines[0].endY
+                                      uina_linear.analysis?.lines[0].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -4825,18 +5097,18 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.uina_linear.analysis?.lines[1]
+                                      uina_linear.analysis?.lines[1]
                                         .startX
                                     }
                                     y1={
-                                      props.uina_linear.analysis?.lines[1]
+                                      uina_linear.analysis?.lines[1]
                                         .startY
                                     }
                                     x2={
-                                      props.uina_linear.analysis?.lines[1].endX
+                                      uina_linear.analysis?.lines[1].endX
                                     }
                                     y2={
-                                      props.uina_linear.analysis?.lines[1].endY
+                                      uina_linear.analysis?.lines[1].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -4847,53 +5119,53 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== LINB ANGULAR ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/LINB_ANGULAR' ? (
+                              {selectid == 'IDS/ANALYSIS/LINB_ANGULAR' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointb[0]?.x}
-                                    cy={props.pointb[0]?.y}
+                                    cx={pointb[0]?.x}
+                                    cy={pointb[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.iii[0]?.x}
-                                    cy={props.iii[0]?.y}
+                                    cx={iii[0]?.x}
+                                    cy={iii[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.iia[0]?.x}
-                                    cy={props.iia[0]?.y}
+                                    cx={iia[0]?.x}
+                                    cy={iia[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.iii[0]?.x}
-                                    y1={props.iii[0]?.y}
-                                    x2={props.iia[0]?.x}
-                                    y2={props.iia[0]?.y}
+                                    x1={iii[0]?.x}
+                                    y1={iii[0]?.y}
+                                    x2={iia[0]?.x}
+                                    y2={iia[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
@@ -4901,70 +5173,70 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== LINB Linear ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/LINB_LINEAR' ? (
+                              {selectid == 'IDS/ANALYSIS/LINB_LINEAR' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pointb[0]?.x}
-                                    cy={props.pointb[0]?.y}
+                                    cx={pointb[0]?.x}
+                                    cy={pointb[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.iii[0]?.x}
-                                    cy={props.iii[0]?.y}
+                                    cx={iii[0]?.x}
+                                    cy={iii[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.iia[0]?.x}
-                                    cy={props.iia[0]?.y}
+                                    cx={iia[0]?.x}
+                                    cy={iia[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.pointb[0]?.x}
-                                    y2={props.pointb[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={pointb[0]?.x}
+                                    y2={pointb[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.iii[0]?.x}
-                                    y1={props.iii[0]?.y}
-                                    x2={props.iia[0]?.x}
-                                    y2={props.iia[0]?.y}
+                                    x1={iii[0]?.x}
+                                    y1={iii[0]?.y}
+                                    x2={iia[0]?.x}
+                                    y2={iia[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.linb_linear.analysis?.lines[0]
+                                      linb_linear.analysis?.lines[0]
                                         .startX
                                     }
                                     y1={
-                                      props.linb_linear.analysis?.lines[0]
+                                      linb_linear.analysis?.lines[0]
                                         .startY
                                     }
                                     x2={
-                                      props.linb_linear.analysis?.lines[0].endX
+                                      linb_linear.analysis?.lines[0].endX
                                     }
                                     y2={
-                                      props.linb_linear.analysis?.lines[0].endY
+                                      linb_linear.analysis?.lines[0].endY
                                     }
                                     stroke="yellow"
                                     strokeWidth="0.8"
@@ -4975,71 +5247,71 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== IIA  ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/IIA' ? (
+                              {selectid == 'IDS/ANALYSIS/IIA' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.iii[0]?.x}
-                                    cy={props.iii[0]?.y}
+                                    cx={iii[0]?.x}
+                                    cy={iii[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.iia[0]?.x}
-                                    cy={props.iia[0]?.y}
+                                    cx={iia[0]?.x}
+                                    cy={iia[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.isa[0]?.x}
-                                    cy={props.isa[0]?.y}
+                                    cx={isa[0]?.x}
+                                    cy={isa[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.isi[0]?.x}
-                                    cy={props.isi[0]?.y}
+                                    cx={isi[0]?.x}
+                                    cy={isi[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.iii[0]?.x}
-                                    y1={props.iii[0]?.y}
-                                    x2={props.iia[0]?.x}
-                                    y2={props.iia[0]?.y}
+                                    x1={iii[0]?.x}
+                                    y1={iii[0]?.y}
+                                    x2={iia[0]?.x}
+                                    y2={iia[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.isa[0]?.x}
-                                    y1={props.isa[0]?.y}
-                                    x2={props.isi[0]?.x}
-                                    y2={props.isi[0]?.y}
+                                    x1={isa[0]?.x}
+                                    y1={isa[0]?.y}
+                                    x2={isi[0]?.x}
+                                    y2={isi[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props._iia.analysis?.lines[0].startX}
-                                    y1={props._iia.analysis?.lines[0].startY}
-                                    x2={props._iia.analysis?.lines[0].endX}
-                                    y2={props._iia.analysis?.lines[0].endY}
+                                    x1={_iia.analysis?.lines[0].startX}
+                                    y1={_iia.analysis?.lines[0].startY}
+                                    x2={_iia.analysis?.lines[0].endX}
+                                    y2={_iia.analysis?.lines[0].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
                                     strokeDasharray="2"
                                   />
                                   <Line
-                                    x1={props._iia.analysis?.lines[1].startX}
-                                    y1={props._iia.analysis?.lines[1].startY}
-                                    x2={props._iia.analysis?.lines[1].endX}
-                                    y2={props._iia.analysis?.lines[1].endY}
+                                    x1={_iia.analysis?.lines[1].startX}
+                                    y1={_iia.analysis?.lines[1].startY}
+                                    x2={_iia.analysis?.lines[1].endX}
+                                    y2={_iia.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -5049,49 +5321,49 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== UPPER LIP ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/UPPER_LIP' ? (
+                              {selectid == 'IDS/ANALYSIS/UPPER_LIP' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.ms[0]?.x}
-                                    cy={props.ms[0]?.y}
+                                    cx={ms[0]?.x}
+                                    cy={ms[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pogs[0]?.x}
-                                    cy={props.pogs[0]?.y}
+                                    cx={pogs[0]?.x}
+                                    cy={pogs[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.ls[0]?.x}
-                                    cy={props.ls[0]?.y}
+                                    cx={ls[0]?.x}
+                                    cy={ls[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.ms[0]?.x}
-                                    y1={props.ms[0]?.y}
-                                    x2={props.pogs[0]?.x}
-                                    y2={props.pogs[0]?.y}
+                                    x1={ms[0]?.x}
+                                    y1={ms[0]?.y}
+                                    x2={pogs[0]?.x}
+                                    y2={pogs[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.upper_lip.analysis?.lines[1].startX
+                                      upper_lip.analysis?.lines[1].startX
                                     }
                                     y1={
-                                      props.upper_lip.analysis?.lines[1].startY
+                                      upper_lip.analysis?.lines[1].startY
                                     }
-                                    x2={props.upper_lip.analysis?.lines[1].endX}
-                                    y2={props.upper_lip.analysis?.lines[1].endY}
+                                    x2={upper_lip.analysis?.lines[1].endX}
+                                    y2={upper_lip.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -5101,49 +5373,49 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== LOWER LIP ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/LOWER_LIP' ? (
+                              {selectid == 'IDS/ANALYSIS/LOWER_LIP' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.ms[0]?.x}
-                                    cy={props.ms[0]?.y}
+                                    cx={ms[0]?.x}
+                                    cy={ms[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.pogs[0]?.x}
-                                    cy={props.pogs[0]?.y}
+                                    cx={pogs[0]?.x}
+                                    cy={pogs[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.li[0]?.x}
-                                    cy={props.li[0]?.y}
+                                    cx={li[0]?.x}
+                                    cy={li[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <Line
-                                    x1={props.ms[0]?.x}
-                                    y1={props.ms[0]?.y}
-                                    x2={props.pogs[0]?.x}
-                                    y2={props.pogs[0]?.y}
+                                    x1={ms[0]?.x}
+                                    y1={ms[0]?.y}
+                                    x2={pogs[0]?.x}
+                                    y2={pogs[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.lower_lip.analysis?.lines[1].startX
+                                      lower_lip.analysis?.lines[1].startX
                                     }
                                     y1={
-                                      props.lower_lip.analysis?.lines[1].startY
+                                      lower_lip.analysis?.lines[1].startY
                                     }
-                                    x2={props.lower_lip.analysis?.lines[1].endX}
-                                    y2={props.lower_lip.analysis?.lines[1].endY}
+                                    x2={lower_lip.analysis?.lines[1].endX}
+                                    y2={lower_lip.analysis?.lines[1].endY}
                                     stroke="yellow"
                                     strokeWidth="0.8"
                                     stroke-linecap="round"
@@ -5153,27 +5425,27 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== MID FACE ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/MIDFACE' ? (
+                              {selectid == 'IDS/ANALYSIS/MIDFACE' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.ans[0]?.x}
-                                    cy={props.ans[0]?.y}
+                                    cx={ans[0]?.x}
+                                    cy={ans[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.menton[0]?.x}
-                                    cy={props.menton[0]?.y}
+                                    cx={menton[0]?.x}
+                                    cy={menton[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
@@ -5181,36 +5453,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
 
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.ans[0]?.x}
-                                    y2={props.ans[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={ans[0]?.x}
+                                    y2={ans[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.ans[0]?.x}
-                                    y1={props.ans[0]?.y}
-                                    x2={props.menton[0]?.x}
-                                    y2={props.menton[0]?.y}
+                                    x1={ans[0]?.x}
+                                    y1={ans[0]?.y}
+                                    x2={menton[0]?.x}
+                                    y2={menton[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].startX
                                     }
                                     y1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].startY
                                     }
                                     x2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].endX
                                     }
                                     y2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[0].endY
                                     }
                                     stroke="yellow"
@@ -5220,19 +5492,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].startX
                                     }
                                     y1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].startY
                                     }
                                     x2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].endX
                                     }
                                     y2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[1].endY
                                     }
                                     stroke="yellow"
@@ -5242,19 +5514,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].startX
                                     }
                                     y1={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].startY
                                     }
                                     x2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].endX
                                     }
                                     y2={
-                                      props.wendellWylie.MIDFACE?.analysis
+                                      wendellWylie.MIDFACE?.analysis
                                         ?.lines[2].endY
                                     }
                                     stroke="yellow"
@@ -5266,27 +5538,27 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                               ) : null}
 
                               {/* ==== LOWER FACE ==== */}
-                              {props.selectid == 'IDS/ANALYSIS/LOWERFACE' ? (
+                              {selectid == 'IDS/ANALYSIS/LOWERFACE' ? (
                                 <>
                                   <AnimatedCircle
-                                    cx={props.nasion[0]?.x}
-                                    cy={props.nasion[0]?.y}
+                                    cx={nasion[0]?.x}
+                                    cy={nasion[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.ans[0]?.x}
-                                    cy={props.ans[0]?.y}
+                                    cx={ans[0]?.x}
+                                    cy={ans[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
                                     strokeWidth="0.5"
                                   />
                                   <AnimatedCircle
-                                    cx={props.menton[0]?.x}
-                                    cy={props.menton[0]?.y}
+                                    cx={menton[0]?.x}
+                                    cy={menton[0]?.y}
                                     r={fadeAnim}
                                     fill="green"
                                     stroke="yellow"
@@ -5294,36 +5566,36 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
 
                                   <Line
-                                    x1={props.nasion[0]?.x}
-                                    y1={props.nasion[0]?.y}
-                                    x2={props.ans[0]?.x}
-                                    y2={props.ans[0]?.y}
+                                    x1={nasion[0]?.x}
+                                    y1={nasion[0]?.y}
+                                    x2={ans[0]?.x}
+                                    y2={ans[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
-                                    x1={props.ans[0]?.x}
-                                    y1={props.ans[0]?.y}
-                                    x2={props.menton[0]?.x}
-                                    y2={props.menton[0]?.y}
+                                    x1={ans[0]?.x}
+                                    y1={ans[0]?.y}
+                                    x2={menton[0]?.x}
+                                    y2={menton[0]?.y}
                                     stroke="#8AFF06"
                                     strokeWidth="0.8"
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].startX
                                     }
                                     y1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].startY
                                     }
                                     x2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].endX
                                     }
                                     y2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[0].endY
                                     }
                                     stroke="yellow"
@@ -5333,19 +5605,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].startX
                                     }
                                     y1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].startY
                                     }
                                     x2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].endX
                                     }
                                     y2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[1].endY
                                     }
                                     stroke="yellow"
@@ -5355,19 +5627,19 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
                                   />
                                   <Line
                                     x1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].startX
                                     }
                                     y1={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].startY
                                     }
                                     x2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].endX
                                     }
                                     y2={
-                                      props.wendellWylie.LOWERFACE?.analysis
+                                      wendellWylie.LOWERFACE?.analysis
                                         ?.lines[2].endY
                                     }
                                     stroke="yellow"
@@ -5392,10 +5664,10 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
             </>
           ) : (
             <>
-              {props.loading ? (
+              {loading ? (
                 <>
                   <ActivityIndicator
-                    animating={props.loading}
+                    animating={loading}
                     style={{alignSelf: 'center', marginTop: wp(-50)}}
                     size="large"
                     color="white"
@@ -5427,11 +5699,11 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
         </View>
 
         <View
-          pointerEvents={props.disablePointer}
+          pointerEvents={disablePointer}
           style={{
             flexDirection: 'row',
             backgroundColor: '#637363',
-            opacity: props.opacityPointer,
+            opacity: opacityPointer,
             borderRadius: 5,
             justifyContent: 'space-between',
             position: 'absolute',
@@ -5617,186 +5889,7 @@ const FormCephalometricAnalysis = (props, {navigation}) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    bantuMarker: state.variabelReducer.bantuMarker,
-    pressAnalysis: state.variabelReducer.pressAnalysis,
-    pressSaveAnalysis: state.variabelReducer.pressSaveAnalysis,
-    resetScaleImage: state.variabelReducer.resetScaleImage,
-    disablePointer: state.variabelReducer.disablePointer,
-    opacityPointer: state.variabelReducer.opacityPointer,
-    startingPoint: state.variabelReducer.startingPoint,
-    endPoint: state.variabelReducer.endPoint,
-    calibrationDistance: state.variabelReducer.calibrationDistance,
-    sella: state.variabelReducer.sella,
-    nasion: state.variabelReducer.nasion,
-    pointa: state.variabelReducer.pointa,
-    pointb: state.variabelReducer.pointb,
-    u6: state.variabelReducer.u6,
-    u4: state.variabelReducer.u4,
-    gonion: state.variabelReducer.gonion,
-    gnathion: state.variabelReducer.gnathion,
-    isa: state.variabelReducer.isa,
-    isi: state.variabelReducer.isi,
-    iia: state.variabelReducer.iia,
-    iii: state.variabelReducer.iii,
-    ms: state.variabelReducer.ms,
-    pogs: state.variabelReducer.pogs,
-    ls: state.variabelReducer.ls,
-    li: state.variabelReducer.li,
-    pog: state.variabelReducer.pog,
-    ans: state.variabelReducer.ans,
-    menton: state.variabelReducer.menton,
-    markingDot: state.variabelReducer.markingDot,
-    resultAnalysis: state.variabelReducer.resultAnalysis,
-    detailResult: state.variabelReducer.detailResult,
-    headerText: state.variabelReducer.headerText,
-    subHeaderText: state.variabelReducer.subHeaderText,
-    loading: state.variabelReducer.loading,
-    loadingGlobal: state.variabelReducer.loadingGlobal,
-    selectid: state.variabelReducer.selectid,
-    widthLastDevice: state.variabelReducer.widthLastDevice,
-    heightLastDevice: state.variabelReducer.heightLastDevice,
-    sna: state.resultReducer.sna,
-    snb: state.resultReducer.snb,
-    anb: state.resultReducer.anb,
-    pogNB: state.resultReducer.pogNB,
-    snop: state.resultReducer.snop,
-    snmp: state.resultReducer.snmp,
-    uina_angular: state.resultReducer.uina_angular,
-    uina_linear: state.resultReducer.uina_linear,
-    linb_angular: state.resultReducer.linb_angular,
-    linb_linear: state.resultReducer.linb_linear,
-    _iia: state.resultReducer._iia,
-    upper_lip: state.resultReducer.upper_lip,
-    lower_lip: state.resultReducer.lower_lip,
-    mid_face: state.resultReducer.mid_face,
-    lower_face: state.resultReducer.lower_face,
-    wendellWylie: state.resultReducer.wendellWylie,
-    patientid: state.patientReducer.patientid,
-    doctorid: state.patientReducer.doctorid,
-    fullname: state.patientReducer.fullname,
-    gender: state.patientReducer.gender,
-    birthdate: state.patientReducer.birthdate,
-    race: state.patientReducer.race,
-    photo: state.patientReducer.photo,
-    ageInYears: state.patientReducer.ageInYears,
-    step: state.patientReducer.step,
-    tempGambar: state.patientReducer.tempGambar,
-    imageUri: state.patientReducer.imageUri,
-    imageType: state.patientReducer.imageType,
-    imageFileName: state.patientReducer.imageFileName,
-  };
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    set_press_analysis: (val) => dispatch(set_press_analysis(val)),
-    set_press_save_analysis: (val) => dispatch(set_press_save_analysis(val)),
-    set_reset_scale_image: (val) => dispatch(set_reset_scale_image(val)),
-    set_disable_pointer: (val) => dispatch(set_disable_pointer(val)),
-    set_opacity_pointer: (val) => dispatch(set_opacity_pointer(val)),
-    set_bantuMarker: (val) => dispatch(set_bantuMarker(val)),
-    set_markingdot: (val) => dispatch(set_markingdot(val)),
-    set_resultanalysis: (val) => dispatch(set_resultanalysis(val)),
-    set_detailresult: (val) => dispatch(set_detailresult(val)),
-    set_startingPoint: (val) => dispatch(set_startingPoint(val)),
-    set_endPoint: (val) => dispatch(set_endPoint(val)),
-    set_calibrationDistance: (val) => dispatch(set_calibrationDistance(val)),
-    set_sella: (val) => dispatch(set_sella(val)),
-    set_nasion: (val) => dispatch(set_nasion(val)),
-    set_pointa: (val) => dispatch(set_pointa(val)),
-    set_pointb: (val) => dispatch(set_pointb(val)),
-    set_u6: (val) => dispatch(set_u6(val)),
-    set_u4: (val) => dispatch(set_u4(val)),
-    set_gonion: (val) => dispatch(set_gonion(val)),
-    set_gnathion: (val) => dispatch(set_gnathion(val)),
-    set_isa: (val) => dispatch(set_isa(val)),
-    set_isi: (val) => dispatch(set_isi(val)),
-    set_iia: (val) => dispatch(set_iia(val)),
-    set_iii: (val) => dispatch(set_iii(val)),
-    set_ms: (val) => dispatch(set_ms(val)),
-    set_pogs: (val) => dispatch(set_pogs(val)),
-    set_ls: (val) => dispatch(set_ls(val)),
-    set_li: (val) => dispatch(set_li(val)),
-    set_pog: (val) => dispatch(set_pog(val)),
-    set_ans: (val) => dispatch(set_ans(val)),
-    set_menton: (val) => dispatch(set_menton(val)),
-    set_sna: (val) => dispatch(set_sna(val)),
-    set_snb: (val) => dispatch(set_snb(val)),
-    set_anb: (val) => dispatch(set_anb(val)),
-    set_pogNB: (val) => dispatch(set_pogNB(val)),
-    set_snop: (val) => dispatch(set_snop(val)),
-    set_snmp: (val) => dispatch(set_snmp(val)),
-    set_uina_angular: (val) => dispatch(set_uina_angular(val)),
-    set_uina_linear: (val) => dispatch(set_uina_linear(val)),
-    set_linb_angular: (val) => dispatch(set_linb_angular(val)),
-    set_linb_linear: (val) => dispatch(set_linb_linear(val)),
-    set__iia: (val) => dispatch(set__iia(val)),
-    set_upper_lip: (val) => dispatch(set_upper_lip(val)),
-    set_lower_lip: (val) => dispatch(set_lower_lip(val)),
-    set_wendellwylie: (val) => dispatch(set_wendellwylie(val)),
-    remove_startingPoint: (val) => dispatch(remove_startingPoint(val)),
-    remove_endPoint: (val) => dispatch(remove_endPoint(val)),
-    remove_sella: (val) => dispatch(remove_sella(val)),
-    remove_nasion: (val) => dispatch(remove_nasion(val)),
-    remove_pointa: (val) => dispatch(remove_pointa(val)),
-    remove_pointb: (val) => dispatch(remove_pointb(val)),
-    remove_u6: (val) => dispatch(remove_u6(val)),
-    remove_u4: (val) => dispatch(remove_u4(val)),
-    remove_gonion: (val) => dispatch(remove_gonion(val)),
-    remove_gnathion: (val) => dispatch(remove_gnathion(val)),
-    remove_isa: (val) => dispatch(remove_isa(val)),
-    remove_isi: (val) => dispatch(remove_isi(val)),
-    remove_iia: (val) => dispatch(remove_iia(val)),
-    remove_iii: (val) => dispatch(remove_iii(val)),
-    remove_ms: (val) => dispatch(remove_ms(val)),
-    remove_pogs: (val) => dispatch(remove_pogs(val)),
-    remove_ls: (val) => dispatch(remove_ls(val)),
-    remove_li: (val) => dispatch(remove_li(val)),
-    remove_pog: (val) => dispatch(remove_pog(val)),
-    remove_ans: (val) => dispatch(remove_ans(val)),
-    remove_menton: (val) => dispatch(remove_menton(val)),
-    remove_sna: (val) => dispatch(remove_sna(val)),
-    remove_snb: (val) => dispatch(remove_snb(val)),
-    remove_anb: (val) => dispatch(remove_anb(val)),
-    remove_pogNB: (val) => dispatch(remove_pogNB(val)),
-    remove_snop: (val) => dispatch(remove_snop(val)),
-    remove_snmp: (val) => dispatch(remove_snmp(val)),
-    remove_uina_angular: (val) => dispatch(remove_uina_angular(val)),
-    remove_uina_linear: (val) => dispatch(remove_uina_linear(val)),
-    remove_linb_angular: (val) => dispatch(remove_linb_angular(val)),
-    remove_linb_linear: (val) => dispatch(remove_linb_linear(val)),
-    remove__iia: (val) => dispatch(remove__iia(val)),
-    remove_upper_lip: (val) => dispatch(remove_upper_lip(val)),
-    remove_lower_lip: (val) => dispatch(remove_lower_lip(val)),
-    remove_wendellwylie: (val) => dispatch(remove_wendellwylie(val)),
-    set_patientid: (val) => dispatch(set_patientid(val)),
-    set_doctorid: (val) => dispatch(set_doctorid(val)),
-    set_fullname: (val) => dispatch(set_fullname(val)),
-    set_gender: (val) => dispatch(set_gender(val)),
-    set_birthdate: (val) => dispatch(set_birthdate(val)),
-    set_race: (val) => dispatch(set_race(val)),
-    set_photo: (val) => dispatch(set_photo(val)),
-    set_tempgambar: (val) => dispatch(set_tempgambar(val)),
-    set_imageuri: (val) => dispatch(set_imageuri(val)),
-    set_imagetype: (val) => dispatch(set_imagetype(val)),
-    set_imagefilename: (val) => dispatch(set_imagefilename(val)),
-    set_enablesave: (val) => dispatch(set_enablesave(val)),
-    set_headerText: (val) => dispatch(set_headerText(val)),
-    set_subHeaderText: (val) => dispatch(set_subHeaderText(val)),
-    set_loading: (val) => dispatch(set_loading(val)),
-    set_loading_global: (val) => dispatch(set_loading_global(val)),
-    set_select_id: (val) => dispatch(set_select_id(val)),
-    set_width_last_device: (val) => dispatch(set_width_last_device(val)),
-    set_height_last_device: (val) => dispatch(set_height_last_device(val)),
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(FormCephalometricAnalysis);
+export default FormCephalometricAnalysis;
 
 const styles = StyleSheet.create({
   container: {

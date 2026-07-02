@@ -1,6 +1,6 @@
 {
-  "name": "orthoceph",
-  "displayName": "orthoceph",
+  "name": "Orthoceph",
+  "displayName": "Orthoceph",
   "expo": {
     "android": {
       "googleServicesFile": "./google-services.json"

@@ -467,7 +467,7 @@ class FormCephalometric extends React.Component {
           let file = await RNHTMLtoPDF.convert(options);
 
           this.props.navigation.navigate('FormCompareResult', {
-            fileName: file.filePath,
+            fileName: this.props.fullname,
             fileBase64: file.base64,
           });
         }
@@ -485,10 +485,10 @@ class FormCephalometric extends React.Component {
         <Appbar.Header
           style={{
             backgroundColor: '#637363',
-            borderRadius: 10,
+            borderRadius: 0,
             marginTop: 5,
           }}>
-          <Appbar.BackAction onPress={() => this.props.navigation.goBack()} />
+          <Appbar.BackAction  color='white' onPress={() => this.props.navigation.goBack()} />
 
           <Appbar.Content
             title="Cephalometric Analysis"
@@ -677,6 +677,12 @@ const mapStateToProps = (state) => {
     lower_face: state.resultReducer.lower_face,
     wendellWylie: state.resultReducer.wendellWylie,
     doctorid: state.patientReducer.doctorid,
+    fullname: state.patientReducer.fullname,
+    gender: state.patientReducer.gender,
+    birthdate: state.patientReducer.birthdate,
+    race: state.patientReducer.race,
+    photo: state.patientReducer.photo,
+    ageInYears: state.patientReducer.ageInYears,
   };
 };
 
