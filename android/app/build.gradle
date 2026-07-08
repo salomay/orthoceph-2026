@@ -117,8 +117,8 @@ android {
         applicationId "com.orthoceph"
          minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 59
-        versionName "28.1.22"
+        versionCode 60
+        versionName "28.1.23"
         multiDexEnabled true
 
         externalNativeBuild {
@@ -196,7 +196,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-    implementation 'com.facebook.soloader:soloader:0.10.4+'
+    implementation 'com.facebook.soloader:soloader:0.12.0'
  
    
 

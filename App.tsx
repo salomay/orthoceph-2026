@@ -40,7 +40,6 @@ import 'react-native-gesture-handler';
 import FormCephalometric from './component/FormCephalometric';
 import FormCephalometricAnalysis from './component/FormCephalometricAnalysis';
 import CustomSideBar from './component/CustomSideBar';
-import {newAnalysis, saveAnalysis} from './component/FormCephalometricAnalysis';
 import FormLogin from './component/FormLogin';
 import FormPatient from './component/FormPatient';
 import FormProfile from './component/FormProfile';
@@ -76,6 +75,7 @@ import {COLORS} from './component/common/Constants';
 
 import {
   set_press_analysis,
+  set_press_new_analysis,
   set_press_save_analysis,
   set_reset_scale_image,
   set_disable_pointer,
@@ -195,7 +195,6 @@ import {
 } from './component/common/Constants';
 
 
-
 const {width, height} = Dimensions.get('screen');
 
 // import LocationEnabler from 'react-native-location-enabler';
@@ -234,6 +233,7 @@ const CustomDrawerContent =({navigation,route}) => {
  const bantuMarker = useSelector((state) => state.variabelReducer.bantuMarker);
        const pressSaveAnalysis = useSelector((state) => state.variabelReducer.pressSaveAnalysis);
        const pressAnalysis = useSelector((state) => state.variabelReducer.pressAnalysis);
+      const pressNewAnalysis = useSelector((state) => state.variabelReducer.pressNewAnalysis);
        const resetScaleImage = useSelector((state) => state.variabelReducer.resetScaleImage);
        const headerText = useSelector((state) => state.variabelReducer.headerText);
        const subHeaderText = useSelector((state) => state.variabelReducer.subHeaderText);
@@ -307,6 +307,7 @@ const CustomDrawerContent =({navigation,route}) => {
    
      const dispatch = useDispatch();
      const set_press_analysis_handler = (val) => dispatch(set_press_analysis(val));
+     const set_press_new_analysis_handler = (val) => dispatch(set_press_new_analysis(val));
      const set_press_save_analysis_handler = (val) => dispatch(set_press_save_analysis(val));
      const set_reset_scale_image_handler = (val) => dispatch(set_reset_scale_image(val));
      const set_disable_pointer_handler = (val) => dispatch(set_disable_pointer(val));
@@ -700,10 +701,13 @@ const CustomDrawerContent =({navigation,route}) => {
 
     set_reset_scale_image_handler(true);
 
+    
+
     if (_WendellWylie.LOWERFACE.value) {
-      set_enablesave_handler(true);
-      set_loading_global_handler(false);
-      navigation.openDrawer();
+        set_enablesave_handler(true);
+        set_loading_handler(false);
+        set_loading_global_handler(false);
+        navigation.openDrawer();
     }
 
     
@@ -1014,7 +1018,7 @@ const CustomDrawerContent =({navigation,route}) => {
       <View style={{flexDirection: 'row'}}>
         <TouchableOpacity
           style={{marginRight: wp(10)}}
-          onPress={(props) => newAnalysis(props)}>
+          onPress={() => set_press_new_analysis_handler(true)}>
           <MaterialCommunityIcons
             name="folder-account"
             size={wp(7)}
@@ -2654,6 +2658,19 @@ const CephalometricLandMarkContent =({navigation,route}) => {
   );
 }
 
+function isVersionOlder(current, target) {
+  const currentParts = current.split('.').map(Number);
+  const targetParts = target.split('.').map(Number);
+
+  for (let i = 0; i < Math.max(currentParts.length, targetParts.length); i++) {
+    const currentPart = currentParts[i] || 0;
+    const targetPart = targetParts[i] || 0;
+
+    if (currentPart < targetPart) return true;
+    if (currentPart >= targetPart) return false;
+  }
+  return false;
+}
 
 
 
@@ -2684,7 +2701,11 @@ class App extends React.Component {
   };
 
   UNSAFE_componentWillMount() {
-    this.getData();
+
+ 
+ this.getData();
+
+   
   }
 
  permission_android = async ()=>{
@@ -2700,6 +2721,9 @@ class App extends React.Component {
 }
 
    componentDidMount() {
+
+   
+  
     console.log("masuk Didmount app.tsx, declare reset props")
     this.props.set_loading_global(false);
     this.props.set_detailresult(false);
@@ -2721,7 +2745,7 @@ class App extends React.Component {
         console.log(accuracy);
       });
     }
-    
+  
   }
 
   setTimePassed = () => {

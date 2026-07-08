@@ -28,6 +28,7 @@ import {
   SET_DISABLE_POINTER,
   SET_OPACITY_POINTER,
   SET_PRESS_ANALYSIS,
+  SET_PRESS_NEW_ANALYSIS,
   SET_PRESS_SAVE_ANALYSIS,
   SET_RESET_SCALE_IMAGE,
   REMOVE_STARTINGPOINT,
@@ -90,6 +91,7 @@ const initialState = {
   disablePointer: 'auto',
   opacityPointer: 1,
   pressAnalysis: false,
+  pressNewAnalysis: false,
   pressSaveAnalysis: false,
   resetScaleImage: false,
   headerText: '',
@@ -112,6 +114,11 @@ const variabelReducer = (state = initialState, action) => {
       return {
         ...state,
         pressAnalysis: action.data,
+      };
+    case SET_PRESS_NEW_ANALYSIS:
+      return {
+        ...state,
+        pressNewAnalysis: action.data,
       };
     case SET_PRESS_SAVE_ANALYSIS:
       return {

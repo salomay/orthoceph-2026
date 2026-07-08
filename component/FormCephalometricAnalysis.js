@@ -65,6 +65,7 @@ import {
   set_resultanalysis,
   set_detailresult,
   set_press_analysis,
+  set_press_new_analysis,
   set_press_save_analysis,
   set_reset_scale_image,
   set_disable_pointer,
@@ -201,150 +202,8 @@ var point_speed = 0.3;
 var marker = [21];
 var bantuClick = true;
 
-export const newAnalysis = ({navigation}) => {
-  
-    const dispatch = useDispatch();
-    const set_bantuMarker_handler = (val) => dispatch(set_bantuMarker(val));
-    const set_markingdot_handler = (val) => dispatch(set_markingdot(val));
-    const set_resultanalysis_handler = (val) => dispatch(set_resultanalysis(val));
-    const set_detailresult_handler = (val) => dispatch(set_detailresult(val));
-    const set_calibrationDistance_handler = (val) => dispatch(set_calibrationDistance(val));
-    const set_tempgambar_handler = (val) => dispatch(set_tempgambar(val));
-    const set_imageuri_handler = (val) => dispatch(set_imageuri(val));
-    const set_imagetype_handler = (val) => dispatch(set_imagetype(val));
-    const set_imagefilename_handler = (val) => dispatch(set_imagefilename(val));
-    const remove_startingPoint_handler = (val) => dispatch(remove_startingPoint(val));
-    const remove_endPoint_handler = (val) => dispatch(remove_endPoint(val));
-    const remove_sella_handler = (val) => dispatch(remove_sella(val));
-    const remove_nasion_handler = (val) => dispatch(remove_nasion(val));
-    const remove_pointa_handler = (val) => dispatch(remove_pointa(val));
-    const remove_pointb_handler = (val) => dispatch(remove_pointb(val));
-    const remove_u6_handler = (val) => dispatch(remove_u6(val));
-    const remove_u4_handler = (val) => dispatch(remove_u4(val));
-    const remove_gonion_handler = (val) => dispatch(remove_gonion(val));
-    const remove_gnathion_handler = (val) => dispatch(remove_gnathion(val));
-    const remove_isa_handler = (val) => dispatch(remove_isa(val));
-    const remove_isi_handler = (val) => dispatch(remove_isi(val));
-    const remove_iia_handler = (val) => dispatch(remove_iia(val));
-    const remove_iii_handler = (val) => dispatch(remove_iii(val));
-    const remove_ms_handler = (val) => dispatch(remove_ms(val));
-    const remove_pogs_handler = (val) => dispatch(remove_pogs(val));
-    const remove_ls_handler = (val) => dispatch(remove_ls(val));
-    const remove_li_handler = (val) => dispatch(remove_li(val));
-    const remove_pog_handler = (val) => dispatch(remove_pog(val));
-    const remove_ans_handler = (val) => dispatch(remove_ans(val));
-    const remove_menton_handler = (val) => dispatch(remove_menton(val));
-    const remove_sna_handler = (val) => dispatch(remove_sna(val));
-    const remove_snb_handler = (val) => dispatch(remove_snb(val));
-    const remove_anb_handler = (val) => dispatch(remove_anb(val));
-    const remove_pogNB_handler = (val) => dispatch(remove_pogNB(val));
-    const remove_snop_handler = (val) => dispatch(remove_snop(val));
-    const remove_snmp_handler = (val) => dispatch(remove_snmp(val));
-    const remove_uina_angular_handler = (val) => dispatch(remove_uina_angular(val));
-    const remove_uina_linear_handler = (val) => dispatch(remove_uina_linear(val));
-    const remove_linb_angular_handler = (val) => dispatch(remove_linb_angular(val));
-    const remove_linb_linear_handler = (val) => dispatch(remove_linb_linear(val));
-    const remove__iia_handler = (val) => dispatch(remove__iia(val));
-    const remove_upper_lip_handler = (val) => dispatch(remove_upper_lip(val));
-    const remove_lower_lip_handler = (val) => dispatch(remove_lower_lip(val));
-    const remove_wendellwylie_handler = (val) => dispatch(remove_wendellwylie(val));
-    const set_headerText_handler = (val) => dispatch(set_headerText(val));
-    const set_loading_handler = (val) => dispatch(set_loading(val));
-    const set_select_id_handler = (val) => dispatch(set_select_id(val));
-    const set_width_last_device_handler = (val) => dispatch(set_width_last_device(val));
-    const set_height_last_device_handler = (val) => dispatch(set_height_last_device(val));
-    
-    
-  set_loading_handler(true);
-  navigation.closeDrawer();
-  set_headerText_handler('Cephalometric Analysis');
-  set_bantuMarker_handler(0);
 
-  const options = {
-    title: 'Choose Your Image',
-    takePhotoButtonTitle: 'Take photo with your camera',
-    chooseFromLibraryButtonTitle: 'Choose photo from library',
-    // maxWidth: 500,
-    // maxHeight: 500,
-    quality: 1,
-    mediaType: 'photo',
-    storageOptions: {
-      skipBackup: true,
-      path: 'images',
-    },
-  };
 
-  launchImageLibrary(options, (response) => {
-    if (response.didCancel) {
-      console.log('User cancelled image picker');
-      set_loading_handler(false);
-    } else if (response.errorCode) {
-      console.log('Image Picker Error: ', response.errorMessage);
-      set_loading_handler(false);
-    } else {
-      let source = {uri: response.assets[0].uri};
-
-      marker = [];
-
-      set_tempgambar_handler(source);
-      set_imageuri_handler(response.assets[0].uri);
-      set_imagetype_handler(response.assets[0].type);
-      set_imagefilename_handler(response.assets[0].fileName);
-
-      remove_startingPoint_handler([]);
-      remove_endPoint_handler([]);
-      set_calibrationDistance_handler(null);
-      remove_sella_handler([]);
-      remove_nasion_handler([]);
-      remove_pointa_handler([]);
-      remove_pointb_handler([]);
-      remove_u6_handler([]);
-      remove_u4_handler([]);
-      remove_gonion_handler([]);
-      remove_gnathion_handler([]);
-      remove_isa_handler([]);
-      remove_isi_handler([]);
-      remove_iia_handler([]);
-      remove_iii_handler([]);
-      remove_ms_handler([]);
-      remove_pogs_handler([]);
-      remove_li_handler([]);
-      remove_ls_handler([]);
-      remove_pog_handler([]);
-      remove_ans_handler([]);
-      remove_menton_handler([]);
-
-      remove_sna_handler([]);
-      remove_snb_handler([]);
-      remove_anb_handler([]);
-      remove_pogNB_handler([]);
-      remove_snop_handler([]);
-      remove_snmp_handler([]);
-      remove_uina_angular_handler([]);
-      remove_uina_linear_handler([]);
-      remove_linb_angular_handler([]);
-      remove_linb_linear_handler([]);
-      remove__iia_handler([]);
-      remove_upper_lip_handler([]);
-      remove_lower_lip_handler([]);
-      remove_wendellwylie_handler([]);
-      set_bantuMarker_handler(1);
-      set_loading_handler(false);
-      set_select_id_handler(null);
-      set_markingdot_handler(true);
-      set_detailresult_handler(false);
-      set_resultanalysis_handler(false);
-    }
-  });
-};
-
-export const saveAnalysis = () => {
-
-    const dispatch = useDispatch();
-    const set_press_save_analysis_handler = (val) => dispatch(set_press_save_analysis(val));
-
-  set_press_save_analysis_handler(true);
-};
 
 const {widthScreen, heightScreen} = Dimensions.get('screen');
 const {widthScreenAndroid, heightScreenAndroid} = Dimensions.get('window');
@@ -358,6 +217,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
       const bantuMarker = useSelector((state) => state.variabelReducer.bantuMarker);
       const pressSaveAnalysis = useSelector((state) => state.variabelReducer.pressSaveAnalysis);
       const pressAnalysis = useSelector((state) => state.variabelReducer.pressAnalysis);
+      const pressNewAnalysis = useSelector((state) => state.variabelReducer.pressNewAnalysis);
       const resetScaleImage = useSelector((state) => state.variabelReducer.resetScaleImage);
       const headerText = useSelector((state) => state.variabelReducer.headerText);
       const subHeaderText = useSelector((state) => state.variabelReducer.subHeaderText);
@@ -430,6 +290,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
   
     const dispatch = useDispatch();
     const set_press_analysis_handler = (val) => dispatch(set_press_analysis(val));
+    const set_press_new_analysis_handler = (val) => dispatch(set_press_new_analysis(val));
     const set_press_save_analysis_handler = (val) => dispatch(set_press_save_analysis(val));
     const set_reset_scale_image_handler = (val) => dispatch(set_reset_scale_image(val));
     const set_disable_pointer_handler = (val) => dispatch(set_disable_pointer(val));
@@ -730,6 +591,8 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     return () => {
       set_bantuMarker_handler(0);
       set_markingdot_handler(true);
+      set_press_analysis_handler(false);
+      set_press_new_analysis_handler(false);
       set_resultanalysis_handler(false);
       set_detailresult_handler(false);
       set_enablesave_handler(true);
@@ -790,9 +653,13 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
   useEffect(() => {
     if (widthLastDevice && heightLastDevice) {
-      console.log('width Last : ' + widthLastDevice);
-      console.log('height Last : ' + heightLastDevice);
-      load_point();
+      if(pressNewAnalysis == false){
+        console.log('width Last : ' + widthLastDevice);
+        console.log('height Last : ' + heightLastDevice);
+        load_point();
+     
+      }
+     
     }
   }, [widthLastDevice, heightLastDevice]);
 
@@ -2282,7 +2149,9 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     set_loading_handler(true);
     navigation.closeDrawer();
 
-    const options = {
+    setTimeout(() => {
+
+      const options = {
       title: 'Choose Your Image',
       takePhotoButtonTitle: 'Take photo with your camera',
       chooseFromLibraryButtonTitle: 'Choose photo from library',
@@ -2300,9 +2169,14 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
         set_loading_handler(false);
+        set_press_new_analysis_handler(false);
+        set_press_save_analysis_handler(false);
+        set_press_analysis_handler(false);
       } else if (response.errorCode) {
         console.log('Image Picker Error: ', response.errorMessage);
         set_loading_handler(false);
+        set_press_analysis_handler(false);
+        set_press_save_analysis_handler(false);
       } else {
         let source = {uri: response.assets[0].uri};
 
@@ -2319,7 +2193,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
         set_imageuri_handler(response.assets[0].uri);
         set_imagetype_handler(response.assets[0].type);
         set_imagefilename_handler(response.assets[0].fileName);
-        navigation.closeDrawer();
+        // navigation.closeDrawer();
 
         marker = [];
 
@@ -2366,14 +2240,22 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
         set_markingdot_handler(true);
         set_detailresult_handler(false);
         set_resultanalysis_handler(false);
+        set_press_save_analysis_handler(false);
+        set_press_analysis_handler(false);
+        set_press_new_analysis_handler(false);
       }
     });
+      
+    }, 500);
+
+    
   };
 
   // ==========
   // === Save Data Analysis
   useFocusEffect(
     React.useCallback(() => {
+      console.log('pressanalysis = '+pressAnalysis);
       if (pressSaveAnalysis == true) {
         saveAnalysis();
       }
@@ -2383,17 +2265,32 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
   );
 
   // ==========
+  // === New Analysis
+  useFocusEffect(
+    React.useCallback(() => {
+      if (pressNewAnalysis == true) {
+        newAnalysis__();
+      }
+
+      return () => pressNewAnalysis;
+    }, [pressNewAnalysis]),
+  );
+
+  // ==========
   // === Reset Scale
   useFocusEffect(
     React.useCallback(() => {
+     
       if (resetScaleImage == true) {
-        set_reset_scale_image_handler(false);
+       set_reset_scale_image_handler(false);
         refImageZoom.current?.resetScale();
       }
 
       return () => resetScaleImage;
     }, [resetScaleImage]),
   );
+
+
 
   function saveAnalysis() {
     refImageZoom.current.resetScale();
@@ -3100,12 +2997,14 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
       set_reset_scale_image_handler(true);
 
-      if (_WendellWylie.LOWERFACE.value) {
+    if (_WendellWylie.LOWERFACE.value) {
+
         set_enablesave_handler(true);
         set_loading_handler(false);
         set_loading_global_handler(false);
         navigation.openDrawer();
-      }
+      
+    }
 
       return null;
     }
@@ -3183,6 +3082,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     return true;
   }
 
+  // Export to PDF
   useEffect(() => {
     if (pressAnalysis == true) {
       exportToPdf();

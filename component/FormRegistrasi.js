@@ -31,7 +31,7 @@ import {Appbar} from 'react-native-paper';
 import title_icon from './../assets/title.png';
 import logo_icon from './../assets/logo.png';
 import RNPermissions, {
-  check,
+  checkMultiple,
   request,
   PERMISSIONS,
   RESULTS,
@@ -83,7 +83,7 @@ export default class FormRegistrasi extends React.Component {
     });
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     this.viewCountries();
     if (Platform.OS === 'ios') {
       RNPermissions.requestMultiple(
@@ -106,10 +106,29 @@ export default class FormRegistrasi extends React.Component {
           });
         }
       });
+    }else{
+      
+
+
+   await checkMultiple([PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION, PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]).then((statuses) => {
+        if (statuses[PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION]){
+            this.setState({
+            statusGPS: true,
+          });
+           this.getPermission();
+        } if (statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]){
+            this.setState({
+            statusGPS: true,
+          });
+          this.getPermission();
+        }
+         
+});
     }
   }
 
   getPermission = async () => {
+ 
     if (Platform.OS == 'ios') {
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then((result) => {
         if (result == 'granted') {
@@ -164,12 +183,12 @@ export default class FormRegistrasi extends React.Component {
       let permition = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       );
 
+    console.log(permition)
       if (permition == 'granted') {
         Geolocation.getCurrentPosition((info) => {
+          
           this.setState({
             latitude: info.coords.latitude,
             longitude: info.coords.longitude,
@@ -244,8 +263,11 @@ export default class FormRegistrasi extends React.Component {
     }
   };
 
-  registrasi = async () => {
-    if (Platform.OS === 'ios') {
+  registrasi =  () => {
+
+
+    if (Platform.OS == 'android') {
+              console.log('masuk validasi android')
       this.setState({
         loading: true,
       });
@@ -254,7 +276,7 @@ export default class FormRegistrasi extends React.Component {
       };
 
       if (this.state.statusGPS == true && this.validationInput()) {
-        this.getPermission();
+    
         _cekEmail(data)
           .then(async (result) => {
             if (result[0].jumlah > 0) {
@@ -371,23 +393,18 @@ export default class FormRegistrasi extends React.Component {
             console.log(error);
             this.setState({loading: false});
           });
-      } else {
-        this.setState(
-          {
-            loading: false,
-            latitude: 0,
-            longitude: 0,
-            statusGPS: false,
-          },
-          () => {
-            this.registrasiNoGps();
-          },
-        );
+      } 
+      
+      if(Platform.OS == 'ios'){
+      
+            this.registrasiLatLong();
+
       }
     }
   };
 
-  registrasiNoGps = async () => {
+  registrasiLatLong =  () => {
+  
     this.setState({
       loading: true,
     });
@@ -395,7 +412,7 @@ export default class FormRegistrasi extends React.Component {
       email: this.state.email,
     };
 
-    if (this.state.statusGPS == false && this.validationInput()) {
+    if (this.state.statusGPS == true && this.validationInput()) {
       _cekEmail(data)
         .then(async (result) => {
           if (result[0].jumlah > 0) {
@@ -691,7 +708,7 @@ export default class FormRegistrasi extends React.Component {
               </View>
             ) : (
               <TouchableOpacity
-                onPress={() => this.registrasiNoGps()}
+                onPress={() => this.registrasi()}
                 style={{
                   justifyContent: 'center',
                   backgroundColor: '#34A853',
