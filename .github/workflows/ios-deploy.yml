@@ -1,0 +1,118 @@
+# .github/workflows/ios-deploy.yml
+#
+# Build React Native iOS app dan upload ke App Store Connect (TestFlight/App Store)
+# menggunakan Fastlane + App Store Connect API Key.
+#
+# ── SECRETS YANG PERLU DISIAPKAN DI GITHUB (Settings > Secrets and variables > Actions) ──
+#
+# APPSTORE_API_KEY_ID          : Key ID dari App Store Connect API Key
+# APPSTORE_API_ISSUER_ID       : Issuer ID App Store Connect API
+# APPSTORE_API_PRIVATE_KEY     : Isi file .p8 (base64 encoded)
+# MATCH_GIT_URL                : URL repo git privat untuk fastlane match (cert & profile)
+# MATCH_PASSWORD                : Password untuk decrypt repo match
+# MATCH_GIT_BASIC_AUTHORIZATION: Base64 dari "username:personal_access_token" utk akses repo match
+# APPLE_TEAM_ID                 : Team ID Apple Developer
+# APP_IDENTIFIER                 : Bundle identifier app, misal com.namaperusahaan.appmu
+#
+# Alternatif code signing manual (tanpa match) dijelaskan di bagian bawah.
+
+name: iOS Build & Deploy to App Store
+
+on:
+  push:
+    tags:
+      - "ios-v*"          # trigger saat push tag, contoh: ios-v1.0.0
+  workflow_dispatch:        # bisa juga dijalankan manual dari tab Actions
+    inputs:
+      lane:
+        description: "Fastlane lane yang dijalankan (beta = TestFlight, release = App Store)"
+        required: true
+        default: "beta"
+        type: choice
+        options:
+          - beta
+          - release
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      # ── Setup Node & install dependencies JS ──
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies JS
+        run: npm ci
+
+      # ── Setup Ruby (dibutuhkan Fastlane & CocoaPods) ──
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: ios
+
+      # ── Install CocoaPods ──
+      - name: Install Pods
+        working-directory: ios
+        run: |
+          bundle exec pod install --repo-update || pod install --repo-update
+
+      # ── Cache CocoaPods & Xcode DerivedData biar build lebih cepat ──
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      # ── Set Xcode version yang dipakai ──
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      # ── Tulis App Store Connect API key ke file sementara ──
+      - name: Setup App Store Connect API Key
+        working-directory: ios
+        env:
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          echo "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > AuthKey.p8
+
+      # ── Jalankan Fastlane untuk build + upload ──
+      - name: Build & Upload via Fastlane
+        working-directory: ios
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          APPSTORE_API_KEY_FILEPATH: AuthKey.p8
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+        run: |
+          bundle exec fastlane ${{ github.event.inputs.lane || 'beta' }}
+
+      # ── Hapus file sensitif setelah selesai ──
+      - name: Cleanup
+        if: always()
+        working-directory: ios
+        run: rm -f AuthKey.p8
+
+      # ── Upload IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ios/build/*.ipa
+          if-no-files-found: ignore
