@@ -1,42 +1,49 @@
 # .github/workflows/ios-deploy.yml
 #
 # Build React Native iOS app dan upload ke App Store Connect (TestFlight/App Store)
-# menggunakan Fastlane + App Store Connect API Key.
+# TANPA Fastlane — pure xcodebuild + xcrun altool.
 #
 # ── SECRETS YANG PERLU DISIAPKAN DI GITHUB (Settings > Secrets and variables > Actions) ──
 #
-# APPSTORE_API_KEY_ID          : Key ID dari App Store Connect API Key
-# APPSTORE_API_ISSUER_ID       : Issuer ID App Store Connect API
-# APPSTORE_API_PRIVATE_KEY     : Isi file .p8 (base64 encoded)
-# MATCH_GIT_URL                : URL repo git privat untuk fastlane match (cert & profile)
-# MATCH_PASSWORD                : Password untuk decrypt repo match
-# MATCH_GIT_BASIC_AUTHORIZATION: Base64 dari "username:personal_access_token" utk akses repo match
-# APPLE_TEAM_ID                 : Team ID Apple Developer
-# APP_IDENTIFIER                 : Bundle identifier app, misal com.namaperusahaan.appmu
+# BUILD_CERTIFICATE_BASE64      : Certificate distribution .p12, di-base64 encode
+# P12_PASSWORD                   : Password untuk file .p12 tsb
+# BUILD_PROVISION_PROFILE_BASE64: Provisioning profile (.mobileprovision), di-base64 encode
+# KEYCHAIN_PASSWORD              : Password bebas untuk keychain sementara di CI
+# APPSTORE_API_KEY_ID            : Key ID App Store Connect API Key
+# APPSTORE_API_ISSUER_ID         : Issuer ID App Store Connect API
+# APPSTORE_API_PRIVATE_KEY       : Isi file .p8, di-base64 encode
+# APP_IDENTIFIER                  : Bundle identifier, misal com.namaperusahaan.appmu
+# APPLE_TEAM_ID                   : Team ID Apple Developer
 #
-# Alternatif code signing manual (tanpa match) dijelaskan di bagian bawah.
+# ── CARA GENERATE BASE64 (jalankan di Mac lokal) ──
+# base64 -i Certificates.p12 | pbcopy
+# base64 -i Profile.mobileprovision | pbcopy
+# base64 -i AuthKey_XXXXX.p8 | pbcopy
 
 name: iOS Build & Deploy to App Store
 
 on:
   push:
     tags:
-      - "ios-v*"          # trigger saat push tag, contoh: ios-v1.0.0
-  workflow_dispatch:        # bisa juga dijalankan manual dari tab Actions
+      - "ios-v*"
+  workflow_dispatch:
     inputs:
-      lane:
-        description: "Fastlane lane yang dijalankan (beta = TestFlight, release = App Store)"
+      submit_for_review:
+        description: "Submit langsung ke App Store review setelah upload? (kalau 'false' hanya upload ke TestFlight processing)"
         required: true
-        default: "beta"
-        type: choice
-        options:
-          - beta
-          - release
+        default: "false"
+        type: boolean
 
 jobs:
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
+
+    env:
+      APP_NAME: "YourAppName"                    # sesuaikan nama app kamu
+      XCODE_SCHEME: "YourAppName"                 # sesuaikan nama scheme
+      XCODE_WORKSPACE: "ios/YourAppName.xcworkspace"  # sesuaikan path workspace
+      EXPORT_METHOD: "app-store"
 
     steps:
       - name: Checkout kode
@@ -52,67 +59,130 @@ jobs:
       - name: Install dependencies JS
         run: npm ci
 
-      # ── Setup Ruby (dibutuhkan Fastlane & CocoaPods) ──
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-          working-directory: ios
-
       # ── Install CocoaPods ──
       - name: Install Pods
         working-directory: ios
-        run: |
-          bundle exec pod install --repo-update || pod install --repo-update
-
-      # ── Cache CocoaPods & Xcode DerivedData biar build lebih cepat ──
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+        run: pod install --repo-update
 
       # ── Set Xcode version yang dipakai ──
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
 
-      # ── Tulis App Store Connect API key ke file sementara ──
-      - name: Setup App Store Connect API Key
+      # ── Import certificate & provisioning profile ke keychain sementara ──
+      - name: Import Code Signing Identity
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # decode secrets jadi file
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          # buat keychain temporary
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate ke keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # taruh provisioning profile di lokasi yang dibaca Xcode
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      # ── Bump build number otomatis pakai run number CI ──
+      - name: Set build number
         working-directory: ios
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
+
+      # ── Archive app ──
+      - name: Build Archive
+        run: |
+          xcodebuild archive \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+            -destination "generic/platform=iOS" \
+            -allowProvisioningUpdates
+
+      # ── Buat ExportOptions.plist secara dinamis ──
+      - name: Create ExportOptions.plist
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>$EXPORT_METHOD</string>
+              <key>teamID</key>
+              <string>$APPLE_TEAM_ID</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+
+      # ── Export .ipa dari archive ──
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/build" \
+            -allowProvisioningUpdates
+
+      # ── Tulis App Store Connect API key ke file ──
+      - name: Setup App Store Connect API Key
         env:
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
         run: |
-          echo "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > AuthKey.p8
+          mkdir -p ~/private_keys
+          echo "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > ~/private_keys/AuthKey_${APPSTORE_API_KEY_ID}.p8
 
-      # ── Jalankan Fastlane untuk build + upload ──
-      - name: Build & Upload via Fastlane
-        working-directory: ios
+      # ── Upload ke App Store Connect (masuk TestFlight, status processing) ──
+      - name: Upload to App Store Connect
         env:
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
           APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
-          APPSTORE_API_KEY_FILEPATH: AuthKey.p8
-          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
         run: |
-          bundle exec fastlane ${{ github.event.inputs.lane || 'beta' }}
+          IPA_PATH=$(find "$RUNNER_TEMP/build" -name "*.ipa" | head -n 1)
+          xcrun altool --upload-app \
+            -f "$IPA_PATH" \
+            -t ios \
+            --apiKey "$APPSTORE_API_KEY_ID" \
+            --apiIssuer "$APPSTORE_API_ISSUER_ID"
 
-      # ── Hapus file sensitif setelah selesai ──
+      # ── Cleanup file sensitif ──
       - name: Cleanup
         if: always()
-        working-directory: ios
-        run: rm -f AuthKey.p8
+        run: |
+          rm -f ~/private_keys/AuthKey_*.p8
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
-      # ── Upload IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
+      # ── Simpan IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
       - name: Upload IPA artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-build
-          path: ios/build/*.ipa
+          path: ${{ runner.temp }}/build/*.ipa
           if-no-files-found: ignore
