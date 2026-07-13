@@ -40,9 +40,9 @@ jobs:
     timeout-minutes: 60
 
     env:
-      APP_NAME: "YourAppName"                    # sesuaikan nama app kamu
-      XCODE_SCHEME: "YourAppName"                 # sesuaikan nama scheme
-      XCODE_WORKSPACE: "ios/YourAppName.xcworkspace"  # sesuaikan path workspace
+      APP_NAME: "orthoceph"                    # sesuaikan nama app kamu
+      XCODE_SCHEME: "orthoceph"                 # sesuaikan nama scheme
+      XCODE_WORKSPACE: "ios/orthoceph.xcworkspace"  # sesuaikan path workspace
       EXPORT_METHOD: "app-store"
 
     steps:
