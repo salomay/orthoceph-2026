@@ -1,5 +1,5 @@
 platform :ios, '14.0'
-prepare_react_native_project!
+# prepare_react_native_project!
 # pod 'OpenSSL-Universal'
 
 def node_require(script)
