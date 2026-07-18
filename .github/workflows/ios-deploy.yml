@@ -133,56 +133,56 @@ jobs:
           echo "=== APP_IDENTIFIER dari secret ==="
           echo "Panjang: $(echo -n "${{ secrets.APP_IDENTIFIER }}" | wc -c)"
             
-      # # ── Archive app ──
-      # - name: Build Archive
-      #   env:
-      #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      #   run: |
-      #     mkdir -p "$RUNNER_TEMP/build"
-      #     xcodebuild archive \
-      #     -workspace "$XCODE_WORKSPACE" \
-      #     -scheme "$XCODE_SCHEME" \
-      #     -configuration Release \
-      #     -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-      #     -destination "generic/platform=iOS" \
-      #     CODE_SIGN_STYLE=Manual \
-      #     DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-      #     PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
-      #     CODE_SIGN_IDENTITY="iPhone Distribution"    
+      # ── Archive app ──
+      - name: Build Archive
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/build"
+          xcodebuild archive \
+          -workspace "$XCODE_WORKSPACE" \
+          -scheme "$XCODE_SCHEME" \
+          -configuration Release \
+          -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+          -destination "generic/platform=iOS" \
+          CODE_SIGN_STYLE=Manual \
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+          PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
+          CODE_SIGN_IDENTITY="iPhone Distribution"    
 
-      # # ── Buat ExportOptions.plist secara dinamis ──
-      # - name: Create ExportOptions.plist
-      #   env:
-      #     APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-      #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      #   run: |
-      #     cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
-      #     <?xml version="1.0" encoding="UTF-8"?>
-      #     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-      #     <plist version="1.0">
-      #     <dict>
-      #         <key>method</key>
-      #         <string>$EXPORT_METHOD</string>
-      #         <key>teamID</key>
-      #         <string>$APPLE_TEAM_ID</string>
-      #         <key>signingStyle</key>
-      #         <string>manual</string>
-      #         <key>uploadSymbols</key>
-      #         <true/>
-      #         <key>compileBitcode</key>
-      #         <false/>
-      #     </dict>
-      #     </plist>
-      #     EOF
+      # ── Buat ExportOptions.plist secara dinamis ──
+      - name: Create ExportOptions.plist
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>$EXPORT_METHOD</string>
+              <key>teamID</key>
+              <string>$APPLE_TEAM_ID</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
 
-      # # ── Export .ipa dari archive ──
-      # - name: Export IPA
-      #   run: |
-      #     xcodebuild -exportArchive \
-      #       -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-      #       -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-      #       -exportPath "$RUNNER_TEMP/build" \
-      #       -allowProvisioningUpdates
+      # ── Export .ipa dari archive ──
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/build" \
+            -allowProvisioningUpdates
 
       # # ── Tulis App Store Connect API key ke file ──
       # - name: Setup App Store Connect API Key
