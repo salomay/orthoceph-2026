@@ -125,7 +125,10 @@ jobs:
           -configuration Release \
           -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
           -destination "generic/platform=iOS" \
-          -allowProvisioningUpdates         
+          CODE_SIGN_STYLE=Manual \
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+          PROVISIONING_PROFILE_SPECIFIER="Nama_Profile_Kamu" \
+          CODE_SIGN_IDENTITY="iPhone Distribution"    
 
       # ── Buat ExportOptions.plist secara dinamis ──
       - name: Create ExportOptions.plist
