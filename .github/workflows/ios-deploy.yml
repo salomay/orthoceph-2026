@@ -111,16 +111,19 @@ jobs:
       #   run: |
       #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
 
-      # ── Archive app ──
-      - name: Build Archive
+      - name: Fix deployment target
         run: |
-          xcodebuild archive \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-            -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 9.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.1;/g' ios/orthoceph.xcodeproj/project.pbxproj
+            # ── Archive app ──
+            - name: Build Archive
+              run: |
+                xcodebuild archive \
+                  -workspace "$XCODE_WORKSPACE" \
+                  -scheme "$XCODE_SCHEME" \
+                  -configuration Release \
+                  -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+                  -destination "generic/platform=iOS" \
+                  -allowProvisioningUpdates
 
       # ── Buat ExportOptions.plist secara dinamis ──
       - name: Create ExportOptions.plist
