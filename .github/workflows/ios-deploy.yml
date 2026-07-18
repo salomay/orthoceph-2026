@@ -149,16 +149,7 @@ jobs:
           EOF
 
           
-      - name: Debug Bundle Identifier
-        run: |
-          echo "=== PRODUCT_BUNDLE_IDENTIFIER di project.pbxproj ==="
-          grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/orthoceph.xcodeproj/project.pbxproj
       
-          echo "=== Isi ExportOptions.plist ==="
-          cat ios/ExportOptions.plist
-      
-          echo "=== APP_IDENTIFIER dari secret ==="
-          echo "Panjang: $(echo -n "${{ secrets.APP_IDENTIFIER }}" | wc -c)"
             
       # ── Archive app ──
       - name: Build Archive
