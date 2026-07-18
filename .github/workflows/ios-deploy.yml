@@ -122,6 +122,33 @@ jobs:
               security cms -D -i "$file" | plutil -extract Name xml1 -o - -
             done
 
+            
+   # ── Buat ExportOptions.plist secara dinamis ──
+      - name: Create ExportOptions.plist
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>$EXPORT_METHOD</string>
+              <key>teamID</key>
+              <string>$APPLE_TEAM_ID</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+
+          
       - name: Debug Bundle Identifier
         run: |
           echo "=== PRODUCT_BUNDLE_IDENTIFIER di project.pbxproj ==="
@@ -150,30 +177,7 @@ jobs:
           PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
           CODE_SIGN_IDENTITY="iPhone Distribution"    
 
-      # ── Buat ExportOptions.plist secara dinamis ──
-      - name: Create ExportOptions.plist
-        env:
-          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>$EXPORT_METHOD</string>
-              <key>teamID</key>
-              <string>$APPLE_TEAM_ID</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>compileBitcode</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
+     
 
       # ── Export .ipa dari archive ──
       - name: Export IPA
