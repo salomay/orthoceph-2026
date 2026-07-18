@@ -85,7 +85,7 @@ jobs:
           ls -la $CERTIFICATE_PATH
           
           # Cek apakah file p12 valid, ini akan minta password
-          openssl pkcs12 -in $CERTIFICATE_PATH -noout -info -passin pass:${{ secrets.IOS_P12_PASSWORD }
+          openssl pkcs12 -in $CERTIFICATE_PATH -noout -info -passin pass:${{ secrets.IOS_P12_PASSWORD }}
 
       # ── Import certificate & provisioning profile ke keychain sementara ──
       - name: Import Code Signing Identity
