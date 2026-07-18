@@ -124,6 +124,8 @@ jobs:
             
       # ── Archive app ──
       - name: Build Archive
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           mkdir -p "$RUNNER_TEMP/build"
           xcodebuild archive \
