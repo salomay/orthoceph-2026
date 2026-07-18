@@ -185,11 +185,11 @@ jobs:
       #     rm -f ~/private_keys/AuthKey_*.p8
       #     security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
-      # ── Simpan IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
-      # - name: Upload IPA artifact
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ios-build
-      #     path: ${{ runner.temp }}/build/*.ipa
-      #     if-no-files-found: ignore
+      ── Simpan IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ${{ runner.temp }}/build/*.ipa
+          if-no-files-found: ignore
