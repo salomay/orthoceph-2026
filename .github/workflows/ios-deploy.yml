@@ -129,17 +129,22 @@ jobs:
           APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
+         cat > ios/ExportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>$EXPORT_METHOD</string>
+              <string>app-store</string>
               <key>teamID</key>
               <string>$APPLE_TEAM_ID</string>
               <key>signingStyle</key>
               <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>$APP_IDENTIFIER</key>
+                  <string>profile_orthoceph</string>
+              </dict>
               <key>uploadSymbols</key>
               <true/>
               <key>compileBitcode</key>
@@ -147,6 +152,9 @@ jobs:
           </dict>
           </plist>
           EOF
+      
+          echo "=== Isi ExportOptions.plist yang di-generate ==="
+          cat ios/ExportOptions.plist
 
       - name: Debug Bundle Identifier
         env:
