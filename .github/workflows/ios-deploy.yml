@@ -103,86 +103,86 @@ jobs:
       #     # Cek apakah file p12 valid, ini akan minta password
       #     openssl pkcs12 -in $CERTIFICATE_PATH -noout -info -passin pass:${{ secrets.IOS_P12_PASSWORD }}
 
-      # ── Import certificate & provisioning profile ke keychain sementara ──
-      - name: Import Code Signing Identity
-        env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+      # # ── Import certificate & provisioning profile ke keychain sementara ──
+      # - name: Import Code Signing Identity
+      #   env:
+      #     BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      #     P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      #     BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+      #     KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      #   run: |
+      #     CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+      #     PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+      #     KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # decode secrets jadi file
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+      #     # decode secrets jadi file
+      #     echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+      #     echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
 
-          # buat keychain temporary
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+      #     # buat keychain temporary
+      #     security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+      #     security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+      #     security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # import certificate ke keychain
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+      #     # import certificate ke keychain
+      #     security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+      #     security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+      #     security list-keychain -d user -s $KEYCHAIN_PATH
 
-          # taruh provisioning profile di lokasi yang dibaca Xcode
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+      #     # taruh provisioning profile di lokasi yang dibaca Xcode
+      #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+      #     cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      # ── Bump build number otomatis pakai run number CI ──
-      - name: Set build number
-        working-directory: ios
-        run: |
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
+      # # ── Bump build number otomatis pakai run number CI ──
+      # - name: Set build number
+      #   working-directory: ios
+      #   run: |
+      #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
 
-      # ── Archive app ──
-      - name: Build Archive
-        run: |
-          xcodebuild archive \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-            -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates
+      # # ── Archive app ──
+      # - name: Build Archive
+      #   run: |
+      #     xcodebuild archive \
+      #       -workspace "$XCODE_WORKSPACE" \
+      #       -scheme "$XCODE_SCHEME" \
+      #       -configuration Release \
+      #       -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+      #       -destination "generic/platform=iOS" \
+      #       -allowProvisioningUpdates
 
-      # ── Buat ExportOptions.plist secara dinamis ──
-      - name: Create ExportOptions.plist
-        env:
-          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>$EXPORT_METHOD</string>
-              <key>teamID</key>
-              <string>$APPLE_TEAM_ID</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>compileBitcode</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
+      # # ── Buat ExportOptions.plist secara dinamis ──
+      # - name: Create ExportOptions.plist
+      #   env:
+      #     APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+      #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      #   run: |
+      #     cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
+      #     <?xml version="1.0" encoding="UTF-8"?>
+      #     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      #     <plist version="1.0">
+      #     <dict>
+      #         <key>method</key>
+      #         <string>$EXPORT_METHOD</string>
+      #         <key>teamID</key>
+      #         <string>$APPLE_TEAM_ID</string>
+      #         <key>signingStyle</key>
+      #         <string>manual</string>
+      #         <key>uploadSymbols</key>
+      #         <true/>
+      #         <key>compileBitcode</key>
+      #         <false/>
+      #     </dict>
+      #     </plist>
+      #     EOF
 
-      # ── Export .ipa dari archive ──
-      - name: Export IPA
-        run: |
-          xcodebuild -exportArchive \
-            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            -exportPath "$RUNNER_TEMP/build" \
-            -allowProvisioningUpdates
+      # # ── Export .ipa dari archive ──
+      # - name: Export IPA
+      #   run: |
+      #     xcodebuild -exportArchive \
+      #       -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+      #       -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+      #       -exportPath "$RUNNER_TEMP/build" \
+      #       -allowProvisioningUpdates
 
       # # ── Tulis App Store Connect API key ke file ──
       # - name: Setup App Store Connect API Key
