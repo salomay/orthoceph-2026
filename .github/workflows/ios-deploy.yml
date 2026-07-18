@@ -90,18 +90,18 @@ jobs:
           file $RUNNER_TEMP/test.p12
           ls -la $RUNNER_TEMP/test.p12
           
-      - name: Debug Certificate
-        env:
-          P12_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          echo -n "$P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+      # - name: Debug Certificate
+      #   env:
+      #     P12_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      #   run: |
+      #     CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+      #     echo -n "$P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           
-          # Cek ukuran file, harus > 0 bytes (biasanya beberapa KB)
-          ls -la $CERTIFICATE_PATH
+      #     # Cek ukuran file, harus > 0 bytes (biasanya beberapa KB)
+      #     ls -la $CERTIFICATE_PATH
           
-          # Cek apakah file p12 valid, ini akan minta password
-          openssl pkcs12 -in $CERTIFICATE_PATH -noout -info -passin pass:${{ secrets.IOS_P12_PASSWORD }}
+      #     # Cek apakah file p12 valid, ini akan minta password
+      #     openssl pkcs12 -in $CERTIFICATE_PATH -noout -info -passin pass:${{ secrets.IOS_P12_PASSWORD }}
 
       # ── Import certificate & provisioning profile ke keychain sementara ──
       - name: Import Code Signing Identity
