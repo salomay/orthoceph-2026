@@ -76,17 +76,17 @@ jobs:
 
       - name: Debug Base64
         env:
-          P12_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         run: |
           # Cek panjang string base64 (harus ribuan karakter, bukan puluhan)
-          echo "Panjang base64: $(echo -n "$P12_BASE64" | wc -c)"
+          echo "Panjang base64: $(echo -n "$BUILD_CERTIFICATE_BASE64" | wc -c)"
           
           # Cek 50 karakter pertama & terakhir (untuk lihat ada karakter aneh atau tidak)
-          echo "Awal: $(echo -n "$P12_BASE64" | head -c 50)"
-          echo "Akhir: $(echo -n "$P12_BASE64" | tail -c 50)"
+          echo "Awal: $(echo -n "$BUILD_CERTIFICATE_BASE64" | head -c 50)"
+          echo "Akhir: $(echo -n "$BUILD_CERTIFICATE_BASE64" | tail -c 50)"
           
           # Decode dan cek file type
-          echo -n "$P12_BASE64" | base64 --decode -o $RUNNER_TEMP/test.p12
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $RUNNER_TEMP/test.p12
           file $RUNNER_TEMP/test.p12
           ls -la $RUNNER_TEMP/test.p12
           
@@ -214,10 +214,10 @@ jobs:
       #     security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
       # ── Simpan IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
-      - name: Upload IPA artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build
-          path: ${{ runner.temp }}/build/*.ipa
-          if-no-files-found: ignore
+      # - name: Upload IPA artifact
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ios-build
+      #     path: ${{ runner.temp }}/build/*.ipa
+      #     if-no-files-found: ignore
