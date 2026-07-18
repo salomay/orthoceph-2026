@@ -134,7 +134,7 @@ jobs:
           -destination "generic/platform=iOS" \
           CODE_SIGN_STYLE=Manual \
           DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-          PROVISIONING_PROFILE_SPECIFIER="Nama_Profile_Kamu" \
+          PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
           CODE_SIGN_IDENTITY="iPhone Distribution"    
 
       # ── Buat ExportOptions.plist secara dinamis ──
