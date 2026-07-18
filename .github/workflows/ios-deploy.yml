@@ -105,11 +105,11 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      # ── Bump build number otomatis pakai run number CI ──
-      - name: Set build number
-        working-directory: ios
-        run: |
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
+      # # ── Bump build number otomatis pakai run number CI ──
+      # - name: Set build number
+      #   working-directory: ios
+      #   run: |
+      #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
 
       # ── Archive app ──
       - name: Build Archive
