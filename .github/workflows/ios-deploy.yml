@@ -122,16 +122,56 @@ jobs:
               security cms -D -i "$file" | plutil -extract Name xml1 -o - -
             done
 
+            
+   # ── Buat ExportOptions.plist secara dinamis ──
+      - name: Create ExportOptions.plist
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+         cat > ios/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>$APPLE_TEAM_ID</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>$APP_IDENTIFIER</key>
+                  <string>profile_orthoceph</string>
+              </dict>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+      
+          echo "=== Isi ExportOptions.plist yang di-generate ==="
+          cat ios/ExportOptions.plist
+
       - name: Debug Bundle Identifier
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
         run: |
           echo "=== PRODUCT_BUNDLE_IDENTIFIER di project.pbxproj ==="
           grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/orthoceph.xcodeproj/project.pbxproj
       
+          echo ""
           echo "=== Isi ExportOptions.plist ==="
           cat ios/ExportOptions.plist
       
+          echo ""
           echo "=== APP_IDENTIFIER dari secret ==="
-          echo "Panjang: $(echo -n "${{ secrets.APP_IDENTIFIER }}" | wc -c)"
+          echo "Panjang: $(echo -n "$APP_IDENTIFIER" | wc -c)"
+          echo "Isi: $APP_IDENTIFIER"
+      
             
       # ── Archive app ──
       - name: Build Archive
@@ -148,32 +188,10 @@ jobs:
           CODE_SIGN_STYLE=Manual \
           DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
           PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
-          CODE_SIGN_IDENTITY="iPhone Distribution"    
+          CODE_SIGN_IDENTITY="iPhone Distribution" \
+          PRODUCT_BUNDLE_IDENTIFIER=org.reactjs.native.medical.orthoceph 
 
-      # ── Buat ExportOptions.plist secara dinamis ──
-      - name: Create ExportOptions.plist
-        env:
-          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>$EXPORT_METHOD</string>
-              <key>teamID</key>
-              <string>$APPLE_TEAM_ID</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>compileBitcode</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
+     
 
       # ── Export .ipa dari archive ──
       - name: Export IPA
