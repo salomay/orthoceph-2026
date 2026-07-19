@@ -349,9 +349,17 @@ jobs:
 
       - name: Cek crash log kalau ada
         run: |
-          xcrun simctl diagnose --no-archive 2>/dev/null || true
-          find ~/Library/Logs/DiagnosticReports -name "*orthoceph*" -mmin -5 -exec cat {} \; || echo "Tidak ada crash report ditemukan"
+          echo "=== Mencari crash report ==="
+          CRASH_DIR=~/Library/Logs/DiagnosticReports
+          if [ -d "$CRASH_DIR" ]; then
+            find "$CRASH_DIR" -iname "*orthoceph*" -mmin -10 -exec echo "--- {} ---" \; -exec cat {} \;
+          else
+            echo "Folder crash report tidak ditemukan"
+          fi
 
+          echo ""
+          echo "=== Isi 100 baris terakhir simulator.log ==="
+          tail -n 100 "$RUNNER_TEMP/simulator.log" || echo "simulator.log tidak ditemukan"
       #- name: Tunggu app render (beri waktu untuk load)
       # run: sleep 15
 
