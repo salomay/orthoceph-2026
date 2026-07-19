@@ -209,14 +209,14 @@ jobs:
 
      
 
-      # # ── Export .ipa dari archive ──
-      # - name: Export IPA
-      #   run: |
-      #     xcodebuild -exportArchive \
-      #       -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-      #       -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-      #       -exportPath "$RUNNER_TEMP/build" \
-      #       -allowProvisioningUpdates
+       # ── Export .ipa dari archive ──
+      - name: Export IPA
+        run: |
+           xcodebuild -exportArchive \
+           -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+           -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+           -exportPath "$RUNNER_TEMP/build" \
+           -allowProvisioningUpdates
 
       # # ── Tulis App Store Connect API key ke file ──
       # - name: Setup App Store Connect API Key
