@@ -338,8 +338,22 @@ jobs:
         run: |
           xcrun simctl launch booted "${{ steps.bundle_id.outputs.bundle_id }}"
 
-      - name: Tunggu app render (beri waktu untuk load)
-        run: sleep 15
+      - name: Cek exit code launch & tunggu app stabil
+        run: |
+          xcrun simctl launch booted "${{ steps.bundle_id.outputs.bundle_id }}"
+          LAUNCH_EXIT=$?
+          echo "Launch exit code: $LAUNCH_EXIT"
+          sleep 3
+          echo "=== Cek proses yang jalan di simulator ==="
+          xcrun simctl spawn booted launchctl list | grep -i orthoceph || echo "App TIDAK ditemukan running"
+
+      - name: Cek crash log kalau ada
+        run: |
+          xcrun simctl diagnose --no-archive 2>/dev/null || true
+          find ~/Library/Logs/DiagnosticReports -name "*orthoceph*" -mmin -5 -exec cat {} \; || echo "Tidak ada crash report ditemukan"
+
+      #- name: Tunggu app render (beri waktu untuk load)
+      # run: sleep 15
 
       - name: Ambil screenshot
         run: |
