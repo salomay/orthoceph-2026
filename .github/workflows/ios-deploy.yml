@@ -334,10 +334,17 @@ jobs:
             > "$RUNNER_TEMP/simulator.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/log_pid"
 
-      - name: Launch app di simulator
+      - name: Launch app & capture output langsung
         run: |
-          xcrun simctl launch booted "${{ steps.bundle_id.outputs.bundle_id }}"
+          xcrun simctl launch --console-pty booted "${{ steps.bundle_id.outputs.bundle_id }}" \
+            > "$RUNNER_TEMP/simulator.log" 2>&1 &
+          LAUNCH_PID=$!
+          echo "$LAUNCH_PID" > "$RUNNER_TEMP/launch_pid"
+          sleep 15
+          echo "=== Log app (console-pty) ==="
+          cat "$RUNNER_TEMP/simulator.log" || echo "Log kosong"
 
+          
       - name: Cek exit code launch & tunggu app stabil
         run: |
           xcrun simctl launch booted "${{ steps.bundle_id.outputs.bundle_id }}"
