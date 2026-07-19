@@ -20,19 +20,7 @@
 		</dict>
 		<dict/>
 	</array>
-	<key>FacebookAppID</key>
-	<string>930797074785858</string>
-	<key>FacebookClientToken</key>
-	<string>d9f1a11e412d6c7a8f1d4be1d55ba94c</string>
-	<key>FacebookDisplayName</key>
-	<string>orthoceph</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>fbapi</string>
-		<string>fb-messenger-share-api</string>
-	</array>
+	
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
