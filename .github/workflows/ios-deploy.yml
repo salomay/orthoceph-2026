@@ -296,7 +296,7 @@ jobs:
           xcodebuild build \
             -workspace "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
-            -configuration Debug \
+            -configuration Release \
             -sdk iphonesimulator \
             -destination "platform=iOS Simulator,name=$SIMULATOR_NAME" \
             -derivedDataPath "$RUNNER_TEMP/build-sim" \
@@ -305,7 +305,7 @@ jobs:
       - name: Cari path .app hasil build
         id: find_app
         run: |
-          APP_PATH=$(find "$RUNNER_TEMP/build-sim" -name "*.app" -path "*Debug-iphonesimulator*" | head -n 1)
+          APP_PATH=$(find "$RUNNER_TEMP/build-sim" -name "*.app" -path "*Release-iphonesimulator*" | head -n 1)
           echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
           echo "Ditemukan: $APP_PATH"
 
