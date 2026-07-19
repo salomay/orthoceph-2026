@@ -73,8 +73,12 @@ jobs:
       # ── Set Xcode version yang dipakai ──
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
+        
+      # ── Clean & Remove ──
+      - name: Clean DerivedData
+        run: rm -rf ~/Library/Developer/Xcode/DerivedData
 
-
+        
       # ── Import certificate & provisioning profile ke keychain sementara ──
       - name: Import Code Signing Identity
         env:
