@@ -188,7 +188,8 @@ jobs:
           CODE_SIGN_STYLE=Manual \
           DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
           PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
-          CODE_SIGN_IDENTITY="iPhone Distribution"    
+          CODE_SIGN_IDENTITY="iPhone Distribution" \
+          PRODUCT_BUNDLE_IDENTIFIER=org.reactjs.native.medical.orthoceph 
 
      
 
