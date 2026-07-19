@@ -17,6 +17,8 @@
 			<array>
 				<string>com.googleusercontent.apps.986260111827-jqgp8dv7kjlu80gqk82kqrcs66mpskbs</string>
 			</array>
+			<key>CFBundleIdentifier</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		</dict>
 		<dict/>
 	</array>
