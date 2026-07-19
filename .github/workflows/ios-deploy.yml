@@ -214,7 +214,7 @@ jobs:
         run: |
            xcodebuild -exportArchive \
            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-           -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+           -exportOptionsPlist "ios/ExportOptions.plist" \
            -exportPath "$RUNNER_TEMP/build" \
            -allowProvisioningUpdates
 
