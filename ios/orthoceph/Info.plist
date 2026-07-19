@@ -17,12 +17,11 @@
 			<array>
 				<string>com.googleusercontent.apps.986260111827-jqgp8dv7kjlu80gqk82kqrcs66mpskbs</string>
 			</array>
-			<key>CFBundleIdentifier</key>
-			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		</dict>
 		<dict/>
 	</array>
-	
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -59,5 +58,9 @@
 	<string>To get location maybe for your clinic or office</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>To get location maybe for your clinic or office</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
 </dict>
 </plist>
