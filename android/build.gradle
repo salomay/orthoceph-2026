@@ -68,11 +68,9 @@ allprojects {
             force 'androidx.appcompat:appcompat:1.7.0'
             force 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
             force 'androidx.activity:activity-ktx:1.9.1' 
-            force "androidx.core:core-ktx:1.12.0"
+            force "androidx.core:core-ktx:1.13.1"
             force "androidx.activity:activity-ktx:1.8.2"
-    
-    // If you are using Jetpack Compose, update this as well
-    implementation "androidx.activity:activity-compose:1.8.2"
+            force 'androidx.activity:activity-compose:1.8.2'
         }
     }
 }
