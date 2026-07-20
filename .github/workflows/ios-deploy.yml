@@ -71,6 +71,10 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+
+      - name: Bersihkan generated codegen lama
+        run: rm -rf ios/build/generated
+  
       - name: Generate Codegen artifacts
         run: |
               node node_modules/react-native/scripts/generate-codegen-artifacts.js \
