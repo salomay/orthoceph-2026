@@ -59,6 +59,7 @@ jobs:
       - name: Install dependencies JS
         run: | 
              rm -rf Pods Podfile.lock
+             rm -rf node_modules
              rm -rf ~/Library/Developer/Xcode/DerivedData
              rm -rf build
              npm install --force
