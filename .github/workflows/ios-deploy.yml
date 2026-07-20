@@ -277,15 +277,15 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies JS
-        run: npm install --force
-
-      - name: Install Pods
-        working-directory: ios
         run: rm -rf Pods Podfile.lock
              rm -rf ~/Library/Caches/CocoaPods
              rm -rf ~/Library/Developer/Xcode/DerivedData
              rm -rf build
-             pod install --repo-update
+             npm install --force
+
+      - name: Install Pods
+        working-directory: ios
+        run: pod install --repo-update
 
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
