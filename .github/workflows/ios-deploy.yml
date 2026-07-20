@@ -307,6 +307,14 @@ jobs:
              rm -rf build
              npm install --force
 
+      - name: Generate Codegen artifacts
+        run: |
+              node node_modules/react-native/scripts/generate-codegen-artifacts.js \
+              --path . \
+              --outputPath ios/build/generated/ios \
+              --targetPlatform ios
+
+              
       - name: Install Pods
         working-directory: ios
         run: pod install --repo-update
