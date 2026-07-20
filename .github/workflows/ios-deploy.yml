@@ -71,6 +71,14 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+      - name: Generate Codegen artifacts
+        run: |
+              node node_modules/react-native/scripts/generate-codegen-artifacts.js \
+              --path . \
+              --outputPath ios/build/generated/ios \
+              --targetPlatform ios
+   
+
       # ── Install CocoaPods ──
       - name: Install Pods
         working-directory: ios
@@ -195,28 +203,32 @@ jobs:
           grep -c "rnscreens.*Props.cpp\|rnpicker.*Props.cpp\|rnpdf.*Props.cpp" ios/Pods/Pods.xcodeproj/project.pbxproj
           echo "=== Cek target React-Codegen exist ==="
           grep -A 5 "React-Codegen" ios/Pods/Pods.xcodeproj/project.pbxproj | grep -i "PBXNativeTarget\|productName" | head -5
-            - name: Cek target React-Codegen
-              run: |
-                  grep -c "React-Codegen" ios/Pods/Pods.xcodeproj/project.pbxproj || echo "React-Codegen TIDAK ditemukan di project!"
-                  find ios -path "*build/generated/ios*" -name "*Props.cpp" | head -20   
-                    # ── Archive app ──
-                    - name: Build Archive
-                      env:
-                        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-                        APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-                      run: |
-                        mkdir -p "$RUNNER_TEMP/build"
-                        xcodebuild archive \
-                        -workspace "$XCODE_WORKSPACE" \
-                        -scheme "$XCODE_SCHEME" \
-                        -configuration Release \
-                        -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-                        -destination "generic/platform=iOS" \
-                        CODE_SIGN_STYLE=Manual \
-                        DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-                        PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
-                        CODE_SIGN_IDENTITY="iPhone Distribution" \
-                        PRODUCT_BUNDLE_IDENTIFIER=$APP_IDENTIFIER 
+
+          
+      - name: Cek target React-Codegen
+        run: |
+              grep -c "React-Codegen" ios/Pods/Pods.xcodeproj/project.pbxproj || echo "React-Codegen TIDAK ditemukan di project!"
+              find ios -path "*build/generated/ios*" -name "*Props.cpp" | head -20
+
+                  
+      # ── Archive app ──
+      - name: Build Archive
+        env:
+            APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+            APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+        run: |
+               mkdir -p "$RUNNER_TEMP/build"
+               xcodebuild archive \
+               -workspace "$XCODE_WORKSPACE" \
+               -scheme "$XCODE_SCHEME" \
+               -configuration Release \
+               -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+               -destination "generic/platform=iOS" \
+               CODE_SIGN_STYLE=Manual \
+               DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+               PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
+               CODE_SIGN_IDENTITY="iPhone Distribution" \
+               PRODUCT_BUNDLE_IDENTIFIER=$APP_IDENTIFIER 
 
      
 
