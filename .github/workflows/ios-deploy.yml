@@ -265,3 +265,148 @@ jobs:
           if-no-files-found: ignore
 
 
+  simulator-test:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    env:
+      APP_NAME: "orthoceph"
+      XCODE_SCHEME: "orthoceph"
+      XCODE_WORKSPACE: "ios/orthoceph.xcworkspace"
+      SIMULATOR_NAME: "iPhone 15"
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies JS
+        run: |
+             rm -rf node_modules
+             rm -rf ios/Pods ios/Podfile.lock
+             rm -rf ~/Library/Developer/Xcode/DerivedData
+             rm -rf build
+             npm install --force
+
+              
+      - name: Install Pods
+        working-directory: ios
+        run: pod install --repo-update
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: List simulator yang tersedia
+        run: xcrun simctl list devices available
+
+      # ── Build khusus untuk simulator (tanpa code signing) ──
+      - name: Build for Simulator
+        run: |
+          mkdir -p "$RUNNER_TEMP/build-sim"
+          xcodebuild build \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME" \
+            -derivedDataPath "$RUNNER_TEMP/build-sim" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Cari path .app hasil build
+        id: find_app
+        run: |
+          APP_PATH=$(find "$RUNNER_TEMP/build-sim" -name "*.app" -path "*Release-iphonesimulator*" | head -n 1)
+          echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
+          echo "Ditemukan: $APP_PATH"
+
+      - name: Boot simulator
+        run: |
+          xcrun simctl boot "$SIMULATOR_NAME" || true
+          xcrun simctl bootstatus "$SIMULATOR_NAME" -b
+
+      - name: Install app ke simulator
+        run: |
+          xcrun simctl install booted "${{ steps.find_app.outputs.app_path }}"
+
+      # ── Ambil bundle id langsung dari Info.plist hasil build ──
+      - name: Ambil Bundle Identifier
+        id: bundle_id
+        run: |
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "${{ steps.find_app.outputs.app_path }}/Info.plist")
+          echo "bundle_id=$BUNDLE_ID" >> "$GITHUB_OUTPUT"
+          echo "Bundle ID: $BUNDLE_ID"
+
+      # ── Mulai rekam log sistem simulator ke file, jalan di background ──
+      - name: Mulai capture log simulator
+        run: |
+          xcrun simctl spawn booted log stream \
+            --predicate "processImagePath CONTAINS \"${{ steps.find_app.outputs.app_path }}\" OR subsystem CONTAINS \"${{ steps.bundle_id.outputs.bundle_id }}\"" \
+            > "$RUNNER_TEMP/simulator.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/log_pid"
+
+      - name: Launch app & capture output langsung
+        run: |
+          xcrun simctl launch --console-pty booted "${{ steps.bundle_id.outputs.bundle_id }}" \
+            > "$RUNNER_TEMP/simulator.log" 2>&1 &
+          LAUNCH_PID=$!
+          echo "$LAUNCH_PID" > "$RUNNER_TEMP/launch_pid"
+          sleep 15
+          echo "=== Log app (console-pty) ==="
+          cat "$RUNNER_TEMP/simulator.log" || echo "Log kosong"
+
+          
+      - name: Cek exit code launch & tunggu app stabil
+        run: |
+          xcrun simctl launch booted "${{ steps.bundle_id.outputs.bundle_id }}"
+          LAUNCH_EXIT=$?
+          echo "Launch exit code: $LAUNCH_EXIT"
+          sleep 3
+          echo "=== Cek proses yang jalan di simulator ==="
+          xcrun simctl spawn booted launchctl list | grep -i orthoceph || echo "App TIDAK ditemukan running"
+
+      - name: Cek crash log kalau ada
+        run: |
+          echo "=== Mencari crash report ==="
+          CRASH_DIR=~/Library/Logs/DiagnosticReports
+          if [ -d "$CRASH_DIR" ]; then
+            find "$CRASH_DIR" -iname "*orthoceph*" -mmin -10 -exec echo "--- {} ---" \; -exec cat {} \;
+          else
+            echo "Folder crash report tidak ditemukan"
+          fi
+
+          echo ""
+          echo "=== Isi 100 baris terakhir simulator.log ==="
+          tail -n 100 "$RUNNER_TEMP/simulator.log" || echo "simulator.log tidak ditemukan"
+      #- name: Tunggu app render (beri waktu untuk load)
+      # run: sleep 15
+
+      - name: Ambil screenshot
+        run: |
+          mkdir -p "$RUNNER_TEMP/screenshots"
+          xcrun simctl io booted screenshot "$RUNNER_TEMP/screenshots/screenshot-01.png"
+
+      - name: Hentikan capture log
+        if: always()
+        run: |
+          kill "$(cat "$RUNNER_TEMP/log_pid")" || true
+
+      - name: Upload screenshot sebagai artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-screenshot
+          path: ${{ runner.temp }}/screenshots/*.png
+          if-no-files-found: warn
+
+      - name: Upload log simulator sebagai artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-log
+          path: ${{ runner.temp }}/simulator.log
+          if-no-files-found: warn  
