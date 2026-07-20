@@ -68,7 +68,11 @@ jobs:
       # ── Install CocoaPods ──
       - name: Install Pods
         working-directory: ios
-        run: pod install --repo-update
+        run: rm -rf Pods Podfile.lock
+             rm -rf ~/Library/Caches/CocoaPods
+             rm -rf ~/Library/Developer/Xcode/DerivedData
+             rm -rf build
+             pod install --repo-update
 
       # ── Set Xcode version yang dipakai ──
       - name: Select Xcode version
