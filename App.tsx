@@ -8,7 +8,7 @@
 
 import AsyncStorage from '@react-native-community/async-storage';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {createNativeStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import {
   createDrawerNavigator,
   DrawerItem,
@@ -199,7 +199,7 @@ const {width, height} = Dimensions.get('screen');
 
 // import LocationEnabler from 'react-native-location-enabler';
 let number = 0;
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 function SideBarNavigation ()  {
