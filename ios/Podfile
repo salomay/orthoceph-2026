@@ -56,7 +56,7 @@ target 'orthoceph' do
 
   use_react_native!(
   :path => config[:reactNativePath],
-  :hermes_enabled => falsee)
+  :hermes_enabled => false)
 
 
   post_install do |installer|
