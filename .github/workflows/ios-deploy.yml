@@ -288,8 +288,6 @@ jobs:
 
       - name: Install Pods
         working-directory: ios
-        env:
-         RCT_NEW_ARCH_ENABLED: "1"
         run: pod install --repo-update
 
       - name: Select Xcode version
