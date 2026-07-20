@@ -208,6 +208,15 @@ jobs:
           echo "=== Cek target React-Codegen exist ==="
           grep -A 5 "React-Codegen" ios/Pods/Pods.xcodeproj/project.pbxproj | grep -i "PBXNativeTarget\|productName" | head -5
 
+      - name: Cek duplikat instalasi
+        run: |
+          find . -path "*/node_modules/react-native-screens/package.json" -not -path "*/node_modules/*/node_modules/*"
+          find . -path "*/node_modules/react-native-screens*/package.json"
+          find . -iname "react-native-screens" -type d
+          find . -iname "react-native-pdf" -type d
+          find . -path "*react-native-picker*" -name "package.json"
+
+
           
       - name: Cek target React-Codegen
         run: |
