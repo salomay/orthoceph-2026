@@ -81,10 +81,6 @@ jobs:
       - name: Run Xcode first launch
         run: sudo xcodebuild -runFirstLaunch
         
-      # ── Clean & Remove ──
-      - name: Clean DerivedData
-        run: rm -rf ~/Library/Developer/Xcode/DerivedData
-
         
       # ── Import certificate & provisioning profile ke keychain sementara ──
       - name: Import Code Signing Identity
