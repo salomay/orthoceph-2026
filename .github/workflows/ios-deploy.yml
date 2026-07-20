@@ -58,11 +58,12 @@ jobs:
 
       - name: Install dependencies JS
         run: | 
-             rm -rf node_modules
-             rm -rf ios/Pods ios/Podfile.lock
-             rm -rf ~/Library/Developer/Xcode/DerivedData
-             rm -rf build
-             npm install --force
+              rm -rf ios/Pods ios/Podfile.lock
+              rm -rf ios/build
+              rm -rf node_modules
+              rm -rf ~/Library/Developer/Xcode/DerivedData
+              rm -rf $TMPDIR/react-native-packager-cache-*
+              npm install --force
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -73,6 +74,8 @@ jobs:
       # ── Install CocoaPods ──
       - name: Install Pods
         working-directory: ios
+        env:
+          RCT_NEW_ARCH_ENABLED: "1"
         run: pod install --repo-update
 
       # ── Set Xcode version yang dipakai ──
