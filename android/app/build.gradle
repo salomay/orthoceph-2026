@@ -24,13 +24,9 @@ react {
  
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
-<<<<<<< HEAD
-    nodeExecutableAndArgs = ["C:/Program Files/nodejs/node.exe"]
+    // nodeExecutableAndArgs = ["C:/Program Files/nodejs/node.exe"]
     
-=======
     nodeExecutableAndArgs = ["node"]
->>>>>>> 0c7d6ca54546cfbbe474de6ec34508fa0f1c461c
-    //
     //   The command to run when bundling. By default is 'bundle'
     // bundleCommand = "ram-bundle"
     //
