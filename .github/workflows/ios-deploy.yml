@@ -75,14 +75,6 @@ jobs:
       - name: Bersihkan generated codegen lama
         run: rm -rf ios/build/generated
   
-      - name: Generate Codegen artifacts
-        run: |
-              node node_modules/react-native/scripts/generate-codegen-artifacts.js \
-              --path . \
-              --outputPath ios/build/generated/ios \
-              --targetPlatform ios
-   
-
       # ── Install CocoaPods ──
       - name: Install Pods
         working-directory: ios
@@ -202,17 +194,7 @@ jobs:
           -destination "generic/platform=iOS" | grep -i "PRODUCT_BUNDLE_IDENTIFIER\|CFBundleIdentifier"
 
    
-      - name: Cek isi ReactCodegen podspec
-        run: |
-              find ios/Pods -iname "ReactCodegen*.podspec*" -exec echo "=== {} ===" \; -exec cat {} \;
-
-      - name: Cek podspec generated
-        run: |
-          find ios -iname "*Codegen*.podspec*"
-          find ios/Pods -maxdepth 1 -type d -iname "*codegen*"
-
-      - name: Cek EXTERNAL SOURCES ReactCodegen
-        run: grep -A 3 "ReactCodegen" ios/Podfile.lock | head -10
+    
                   
       # ── Archive app ──
       - name: Build Archive
