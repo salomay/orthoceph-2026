@@ -432,10 +432,13 @@ jobs:
           idb_companion --udid $(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])") &
           sleep 3
           idb list-targets
+          
 
       - name: Describe elemen di layar
-        run: idb ui describe-all --udid <UDID>
+        run: UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])")
+             idb ui describe-all --udid "$UDID"
 
+             
       - name: Test login flow
         run: |
           UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])")
