@@ -416,3 +416,35 @@ jobs:
           name: simulator-log
           path: ${{ runner.temp }}/simulator.log
           if-no-files-found: warn  
+
+      - name: Start idb companion & connect
+        run: |
+          idb_companion --udid $(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])") &
+          sleep 3
+          idb list-targets
+
+      - name: Describe elemen di layar
+        run: idb ui describe-all --udid <UDID>
+
+      - name: Test login flow
+        run: |
+          UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])")
+      
+          # Tap field username (ganti X,Y sesuai hasil describe-all)
+          idb ui tap 200 300 --udid $UDID
+          sleep 1
+          idb ui text "user@example.com" --udid $UDID
+      
+          # Tap field password
+          idb ui tap 200 380 --udid $UDID
+          sleep 1
+          idb ui text "password123" --udid $UDID
+      
+          # Tap tombol login
+          idb ui tap 200 460 --udid $UDID
+          sleep 3
+      
+      - name: Screenshot hasil login
+        run: |
+          mkdir -p "$RUNNER_TEMP/screenshots"
+          idb screenshot "$RUNNER_TEMP/screenshots/after-login.png" --udid $UDID  
