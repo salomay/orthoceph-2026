@@ -329,6 +329,12 @@ jobs:
           xcrun simctl boot "$SIMULATOR_NAME" || true
           xcrun simctl bootstatus "$SIMULATOR_NAME" -b
 
+      - name: Install idb
+        run: |
+          brew tap facebook/fb
+          brew install idb-companion
+          pip3 install fb-idb --break-system-packages
+
       - name: Install app ke simulator
         run: |
           xcrun simctl install booted "${{ steps.find_app.outputs.app_path }}"
