@@ -336,6 +336,13 @@ jobs:
           brew trust facebook/fb
           brew install idb-companion
           pip3 install fb-idb --break-system-packages
+          brew install idb-companion python@3.11
+
+          /opt/homebrew/opt/python@3.11/bin/python3.11 -m venv $RUNNER_TEMP/idb-venv
+          source $RUNNER_TEMP/idb-venv/bin/activate
+          pip install fb-idb
+          echo "$RUNNER_TEMP/idb-venv/bin" >> $GITHUB_PATH
+
           
           
       - name: Install app ke simulator
