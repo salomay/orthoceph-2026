@@ -192,39 +192,28 @@ jobs:
 
 
  
-      - name: Describe elemen layar login
+      - name: Buat script Python
         run: |
-            idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
-            
-            python3 -m json.tool "$RUNNER_TEMP/describe.json"
-
-
-      - name: Tampilkan hasil describe
-        run: cat "$RUNNER_TEMP/describe.json" | python3 -m json.tool
-          
-
-      - name: Cek semua elemen layar
+          echo 'import json, os' > "$RUNNER_TEMP/check_elements.py"
+          echo 'with open(os.environ["RUNNER_TEMP"] + "/describe.json") as f:' >> "$RUNNER_TEMP/check_elements.py"
+          echo '    data = json.load(f)' >> "$RUNNER_TEMP/check_elements.py"
+          echo 'for el in data:' >> "$RUNNER_TEMP/check_elements.py"
+          echo '    role = el.get("role") or ""' >> "$RUNNER_TEMP/check_elements.py"
+          echo '    label = el.get("AXLabel") or ""' >> "$RUNNER_TEMP/check_elements.py"
+          echo '    frame = el.get("frame")' >> "$RUNNER_TEMP/check_elements.py"
+          echo '    print(role, "|", repr(label), "|", frame)' >> "$RUNNER_TEMP/check_elements.py"
+      
+      - name: Ambil describe & jalankan script
         run: |
           idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
-          cat > "$RUNNER_TEMP/check_elements.py" << 'PYEOF'
-          import json, os
-      
-          with open(os.environ["RUNNER_TEMP"] + "/describe.json") as f:
-          data = json.load(f)
-      
-          for el in data:
-              role = el.get("role") or ""
-              label = el.get("AXLabel") or ""
-              frame = el.get("frame")
-              print(role, "|", repr(label), "|", frame)
-          PYEOF
-              python3 "$RUNNER_TEMP/check_elements.py"
+          python3 "$RUNNER_TEMP/check_elements.py"
+          
 
                     
      
       - name: Test login flow
         run: |
-            idb ui tap 80 590 --udid "$SIM_UDID"
+            idb ui tap 60 590 --udid "$SIM_UDID"
             sleep 1
       
             idb ui tap 195 400 --udid "$SIM_UDID"
