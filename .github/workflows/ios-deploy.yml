@@ -450,20 +450,20 @@ jobs:
           UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])")
       
           # Tap field username (ganti X,Y sesuai hasil describe-all)
-          idb ui tap 200 300 --udid $UDID
+          idb ui tap 200 300 --udid $SIM_UDID
           sleep 1
-          idb ui text "user@example.com" --udid $UDID
+          idb ui text "user@example.com" --udid $SIM_UDID
       
           # Tap field password
-          idb ui tap 200 380 --udid $UDID
+          idb ui tap 200 380 --udid $SIM_UDID
           sleep 1
-          idb ui text "password123" --udid $UDID
+          idb ui text "password123" --udid $SIM_UDID
       
           # Tap tombol login
-          idb ui tap 200 460 --udid $UDID
+          idb ui tap 200 460 --udid $SIM_UDID
           sleep 3
       
       - name: Screenshot hasil login
         run: |
           mkdir -p "$RUNNER_TEMP/screenshots"
-          idb screenshot "$RUNNER_TEMP/screenshots/after-login.png" --udid $UDID  
+          idb screenshot "$RUNNER_TEMP/screenshots/after-login.png" --udid $SIM_UDID  
