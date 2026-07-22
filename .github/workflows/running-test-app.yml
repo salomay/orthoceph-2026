@@ -213,23 +213,23 @@ jobs:
      
       - name: Test login flow
         run: |
-            idb ui tap 160 221 --udid "$UDID"
+            idb ui tap 160 221 --udid "$SIM_UDID"
             sleep 3
             for i in $(seq 1 30); do
-             idb ui key 42 --udid "$UDID"
+             idb ui key 42 --udid "$SIM_UDID"
             done
             sleep 1
-            idb ui text "demo@demo.com" --udid "$UDID"
+            idb ui text "demo@demo.com" --udid "$SIM_UDID"
             sleep 1
 
        
-            idb ui tap 160 270 --udid "$UDID"
+            idb ui tap 160 270 --udid "$SIM_UDID"
             sleep 2
             for i in $(seq 1 30); do
-             idb ui key 42 --udid "$UDID"
+             idb ui key 42 --udid "$SIM_UDID"
             done
             sleep 1
-            idb ui text "admin" --udid "$UDID"
+            idb ui text "admin" --udid "$SIM_UDID"
             sleep 1
        
       
