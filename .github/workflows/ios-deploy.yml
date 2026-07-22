@@ -467,3 +467,11 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/screenshots"
           idb screenshot "$RUNNER_TEMP/screenshots/after-login.png" --udid $SIM_UDID  
+
+      - name: Upload screenshot login sebagai artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: login-screenshot
+          path: ${{ runner.temp }}/screenshots/after-login.png
+          if-no-files-found: warn
