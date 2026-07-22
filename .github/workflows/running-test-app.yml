@@ -223,11 +223,11 @@ jobs:
             idb ui text "admin" --udid "$SIM_UDID"
             sleep 1
 
-            idb ui tap 95 590 --udid "$SIM_UDID"
-            sleep 2
+            #idb ui tap 95 590 --udid "$SIM_UDID"
+            #sleep 2
           
-            idb ui tap 195 520 --udid "$SIM_UDID"
-            sleep 5
+            #idb ui tap 195 520 --udid "$SIM_UDID"
+            #sleep 5
             
        
       
