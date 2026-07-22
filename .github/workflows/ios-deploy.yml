@@ -433,14 +433,30 @@ jobs:
             echo "Ditemukan UDID: $UDID"
             echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
 
+
+
       - name: Start idb companion
         run: |
             idb_companion --udid "$SIM_UDID" &
             sleep 3
             idb list-targets
 
-      - name: Describe elemen di layar
-        run: idb ui describe-all --udid "$SIM_UDID"
+
+
+      - name: Dismiss location permission dialog
+        run: |
+             idb ui tap 196 497 --udid "$SIM_UDID"
+             sleep 2
+
+
+ 
+      - name: Describe elemen layar login
+        run: idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
+
+
+
+      - name: Tampilkan hasil describe
+        run: cat "$RUNNER_TEMP/describe.json" | python3 -m json.tool
           
 
    
