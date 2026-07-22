@@ -213,33 +213,24 @@ jobs:
      
       - name: Test login flow
         run: |
-            idb ui tap 195 380 --udid "$SIM_UDID"
-            sleep 2
-              # Bersihkan field: tekan backspace berkali-kali untuk hapus sisa teks lama
+            idb ui tap 160 221 --udid "$UDID"
+            sleep 3
             for i in $(seq 1 30); do
-             idb ui key 42 --udid $SIM_UDID
+             idb ui key 42 --udid "$UDID"
             done
             sleep 1
-
-            idb ui text "demo@demo.com" --udid $SIM_UDID
+            idb ui text "demo@demo.com" --udid "$UDID"
             sleep 1
 
-            # Tap field password
-            idb ui tap 195 400 --udid $SIM_UDID
+       
+            idb ui tap 160 270 --udid "$UDID"
             sleep 2
             for i in $(seq 1 30); do
-             idb ui key 42 --udid $SIM_UDID
+             idb ui key 42 --udid "$UDID"
             done
             sleep 1
-            idb ui text "admin" --udid $SIM_UDID
+            idb ui text "admin" --udid "$UDID"
             sleep 1
-
-            idb ui tap 95 590 --udid "$SIM_UDID"
-            sleep 2
-          
-            #idb ui tap 195 520 --udid "$SIM_UDID"
-            #sleep 5
-            
        
       
       - name: Screenshot hasil login
