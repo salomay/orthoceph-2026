@@ -214,7 +214,7 @@ jobs:
       - name: Test login flow
         run: |
             idb ui tap 195 400 --udid "$SIM_UDID"
-            sleep 3
+            sleep 6
             idb ui text "demo@demo.com" --udid "$SIM_UDID"
             sleep 1
             
