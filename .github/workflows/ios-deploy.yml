@@ -467,14 +467,18 @@ jobs:
       
           # Tap field username (ganti X,Y sesuai hasil describe-all)
           idb ui tap 195 400 --udid "$SIM_UDID"
-          sleep 1
+          sleep 2
           idb ui text "user@example.com" --udid "$SIM_UDID"
       
           # Tap field password
           idb ui tap 195 460 --udid "$SIM_UDID"
-          sleep 1
+          sleep 2
           idb ui text "password123" --udid "$SIM_UDID"
-      
+
+          #tap centang
+          idb ui tap 95 590 --udid "$SIM_UDID"
+          sleep 1
+    
           # Tap tombol login
           idb ui tap 195 520 --udid "$SIM_UDID"
           sleep 3
