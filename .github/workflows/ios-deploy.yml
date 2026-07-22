@@ -452,7 +452,7 @@ jobs:
  
       - name: Describe elemen layar login
         run: idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
-
+             python3 -m json.tool "$RUNNER_TEMP/describe.json"
 
 
       - name: Tampilkan hasil describe
@@ -463,7 +463,7 @@ jobs:
              
       - name: Test login flow
         run: |
-          UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])")
+          # UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])")
       
           # Tap field username (ganti X,Y sesuai hasil describe-all)
           idb ui tap 195 400 --udid "$SIM_UDID"
