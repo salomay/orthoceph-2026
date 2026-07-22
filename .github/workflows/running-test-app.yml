@@ -219,9 +219,7 @@ jobs:
             sleep 2
             idb ui text "admin" --udid "$SIM_UDID"
            
-            # Tap tombol login
-            idb ui tap 195 520 --udid "$SIM_UDID"
-            sleep 3
+       
       
       - name: Screenshot hasil login
         run: |
