@@ -213,15 +213,13 @@ jobs:
      
       - name: Test login flow
         run: |
-              # isi email
-              idb ui tap 195 400 --udid "$SIM_UDID"
-              sleep 2
-              idb ui text "demo@demo.com" --udid "$SIM_UDID"
-          
-              # isi password
-              idb ui tap 195 460 --udid "$SIM_UDID"
-              sleep 2
-              idb ui text "admin" --udid "$SIM_UDID"
+            idb ui tap 195 400 --udid "$SIM_UDID"
+            sleep 2
+            idb ui text "demo@demo.com" --udid "$SIM_UDID"
+        
+            idb ui tap 195 460 --udid "$SIM_UDID"
+            sleep 2
+            idb ui text "admin" --udid "$SIM_UDID"
           
             
        
