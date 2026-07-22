@@ -202,13 +202,21 @@ jobs:
           echo '    label = el.get("AXLabel") or ""' >> "$RUNNER_TEMP/check_elements.py"
           echo '    frame = el.get("frame")' >> "$RUNNER_TEMP/check_elements.py"
           echo '    print(role, "|", repr(label), "|", frame)' >> "$RUNNER_TEMP/check_elements.py"
-      
-      - name: Ambil describe & jalankan script
-        run: |
-          idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
-          python3 "$RUNNER_TEMP/check_elements.py"
-          
 
+
+      - name: Cek dimensi screenshot
+        run: |
+          idb screenshot "$RUNNER_TEMP/test.png" --udid "$SIM_UDID"
+          file "$RUNNER_TEMP/test.png"
+          sips -g pixelWidth -g pixelHeight "$RUNNER_TEMP/test.png"
+            - name: Ambil describe & jalankan script
+              run: |
+                idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
+                python3 "$RUNNER_TEMP/check_elements.py"
+          
+      - name: Cek ukuran layar sebenarnya
+        run: |
+          idb describe --udid "$SIM_UDID"
                     
      
       - name: Test login flow
