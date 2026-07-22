@@ -203,11 +203,24 @@ jobs:
         run: cat "$RUNNER_TEMP/describe.json" | python3 -m json.tool
           
 
-   
-      #UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print([x['udid'] for v in d.values() for x in v if x.get('state')=='Booted'][0])") 
+      - name: Cek posisi checkbox terms
+        run: |
+            idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
+            python3 -c "
+            import json
+            with open('$RUNNER_TEMP/describe.json') as f:
+                data = json.load(f)
+            for el in data:
+                label = (el.get('AXLabel') or '')
+                role = (el.get('role') or '')
+                if 'understand' in label.lower() or 'checkbox' in role.lower() or 'agree' in label.lower():
+                    print(role, '|', label, '|', el.get('frame'))
+
+                    
+     
       - name: Test login flow
         run: |
-            idb ui tap 90 590 --udid "$SIM_UDID"
+            idb ui tap 80 590 --udid "$SIM_UDID"
             sleep 1
       
             idb ui tap 195 400 --udid "$SIM_UDID"
