@@ -451,8 +451,10 @@ jobs:
 
  
       - name: Describe elemen layar login
-        run: idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
-             python3 -m json.tool "$RUNNER_TEMP/describe.json"
+        run: |
+            idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
+            
+            python3 -m json.tool "$RUNNER_TEMP/describe.json"
 
 
       - name: Tampilkan hasil describe
