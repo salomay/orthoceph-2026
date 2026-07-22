@@ -223,13 +223,7 @@ jobs:
               sleep 2
               idb ui text "admin" --udid "$SIM_UDID"
           
-              # centang checkbox terms
-              idb ui tap 95 590 --udid "$SIM_UDID"
-              sleep 1
-          
-              # tap tombol LogIn (sudah dikonfirmasi benar)
-              idb ui tap 195 520 --udid "$SIM_UDID"
-              sleep 3
+            
        
       
       - name: Screenshot hasil login
