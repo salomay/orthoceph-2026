@@ -232,11 +232,11 @@ jobs:
             idb ui text "admin" --udid "$SIM_UDID"
             sleep 1
         
-            idb ui tap 31 659 --udid "$SIM_UDID"
-            sleep 1
+            # idb ui tap 31 659 --udid "$SIM_UDID"
+            # sleep 1
         
-            idb ui tap 196 563 --udid "$SIM_UDID"
-            sleep 3
+            # idb ui tap 196 563 --udid "$SIM_UDID"
+            # sleep 3
        
       
       - name: Screenshot hasil login
