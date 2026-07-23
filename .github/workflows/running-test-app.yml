@@ -247,10 +247,10 @@ jobs:
             sleep 1
         
             idb ui tap 28 580 --udid "$SIM_UDID"
-            # sleep 1
+            sleep 1
         
-            # idb ui tap 196 563 --udid "$SIM_UDID"
-            # sleep 3
+            idb ui tap 196 540 --udid "$SIM_UDID"
+            sleep 3
        
       
       - name: Screenshot hasil login
