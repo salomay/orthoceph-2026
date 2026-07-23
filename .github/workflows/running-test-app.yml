@@ -224,7 +224,16 @@ jobs:
         run: |
             idb ui tap 196 393 --udid "$SIM_UDID"
             sleep 3
-            idb ui text "demo@demo.com" --udid "$SIM_UDID"
+        
+            idb ui text "demo" --udid "$SIM_UDID"
+            sleep 0.5
+            idb ui text "@" --udid "$SIM_UDID"
+            sleep 0.5
+            idb ui text "demo" --udid "$SIM_UDID"
+            sleep 0.5
+            idb ui text "." --udid "$SIM_UDID"
+            sleep 0.5
+            idb ui text "com" --udid "$SIM_UDID"
             sleep 1
         
             idb ui tap 196 478 --udid "$SIM_UDID"
