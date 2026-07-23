@@ -18,9 +18,10 @@ jobs:
       SIMULATOR_NAME: "iPhone 15"
 
     steps:
-      - name: Test konektivitas API dari runner
+      - name: Test koneksi ke API
         run: |
-           curl -v https://orthoceph.furnabel.com 2>&1 | tail -30
+          curl -v https://orthoceph.furnabel.com/login
+          echo "Exit code: $?"
            
       - name: Checkout kode
         uses: actions/checkout@v4
