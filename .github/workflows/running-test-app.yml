@@ -234,7 +234,6 @@ jobs:
             idb ui text "demo@demo.com" --udid "$SIM_UDID"
             sleep 1
         
-            # Tap & warm-up field password
             idb ui tap 196 478 --udid "$SIM_UDID"
             sleep 2
             idb ui text "x" --udid "$SIM_UDID"
@@ -248,9 +247,8 @@ jobs:
         
             idb ui tap 28 580 --udid "$SIM_UDID"
             sleep 1
-        
             idb ui tap 196 540 --udid "$SIM_UDID"
-            sleep 3
+            
        
       
       - name: Screenshot hasil login
