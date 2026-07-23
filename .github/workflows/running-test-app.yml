@@ -233,13 +233,9 @@ jobs:
             sleep 3
             idb ui text "admin" --udid "$SIM_UDID"
             sleep 2
-        
-            idb ui tap 31 659 --udid "$SIM_UDID"
-            sleep 2
-        
             idb ui tap 28 580 --udid "$SIM_UDID"
             sleep 1
-            idb ui tap 196 540 --udid "$SIM_UDID"
+            idb ui tap 196 530 --udid "$SIM_UDID"
             
        
       
