@@ -226,6 +226,11 @@ jobs:
 
             idb ui tap 196 393 --udid "$SIM_UDID"
             sleep 4
+             for attempt in 1 2 3 4 5; 
+              for i in $(seq 1 20); do
+                idb ui key 42 --udid "$SIM_UDID"
+              done
+            sleep 1
             idb ui text "demo@demo.com" --udid "$SIM_UDID"
             sleep 2
         
