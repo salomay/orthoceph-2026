@@ -222,22 +222,27 @@ jobs:
      
       - name: Test login flow
         run: |
+            # Tap & warm-up field email
             idb ui tap 196 393 --udid "$SIM_UDID"
             sleep 3
-        
-            idb ui text "demo" --udid "$SIM_UDID"
-            sleep 0.5
-            idb ui text "@" --udid "$SIM_UDID"
-            sleep 0.5
-            idb ui text "demo" --udid "$SIM_UDID"
-            sleep 0.5
-            idb ui text "." --udid "$SIM_UDID"
-            sleep 0.5
-            idb ui text "com" --udid "$SIM_UDID"
+            idb ui text "x" --udid "$SIM_UDID"
+            sleep 1
+            for i in $(seq 1 5); do
+              idb ui key 42 --udid "$SIM_UDID"
+            done
+            sleep 1
+            idb ui text "demo@demo.com" --udid "$SIM_UDID"
             sleep 1
         
+            # Tap & warm-up field password
             idb ui tap 196 478 --udid "$SIM_UDID"
             sleep 2
+            idb ui text "x" --udid "$SIM_UDID"
+            sleep 1
+            for i in $(seq 1 5); do
+              idb ui key 42 --udid "$SIM_UDID"
+            done
+            sleep 1
             idb ui text "admin" --udid "$SIM_UDID"
             sleep 1
         
