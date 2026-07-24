@@ -2863,8 +2863,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerShown: false,
                   }}
                 />
