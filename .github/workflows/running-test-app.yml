@@ -227,7 +227,7 @@ jobs:
      
       - name: Test login flow
         run: |
-            idb ui tap 160 221 --udid "$SIM_UDID"
+            idb ui tap 197 392 --udid "$SIM_UDID"
             sleep 3
         
             for attempt in 1 2 3 4 5; do
@@ -240,7 +240,7 @@ jobs:
               sleep 2
         
               # cek isi field sekarang
-              VALUE=$(idb ui describe-point 160 221 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
+              VALUE=$(idb ui describe-point 197 392 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
               echo "Percobaan $attempt, isi field: '$VALUE'"
         
               if [ "$VALUE" = "demo@demo.com" ]; then
@@ -251,14 +251,14 @@ jobs:
 
             sleep 2
         
-            idb ui tap 160 270 --udid "$SIM_UDID"
+            idb ui tap 197 479 --udid "$SIM_UDID"
             sleep 3
             idb ui text "admin" --udid "$SIM_UDID"
             sleep 2
-            idb ui tap 26 371 --udid "$SIM_UDID"
+            idb ui tap 32 658 --udid "$SIM_UDID"
             sleep 1
             #idb ui tap 160 423 --udid "$SIM_UDID"
-            idb ui tap 160 317 --udid "$SIM_UDID"
+            idb ui tap 197 563 --udid "$SIM_UDID"
        
       
       - name: Screenshot hasil login
