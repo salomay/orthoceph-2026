@@ -15,7 +15,7 @@ jobs:
       APP_NAME: "orthoceph"
       XCODE_SCHEME: "orthoceph"
       XCODE_WORKSPACE: "ios/orthoceph.xcworkspace"
-      SIMULATOR_NAME: "iPhone 15"
+      SIMULATOR_NAME: "iPhone 12"
 
     steps:
       - name: Test koneksi ke API
@@ -251,14 +251,14 @@ jobs:
 
             sleep 2
         
-            idb ui tap 196 478 --udid "$SIM_UDID"
-            sleep 3
-            idb ui text "admin" --udid "$SIM_UDID"
-            sleep 2
-            idb ui tap 28 580 --udid "$SIM_UDID"
-            sleep 1
-            #idb ui tap 196 530 --udid "$SIM_UDID"
-            idb ui tap 196 650 --udid "$SIM_UDID"
+            # idb ui tap 196 478 --udid "$SIM_UDID"
+            # sleep 3
+            # idb ui text "admin" --udid "$SIM_UDID"
+            # sleep 2
+            # idb ui tap 28 580 --udid "$SIM_UDID"
+            # sleep 1
+            # #idb ui tap 196 530 --udid "$SIM_UDID"
+            # idb ui tap 196 650 --udid "$SIM_UDID"
        
       
       - name: Screenshot hasil login
