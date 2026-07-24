@@ -2928,8 +2928,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2957,8 +2957,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2985,8 +2985,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3000,8 +3000,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3015,8 +3015,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3030,8 +3030,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerShown: false,
                   }}
                 />
@@ -3042,8 +3042,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3057,8 +3057,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3099,8 +3099,8 @@ class App extends React.Component {
                   options={{
                     gestureDirection: 'horizontal',
                    ...(Platform.OS === 'android'
-      ? TransitionPresets.RevealFromBottomAndroid
-      : TransitionPresets.SlideFromRightIOS),
+                    ? TransitionPresets.RevealFromBottomAndroid
+                    : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
