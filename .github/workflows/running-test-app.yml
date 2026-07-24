@@ -18,6 +18,11 @@ jobs:
       SIMULATOR_NAME: "iPhone 15"
 
     steps:
+      - name: Test koneksi ke API
+        run: |
+          curl -v https://orthoceph.furnabel.com/login
+          echo "Exit code: $?"
+           
       - name: Checkout kode
         uses: actions/checkout@v4
 
@@ -222,35 +227,38 @@ jobs:
      
       - name: Test login flow
         run: |
-            # Tap & warm-up field email
             idb ui tap 196 393 --udid "$SIM_UDID"
             sleep 3
-            idb ui text "x" --udid "$SIM_UDID"
-            sleep 1
-            for i in $(seq 1 5); do
-              idb ui key 42 --udid "$SIM_UDID"
-            done
-            sleep 1
-            idb ui text "demo@demo.com" --udid "$SIM_UDID"
-            sleep 1
         
-            # Tap & warm-up field password
-            idb ui tap 196 478 --udid "$SIM_UDID"
+            for attempt in 1 2 3 4 5; do
+              # bersihkan field
+              for i in $(seq 1 20); do
+                idb ui key 42 --udid "$SIM_UDID"
+              done
+              sleep 1
+              idb ui text "demo@demo.com" --udid "$SIM_UDID"
+              sleep 2
+        
+              # cek isi field sekarang
+              VALUE=$(idb ui describe-point 196 393 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
+              echo "Percobaan $attempt, isi field: '$VALUE'"
+        
+              if [ "$VALUE" = "demo@demo.com" ]; then
+                echo "Email berhasil terisi dengan benar!"
+                break
+              fi
+            done
+
             sleep 2
-            idb ui text "x" --udid "$SIM_UDID"
-            sleep 1
-            for i in $(seq 1 5); do
-              idb ui key 42 --udid "$SIM_UDID"
-            done
-            sleep 1
-            idb ui text "admin" --udid "$SIM_UDID"
-            sleep 1
         
+            idb ui tap 196 478 --udid "$SIM_UDID"
+            sleep 3
+            idb ui text "admin" --udid "$SIM_UDID"
+            sleep 2
             idb ui tap 28 580 --udid "$SIM_UDID"
             sleep 1
-        
-            idb ui tap 196 540 --udid "$SIM_UDID"
-            sleep 3
+            #idb ui tap 196 530 --udid "$SIM_UDID"
+            idb ui tap 196 650 --udid "$SIM_UDID"
        
       
       - name: Screenshot hasil login

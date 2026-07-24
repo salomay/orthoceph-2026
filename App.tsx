@@ -2847,7 +2847,9 @@ class App extends React.Component {
                   component={FormAddPatient}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+                  ? TransitionPresets.RevealFromBottomAndroid
+                  : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2860,7 +2862,9 @@ class App extends React.Component {
                   component={FormRegistrasi}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerShown: false,
                   }}
                 />
@@ -2870,7 +2874,9 @@ class App extends React.Component {
                   component={FormThankYou}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2921,7 +2927,9 @@ class App extends React.Component {
                   component={FormPdfPreview}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2948,7 +2956,9 @@ class App extends React.Component {
                   component={FormPatientList}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2974,7 +2984,9 @@ class App extends React.Component {
                   component={FormProfile}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -2987,7 +2999,9 @@ class App extends React.Component {
                   component={FormPatient}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3000,7 +3014,9 @@ class App extends React.Component {
                   component={FormAddPatient}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3013,7 +3029,9 @@ class App extends React.Component {
                   component={FormRegistrasi}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerShown: false,
                   }}
                 />
@@ -3023,7 +3041,9 @@ class App extends React.Component {
                   component={FormThankYou}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3036,7 +3056,9 @@ class App extends React.Component {
                   component={FormCephalometric}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
@@ -3076,7 +3098,9 @@ class App extends React.Component {
                   component={FormPdfPreview}
                   options={{
                     gestureDirection: 'horizontal',
-                    ...TransitionPresets.RevealFromBottomAndroid,
+                   ...(Platform.OS === 'android'
+      ? TransitionPresets.RevealFromBottomAndroid
+      : TransitionPresets.SlideFromRightIOS),
                     headerStyle: {
                       elevation: 0,
                     },
