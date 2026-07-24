@@ -257,7 +257,7 @@ jobs:
             sleep 2
             idb ui tap 26 371 --udid "$SIM_UDID"
             sleep 1
-            #idb ui tap 196 530 --udid "$SIM_UDID"
+            #idb ui tap 160 423 --udid "$SIM_UDID"
             idb ui tap 160 317 --udid "$SIM_UDID"
        
       
