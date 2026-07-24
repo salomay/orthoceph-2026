@@ -240,7 +240,7 @@ jobs:
               sleep 2
         
               # cek isi field sekarang
-              VALUE=$(idb ui describe-point 196 393 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
+              VALUE=$(idb ui describe-point 160 221 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
               echo "Percobaan $attempt, isi field: '$VALUE'"
         
               if [ "$VALUE" = "demo@demo.com" ]; then
