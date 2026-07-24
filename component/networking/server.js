@@ -1,7 +1,7 @@
 import {Platform} from 'react-native';
 
-const apiurl = 'http://orthoceph.furnabel.com/';
-const apiurlImage = 'http://orthoceph-image.furnabel.com/';
+const apiurl = 'https://orthoceph.furnabel.com/';
+const apiurlImage = 'https://orthoceph-image.furnabel.com/';
 
 //loginAuth
 const _loginAuth = async (params) => {
