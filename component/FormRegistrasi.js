@@ -524,7 +524,6 @@ export default class FormRegistrasi extends React.Component {
               borderRadius: 0,
               marginTop: 5,
               zIndex: 9999,
-              height: 'auto',
             }}>
             <Appbar.BackAction onPress={() => this.props.navigation.goBack()} color='white' />
 
