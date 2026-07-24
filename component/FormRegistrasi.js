@@ -528,7 +528,7 @@ export default class FormRegistrasi extends React.Component {
             }}>
             <Appbar.BackAction onPress={() => this.props.navigation.goBack()} color='white' />
 
-            <Appbar.Content
+            {/* <Appbar.Content
               title="Registration Users"
               subtitle=""
               color="white"
@@ -538,7 +538,30 @@ export default class FormRegistrasi extends React.Component {
                 textAlign: 'center',
                 // marginLeft: Platform.OS == 'ios' ? 0 : -60,
               }}
-            />
+            /> */}
+             <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                // kompensasi lebar BackAction biar teks bener-bener center
+                marginRight: Platform.OS === 'ios' ? 40 : 0,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'white',
+                  fontSize: wp(3.4),
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}
+                numberOfLines={1}
+              >
+                Registration Users
+              </Text>
+          </View>
+            {/* spacer biar action kanan kalau ada tetap seimbang */}
+            <View style={{ width: 48 }} />
 
             <Appbar.Action />
           </Appbar.Header>
