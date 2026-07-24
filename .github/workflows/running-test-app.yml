@@ -15,7 +15,7 @@ jobs:
       APP_NAME: "orthoceph"
       XCODE_SCHEME: "orthoceph"
       XCODE_WORKSPACE: "ios/orthoceph.xcworkspace"
-      SIMULATOR_NAME: "iPhone 12"
+      SIMULATOR_NAME: "iPhone 15 Plus"
 
     steps:
       - name: Test koneksi ke API
