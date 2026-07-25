@@ -287,7 +287,7 @@ jobs:
           idb ui tap 196 207 --udid "$SIM_UDID"
           sleep 1
           idb ui text "Budi Santoso" --udid "$SIM_UDID"
-          sleep 1
+          sleep 6
 
           ## Tap dropdown Gender (opsional - pilih item pertama)
           #idb ui tap 196 276 --udid "$SIM_UDID"
@@ -309,13 +309,13 @@ jobs:
           idb ui tap 196 408 --udid "$SIM_UDID"
           sleep 1
           idb ui text "budi.test@example.com" --udid "$SIM_UDID"
-          sleep 1
+          sleep 6
 
           # Tap Password
           idb ui tap 196 483 --udid "$SIM_UDID"
           sleep 1
           idb ui text "Password123!" --udid "$SIM_UDID"
-          sleep 1
+          sleep 6
 
           echo "Form registrasi selesai diisi"
 
