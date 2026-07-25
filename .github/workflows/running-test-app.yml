@@ -327,36 +327,50 @@ jobs:
           #sleep 1
 
           # Tap Email
-           idb ui tap 196 408  --udid "$SIM_UDID"
-            sleep 3
-        
-            for attempt in 1 2 3 4 5; do
-              # bersihkan field
-              for i in $(seq 1 20); do
-                idb ui key 42 --udid "$SIM_UDID"
-              done
-              sleep 1
-              idb ui text "budi.test@example.com" --udid "$SIM_UDID"
-              sleep 2
-        
-              # cek isi field sekarang
-              VALUE=$(idb ui describe-point 196 408 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
-              echo "Percobaan $attempt, isi field: '$VALUE'"
-        
-              if [ "$VALUE" = "budi.test@example.com" ]; then
-                echo "Nama berhasil terisi dengan benar!"
-                break
-              fi
-            done
-
+          idb ui tap 196 408 --udid "$SIM_UDID"
           sleep 2
+      
+          for attempt in 1 2 3 4 5; do
+            echo "=== Percobaan $attempt ==="
+      
+            # Pastikan field benar-benar fokus & kursor di posisi yang sama tiap kali
+            idb ui tap 196 408 --udid "$SIM_UDID"
+            sleep 1
+      
+            # Hapus lebih banyak dari kemungkinan panjang teks apapun yang nyangkut
+            for i in $(seq 1 60); do
+              idb ui key 42 --udid "$SIM_UDID"
+            done
+            sleep 1
+      
+            # Verifikasi field sudah kosong SEBELUM mengetik
+            EMPTY_CHECK=$(idb ui describe-point 196 408 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
+            echo "Isi field setelah clear: '$EMPTY_CHECK'"
+      
+            if [ -n "$EMPTY_CHECK" ]; then
+              echo "Field belum kosong, ulangi clear..."
+              continue
+            fi
+      
+            # Baru ketik setelah dipastikan kosong
+            idb ui text "budi.test@example.com" --udid "$SIM_UDID"
+            sleep 2
+      
+            VALUE=$(idb ui describe-point 196 408 --udid "$SIM_UDID" --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AXValue') or '')" 2>/dev/null || echo "")
+            echo "Percobaan $attempt, isi field: '$VALUE'"
+      
+            if [ "$VALUE" = "budi.test@example.com" ]; then
+              echo "Email berhasil terisi dengan benar!"
+              break
+            fi
+          done
             
        
           # Tap Password
           idb ui tap 196 483 --udid "$SIM_UDID"
           sleep 1
           idb ui text "admin" --udid "$SIM_UDID"
-          sleep 6
+          sleep 2
 
           echo "Form registrasi selesai diisi"
 
