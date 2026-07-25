@@ -257,11 +257,11 @@ jobs:
             sleep 2
             idb ui tap 31 579 --udid "$SIM_UDID"
             sleep 1
-            # Tap Registrasi
-            # idb ui tap 160 636 --udid "$SIM_UDID"
-            #Tap Login
-            idb ui tap 196 515 --udid "$SIM_UDID"
-            sleep 6
+            #Tap Registrasi
+            idb ui tap 160 636 --udid "$SIM_UDID"
+            # #Tap Login
+            # idb ui tap 196 515 --udid "$SIM_UDID"
+            # sleep 6
       
       - name: Screenshot hasil login
         run: |
