@@ -303,14 +303,16 @@ jobs:
               return json.loads(out)
 
           def find_field(elements, hint):
-           for el in elements:
-             if el.get("role") == "AXTextField":
-              frame = el.get("frame") or {}
-              fx, fy = frame.get("x", 0), frame.get("y", 0)
-              fw, fh = frame.get("width", 0), frame.get("height", 0)
-               if fx <= X <= fx + fw and fy <= Y <= fy + fh:
-                return el
-          return None
+              for el in elements:
+                  if el.get("role") == "AXTextField":
+                      frame = el.get("frame") or {}
+                      fx = frame.get("x", 0)
+                      fy = frame.get("y", 0)
+                      fw = frame.get("width", 0)
+                      fh = frame.get("height", 0)
+                      if fx <= X <= fx + fw and fy <= Y <= fy + fh:
+                          return el
+              return None
 
           def tap(x, y):
               subprocess.run(["idb", "ui", "tap", str(x), str(y), "--udid", UDID])
@@ -337,8 +339,8 @@ jobs:
           elements = describe()
           print("=== Semua AXTextField yang terdeteksi ===")
           for el in elements:
-           if el.get("role") == "AXTextField":
-            print(el.get("frame"), "value:", repr(el.get("AXValue")))
+              if el.get("role") == "AXTextField":
+                  print(el.get("frame"), "value:", repr(el.get("AXValue")))
 
           typed_so_far = ""
           rounds = 0
