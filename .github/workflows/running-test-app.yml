@@ -71,20 +71,11 @@ jobs:
           echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
           echo "Ditemukan: $APP_PATH"
 
-      - name: Nonaktifkan software keyboard di Simulator
-        run: |
-          defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool true
-          defaults write com.apple.iphonesimulator ConnectHardwareKeyboard-com.apple.CoreSimulator.SimDevice -bool true || true
-
-    
+   
       - name: Boot simulator
         run: |
           xcrun simctl boot "$SIMULATOR_NAME" || true
           xcrun simctl bootstatus "$SIMULATOR_NAME" -b
-
-      - name: Nonaktifkan autocorrect & predictive text
-        run: |
-          xcrun simctl spawn booted defaults write com.apple.Preferences KeyboardCapsLock -bool false || true
 
 
       - name: Install idb
