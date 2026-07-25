@@ -289,21 +289,21 @@ jobs:
           idb ui text "Budi Santoso" --udid "$SIM_UDID"
           sleep 1
 
-          # Tap dropdown Gender (opsional - pilih item pertama)
-          idb ui tap 196 276 --udid "$SIM_UDID"
-          sleep 2
-          idb screenshot "$RUNNER_TEMP/screenshots/gender-dropdown.png" --udid "$SIM_UDID"
+          ## Tap dropdown Gender (opsional - pilih item pertama)
+          #idb ui tap 196 276 --udid "$SIM_UDID"
+          #sleep 2
+          #idb screenshot "$RUNNER_TEMP/screenshots/gender-dropdown.png" --udid "$SIM_UDID"
           # sesuaikan koordinat pilihan gender sesuai posisi item di picker
-          idb ui tap 196 320 --udid "$SIM_UDID"
-          sleep 1
+          #idb ui tap 196 320 --udid "$SIM_UDID"
+          #sleep 1
 
-          # Tap dropdown Country (opsional - pilih item pertama)
-          idb ui tap 196 339 --udid "$SIM_UDID"
-          sleep 4
-          idb screenshot "$RUNNER_TEMP/screenshots/country-dropdown.png" --udid "$SIM_UDID"
-          # sesuaikan koordinat pilihan country sesuai posisi item di picker
-          idb ui tap 196 383 --udid "$SIM_UDID"
-          sleep 1
+          ## Tap dropdown Country (opsional - pilih item pertama)
+          #idb ui tap 196 339 --udid "$SIM_UDID"
+          #sleep 4
+          #idb screenshot "$RUNNER_TEMP/screenshots/country-dropdown.png" --udid "$SIM_UDID"
+          ## sesuaikan koordinat pilihan country sesuai posisi item di picker
+          #idb ui tap 196 383 --udid "$SIM_UDID"
+          #sleep 1
 
           # Tap Email
           idb ui tap 196 408 --udid "$SIM_UDID"
