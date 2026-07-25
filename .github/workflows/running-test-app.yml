@@ -280,3 +280,103 @@ jobs:
         run: |
             idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe.json"
             python3 "$RUNNER_TEMP/check_elements.py"
+
+      - name: Isi Form Registrasi User
+        run: |
+          # Tap Full Name
+          idb ui tap 196 207 --udid "$SIM_UDID"
+          sleep 1
+          idb ui text "Budi Santoso" --udid "$SIM_UDID"
+          sleep 1
+
+          # Tap dropdown Gender (opsional - pilih item pertama)
+          idb ui tap 196 276 --udid "$SIM_UDID"
+          sleep 2
+          idb screenshot "$RUNNER_TEMP/screenshots/gender-dropdown.png" --udid "$SIM_UDID"
+          # sesuaikan koordinat pilihan gender sesuai posisi item di picker
+          idb ui tap 196 320 --udid "$SIM_UDID"
+          sleep 1
+
+          # Tap dropdown Country (opsional - pilih item pertama)
+          idb ui tap 196 339 --udid "$SIM_UDID"
+          sleep 4
+          idb screenshot "$RUNNER_TEMP/screenshots/country-dropdown.png" --udid "$SIM_UDID"
+          # sesuaikan koordinat pilihan country sesuai posisi item di picker
+          idb ui tap 196 383 --udid "$SIM_UDID"
+          sleep 1
+
+          # Tap Email
+          idb ui tap 196 408 --udid "$SIM_UDID"
+          sleep 1
+          idb ui text "budi.test@example.com" --udid "$SIM_UDID"
+          sleep 1
+
+          # Tap Password
+          idb ui tap 196 483 --udid "$SIM_UDID"
+          sleep 1
+          idb ui text "Password123!" --udid "$SIM_UDID"
+          sleep 1
+
+          echo "Form registrasi selesai diisi"
+
+      - name: Screenshot form sebelum submit
+        run: |
+          mkdir -p "$RUNNER_TEMP/screenshots"
+          idb screenshot "$RUNNER_TEMP/screenshots/before-register-submit.png" --udid "$SIM_UDID"
+
+      - name: Verifikasi isi field sebelum submit
+        run: |
+          idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe-before-submit.json"
+          python3 -c "
+          import json
+          with open('$RUNNER_TEMP/describe-before-submit.json') as f:
+              data = json.load(f)
+          for el in data:
+              role = el.get('role') or ''
+              val = el.get('AXValue') or ''
+              if role == 'AXTextField' and val:
+                  print(f'{role} terisi: {val}')
+          "
+
+      - name: Tap tombol Register
+        run: |
+          idb ui tap 196 539 --udid "$SIM_UDID"
+          sleep 5
+
+      - name: Screenshot hasil registrasi
+        run: |
+          mkdir -p "$RUNNER_TEMP/screenshots"
+          idb screenshot "$RUNNER_TEMP/screenshots/after-register.png" --udid "$SIM_UDID"
+
+      - name: Cek hasil registrasi (sukses/error)
+        run: |
+          idb ui describe-all --udid "$SIM_UDID" --json > "$RUNNER_TEMP/describe-after-register.json"
+          python3 "$RUNNER_TEMP/check_elements.py" 2>/dev/null || true
+          echo "=== Isi teks yang muncul di layar setelah submit ==="
+          python3 -c "
+          import json
+          with open('$RUNNER_TEMP/describe-after-register.json') as f:
+              data = json.load(f)
+          for el in data:
+              label = el.get('AXLabel') or ''
+              if label:
+                  print(label)
+          "
+
+      - name: Upload screenshot registrasi sebagai artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registration-screenshots
+          path: ${{ runner.temp }}/screenshots/*.png
+          if-no-files-found: warn
+
+      - name: Upload hasil describe registrasi sebagai artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registration-describe-json
+          path: |
+            ${{ runner.temp }}/describe-before-submit.json
+            ${{ runner.temp }}/describe-after-register.json
+          if-no-files-found: warn
