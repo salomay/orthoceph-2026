@@ -334,6 +334,12 @@ jobs:
           time.sleep(0.5)
           clear_field()
 
+          elements = describe()
+          print("=== Semua AXTextField yang terdeteksi ===")
+          for el in elements:
+           if el.get("role") == "AXTextField":
+            print(el.get("frame"), "value:", repr(el.get("AXValue")))
+
           typed_so_far = ""
           rounds = 0
           success = False
