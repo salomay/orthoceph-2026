@@ -99,11 +99,13 @@ export default class FormRegistrasi extends React.Component {
           this.setState({
             statusGPS: true,
           });
+          this.getPermission();
         }
         if (accuracy['ios.permission.LOCATION_WHEN_IN_USE'] == 'granted') {
           this.setState({
             statusGPS: true,
           });
+          this.getPermission();
         }
       });
     }else{
