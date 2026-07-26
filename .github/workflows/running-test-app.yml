@@ -299,9 +299,10 @@ jobs:
           Y = int(sys.argv[3])
           TARGET = sys.argv[4]
           LABEL_HINT = sys.argv[5]
+          IS_SECURE = (len(sys.argv) > 6 and sys.argv[6] == "secure")
           CHUNK_SIZE = 3
           MAX_ROUNDS = 15
-          ANCHOR = "0"   # karakter dummy, digit tidak kena autocapitalize
+          ANCHOR = "0"
 
           def describe():
               out = subprocess.run(
@@ -340,8 +341,19 @@ jobs:
               tap(X, Y)
               time.sleep(0.3)
               val = current_value()
-              key(42, times=len(val) + 10)   # backspace habiskan isi lama
+              key(42, times=len(val) + 10)
               time.sleep(0.5)
+
+          def is_progressing(expected_full, current):
+              # secure field: hanya bisa cek PANJANG, bukan isi
+              if IS_SECURE:
+                  return len(current) <= len(expected_full) and all(c == "\u2022" for c in current)
+              return expected_full.startswith(current)
+
+          def is_complete(expected_full, current):
+              if IS_SECURE:
+                  return len(current) == len(expected_full)
+              return current == expected_full
 
           # === mulai ===
           tap(X, Y)
@@ -349,53 +361,69 @@ jobs:
           clear_field()
 
           full_with_anchor = ANCHOR + TARGET
-          typed_so_far = ""
+          typed_len = 0
           rounds = 0
-          reached_full_text = False
 
-          while typed_so_far != full_with_anchor and rounds < MAX_ROUNDS:
+          while typed_len < len(full_with_anchor) and rounds < MAX_ROUNDS:
               rounds += 1
-              remaining = full_with_anchor[len(typed_so_far):]
+              remaining = full_with_anchor[typed_len:]
               chunk = remaining[:CHUNK_SIZE]
 
               text(chunk)
               time.sleep(0.5)
 
               current_val = current_value()
-              print(f"Round {rounds}: expect(anchor+target)='{full_with_anchor}' now='{current_val}'")
 
-              if full_with_anchor.startswith(current_val):
-                  typed_so_far = current_val
+              if IS_SECURE:
+                  print(f"Round {rounds}: target_len={len(full_with_anchor)} now_len={len(current_val)}")
+                  if is_progressing(full_with_anchor, current_val):
+                      typed_len = len(current_val)
+                  else:
+                      print("Panjang tidak sesuai, clear ulang...")
+                      clear_field()
+                      typed_len = 0
               else:
-                  print("Karakter salah terdeteksi, clear ulang...")
-                  clear_field()
-                  typed_so_far = ""
+                  print(f"Round {rounds}: expect(anchor+target)='{full_with_anchor}' now='{current_val}'")
+                  if full_with_anchor.startswith(current_val):
+                      typed_len = len(current_val)
+                  else:
+                      print("Karakter salah terdeteksi, clear ulang...")
+                      clear_field()
+                      typed_len = 0
 
-          reached_full_text = (typed_so_far == full_with_anchor)
+          reached_full = (typed_len == len(full_with_anchor))
 
-          if not reached_full_text:
+          if not reached_full:
               print(f"GAGAL mengetik teks lengkap setelah {MAX_ROUNDS} percobaan")
               sys.exit(1)
 
           print("Teks lengkap (dengan anchor) berhasil masuk. Menghapus anchor...")
 
-          # geser kursor ke posisi paling awal (kiri) dengan tombol panah kiri
-          key(80, times=len(full_with_anchor) + 3)   # HID 80 = Left Arrow, +buffer
+          key(80, times=len(full_with_anchor) + 3)
           time.sleep(0.3)
-
-          # hapus 1 karakter anchor dengan Delete Forward (bukan backspace)
-          key(76, times=1)   # HID 76 = Delete Forward
+          key(76, times=1)
           time.sleep(0.5)
 
           final_val = current_value()
-          print(f"Hasil akhir setelah hapus anchor: '{final_val}'")
+          final_len = len(final_val)
+          expected_len = len(TARGET)
 
-          if final_val == TARGET:
-              print("BERHASIL - teks sesuai target persis")
-              sys.exit(0)
+          if IS_SECURE:
+              print(f"Panjang akhir: {final_len}, diharapkan: {expected_len}")
+              if final_len == expected_len:
+                  print("BERHASIL - panjang password sesuai (isi tidak bisa diverifikasi karena secure field)")
+                  sys.exit(0)
+              else:
+                  print("GAGAL - panjang password tidak sesuai")
+                  sys.exit(1)
           else:
-              print(f"GAGAL - hasil akhir '{final_val}' tidak sama dengan target '{TARGET}'")
-              sys.exit(1)
+              print(f"Hasil akhir: '{final_val}'")
+              if final_val == TARGET:
+                  print("BERHASIL")
+                  sys.exit(0)
+              else:
+                  print("GAGAL")
+                  sys.exit(1)
           PYEOF
           echo "Script type_reliably.py berhasil dibuat"
 
