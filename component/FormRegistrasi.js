@@ -88,8 +88,8 @@ export default class FormRegistrasi extends React.Component {
     if (Platform.OS === 'ios') {
       RNPermissions.requestMultiple(
         [
-          'ios.permission.LOCATION_ALWAYS',
-          'ios.permission.LOCATION_WHEN_IN_USE',
+          PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
+          PERMISSIONS.IOS.LOCATION_ALWAYS
         ],
         {
           purposeKey: 'full-accuracy',
@@ -157,6 +157,18 @@ export default class FormRegistrasi extends React.Component {
               console.log('latitude :' + this.state.latitude);
             },
           );
+        },
+        error => {
+            console.log('GPS ERROR', error);
+            Alert.alert(
+                'GPS',
+                JSON.stringify(error)
+            );
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 1000,
         });
       }
     });
