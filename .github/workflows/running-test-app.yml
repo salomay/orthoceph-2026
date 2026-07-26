@@ -428,13 +428,13 @@ jobs:
           echo "Script type_reliably.py berhasil dibuat"
 
       - name: Isi Full Name
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 207 "Budi Santoso" "Full Name"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 207 "Budi Sudarsono" "Full Name"
 
       - name: Isi Email
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 408 "budi.test@example.com" "Email"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 408 "budi.sudarsono@example.com" "Email"
 
       - name: Isi Password
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 483 "Password123!" "Password" secure
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 483 "admin" "Password" secure
 
       - name: Screenshot form sebelum submit
         run: |
