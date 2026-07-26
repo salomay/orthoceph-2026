@@ -395,11 +395,10 @@ export default class FormRegistrasi extends React.Component {
           });
       } 
       
-      if(Platform.OS == 'ios'){
-      
-            this.registrasiLatLong();
+     
+    }else{
+      this.registrasiLatLong();
 
-      }
     }
   };
 
