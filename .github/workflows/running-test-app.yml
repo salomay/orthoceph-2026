@@ -434,7 +434,7 @@ jobs:
         run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 408 "budi.test@example.com" "Email"
 
       - name: Isi Password
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 483 "Password123!" "Password"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 483 "Password123!" "Password" secure
 
       - name: Screenshot form sebelum submit
         run: |
