@@ -234,8 +234,7 @@ jobs:
      
       - name: Test login flow
         run: |
-            # tap allow location permission 
-            idb ui tap 196 498 --udid "$UDID"
+            idb ui tap 196 498 --udid "$SIM_UDID"
             sleep 2
             idb ui tap 197 405 --udid "$SIM_UDID"
             sleep 3
