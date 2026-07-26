@@ -71,6 +71,13 @@ jobs:
           echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
           echo "Ditemukan: $APP_PATH"
 
+      - name: Nonaktifkan autocorrect & predictive keyboard
+        run: |
+          defaults write com.apple.Preferences KeyboardAutocorrection -bool NO
+          defaults write com.apple.Preferences KeyboardPrediction -bool NO
+          defaults write com.apple.Preferences KeyboardCapsLock -bool NO
+          defaults write com.apple.Preferences KeyboardAutocapitalization -bool NO
+          defaults write com.apple.Preferences KeyboardCheckSpelling -bool NO
    
       - name: Boot simulator
         run: |
@@ -325,11 +332,12 @@ jobs:
               subprocess.run(["idb", "ui", "text", s, "--udid", UDID])
 
           def clear_field():
-              for _ in range(3):
-                  tap(X, Y)
-                  time.sleep(0.12)
+              tap(X, Y)
               time.sleep(0.3)
-              key(42, times=1)
+              elements = describe()
+              field = find_field(elements, LABEL_HINT)
+              current_val = (field.get("AXValue") or "") if field else ""
+              key(42, times=len(current_val) + 10)
               time.sleep(0.5)
 
           tap(X, Y)
@@ -337,14 +345,13 @@ jobs:
           clear_field()
 
           elements = describe()
-          print("=== Semua AXTextField yang terdeteksi ===")
+          print("=== Semua AXTextField setelah clear ===")
           for el in elements:
               if el.get("role") == "AXTextField":
                   print(el.get("frame"), "value:", repr(el.get("AXValue")))
 
           typed_so_far = ""
           rounds = 0
-          success = False
 
           while typed_so_far != TARGET and rounds < MAX_ROUNDS:
               rounds += 1
@@ -352,7 +359,7 @@ jobs:
               chunk = remaining[:CHUNK_SIZE]
 
               text(chunk)
-              time.sleep(0.4)
+              time.sleep(0.5)
 
               elements = describe()
               field = find_field(elements, LABEL_HINT)
