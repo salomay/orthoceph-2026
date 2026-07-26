@@ -542,8 +542,6 @@ export default class FormRegistrasi extends React.Component {
                 flex: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
-                // kompensasi lebar BackAction biar teks bener-bener center
-                marginRight: Platform.OS === 'ios' ? 40 : 0,
               }}
             >
               <Text
