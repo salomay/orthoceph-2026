@@ -301,6 +301,7 @@ jobs:
           LABEL_HINT = sys.argv[5]
           CHUNK_SIZE = 3
           MAX_ROUNDS = 15
+          ANCHOR = "0"   # karakter dummy, digit tidak kena autocapitalize
 
           def describe():
               out = subprocess.run(
@@ -309,7 +310,7 @@ jobs:
               ).stdout
               return json.loads(out)
 
-          def find_field(elements, hint):
+          def find_field(elements):
               for el in elements:
                   if el.get("role") == "AXTextField":
                       frame = el.get("frame") or {}
@@ -320,6 +321,10 @@ jobs:
                       if fx <= X <= fx + fw and fy <= Y <= fy + fh:
                           return el
               return None
+
+          def current_value():
+              field = find_field(describe())
+              return (field.get("AXValue") or "") if field else ""
 
           def tap(x, y):
               subprocess.run(["idb", "ui", "tap", str(x), str(y), "--udid", UDID])
@@ -334,49 +339,63 @@ jobs:
           def clear_field():
               tap(X, Y)
               time.sleep(0.3)
-              elements = describe()
-              field = find_field(elements, LABEL_HINT)
-              current_val = (field.get("AXValue") or "") if field else ""
-              key(42, times=len(current_val) + 10)
+              val = current_value()
+              key(42, times=len(val) + 10)   # backspace habiskan isi lama
               time.sleep(0.5)
 
+          # === mulai ===
           tap(X, Y)
           time.sleep(0.5)
           clear_field()
 
-          elements = describe()
-          print("=== Semua AXTextField setelah clear ===")
-          for el in elements:
-              if el.get("role") == "AXTextField":
-                  print(el.get("frame"), "value:", repr(el.get("AXValue")))
-
+          full_with_anchor = ANCHOR + TARGET
           typed_so_far = ""
           rounds = 0
+          reached_full_text = False
 
-          while typed_so_far != TARGET and rounds < MAX_ROUNDS:
+          while typed_so_far != full_with_anchor and rounds < MAX_ROUNDS:
               rounds += 1
-              remaining = TARGET[len(typed_so_far):]
+              remaining = full_with_anchor[len(typed_so_far):]
               chunk = remaining[:CHUNK_SIZE]
 
               text(chunk)
               time.sleep(0.5)
 
-              elements = describe()
-              field = find_field(elements, LABEL_HINT)
-              current_val = (field.get("AXValue") or "") if field else ""
+              current_val = current_value()
+              print(f"Round {rounds}: expect(anchor+target)='{full_with_anchor}' now='{current_val}'")
 
-              print(f"Round {rounds}: target='{TARGET}' now='{current_val}'")
-
-              if TARGET.startswith(current_val):
+              if full_with_anchor.startswith(current_val):
                   typed_so_far = current_val
               else:
                   print("Karakter salah terdeteksi, clear ulang...")
                   clear_field()
                   typed_so_far = ""
 
-          success = (typed_so_far == TARGET)
-          print("BERHASIL" if success else "GAGAL setelah max_rounds")
-          sys.exit(0 if success else 1)
+          reached_full_text = (typed_so_far == full_with_anchor)
+
+          if not reached_full_text:
+              print(f"GAGAL mengetik teks lengkap setelah {MAX_ROUNDS} percobaan")
+              sys.exit(1)
+
+          print("Teks lengkap (dengan anchor) berhasil masuk. Menghapus anchor...")
+
+          # geser kursor ke posisi paling awal (kiri) dengan tombol panah kiri
+          key(80, times=len(full_with_anchor) + 3)   # HID 80 = Left Arrow, +buffer
+          time.sleep(0.3)
+
+          # hapus 1 karakter anchor dengan Delete Forward (bukan backspace)
+          key(76, times=1)   # HID 76 = Delete Forward
+          time.sleep(0.5)
+
+          final_val = current_value()
+          print(f"Hasil akhir setelah hapus anchor: '{final_val}'")
+
+          if final_val == TARGET:
+              print("BERHASIL - teks sesuai target persis")
+              sys.exit(0)
+          else:
+              print(f"GAGAL - hasil akhir '{final_val}' tidak sama dengan target '{TARGET}'")
+              sys.exit(1)
           PYEOF
           echo "Script type_reliably.py berhasil dibuat"
 
