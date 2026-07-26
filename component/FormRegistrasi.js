@@ -132,55 +132,36 @@ export default class FormRegistrasi extends React.Component {
   getPermission = async () => {
  
     if (Platform.OS == 'ios') {
-      request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then((result) => {
-        if (result == 'granted') {
-          Geolocation.requestAuthorization();
-          Geolocation.setRNConfiguration({
-            skipPermissionRequests: false,
-            authorizationLevel: 'always',
-          });
-          Geolocation.getCurrentPosition((info) => {
-            this.setState(
-              {
-                latitude: info.coords.latitude,
-                longitude: info.coords.longitude,
-                statusGPS: true,
-              },
-              () => {
-                console.log('longitude :' + this.state.longitude);
-                console.log('latitude :' + this.state.latitude);
-              },
-            );
-          });
-          // Alert.alert(
-          //   'Permission Location Services',
-          //   'Do you want to share your location to use this app?',
-          //   [
-          //     {
-          //       text: 'No',
-          //       onPress: () =>
-          //         this.setState(
-          //           {
-          //             latitude: 0,
-          //             longitude: 0,
-          //             statusGPS: false,
-          //           },
-          //           () => {
-          //             this.registrasiNoGps();
-          //             console.log('longitude :' + this.state.longitude);
-          //             console.log('latitude :' + this.state.latitude);
-          //           },
-          //         ),
-          //       style: 'cancel',
-          //     },
-          //     {
-          //       text: 'Yes',
-          //       onPress: () => Linking.openURL('App-Prefs:Maps&path=LOCATION'),
-          //     },
-          //   ],
-          // );
-        }
-      });
+      requestMultiple([
+      PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
+      PERMISSIONS.IOS.LOCATION_ALWAYS,
+    ]).then((results) => {
+      const whenInUse = results[PERMISSIONS.IOS.LOCATION_WHEN_IN_USE];
+      const always = results[PERMISSIONS.IOS.LOCATION_ALWAYS];
+
+      if (whenInUse === 'granted' || always === 'granted') {
+        Geolocation.requestAuthorization();
+        Geolocation.setRNConfiguration({
+          skipPermissionRequests: false,
+          authorizationLevel: 'always',
+        });
+        Geolocation.getCurrentPosition((info) => {
+          this.setState(
+            {
+              latitude: info.coords.latitude,
+              longitude: info.coords.longitude,
+              statusGPS: true,
+            },
+            () => {
+              console.log('longitude :' + this.state.longitude);
+              console.log('latitude :' + this.state.latitude);
+            },
+          );
+        });
+      }
+    });
+
+
     } else {
       let permition = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
