@@ -6,19 +6,24 @@
 # ── SECRETS YANG PERLU DISIAPKAN DI GITHUB (Settings > Secrets and variables > Actions) ──
 #
 # BUILD_CERTIFICATE_BASE64      : Certificate distribution .p12, di-base64 encode
-# P12_PASSWORD                   : Password untuk file .p12 tsb
+# P12_PASSWORD                  : Password untuk file .p12 tsb
 # BUILD_PROVISION_PROFILE_BASE64: Provisioning profile (.mobileprovision), di-base64 encode
-# KEYCHAIN_PASSWORD              : Password bebas untuk keychain sementara di CI
-# APPSTORE_API_KEY_ID            : Key ID App Store Connect API Key
-# APPSTORE_API_ISSUER_ID         : Issuer ID App Store Connect API
-# APPSTORE_API_PRIVATE_KEY       : Isi file .p8, di-base64 encode
-# APP_IDENTIFIER                  : Bundle identifier, misal com.namaperusahaan.appmu
-# APPLE_TEAM_ID                   : Team ID Apple Developer
+# KEYCHAIN_PASSWORD             : Password bebas untuk keychain sementara di CI
+# APPSTORE_API_KEY_ID           : Key ID App Store Connect API Key
+# APPSTORE_API_ISSUER_ID        : Issuer ID App Store Connect API
+# APPSTORE_API_PRIVATE_KEY      : Isi file .p8, di-base64 encode
+# APP_IDENTIFIER                : Bundle identifier, misal com.namaperusahaan.appmu
+# APPLE_TEAM_ID                 : Team ID Apple Developer
 #
-# ── CARA GENERATE BASE64 (jalankan di Mac lokal) ──
-# base64 -i Certificates.p12 | pbcopy
-# base64 -i Profile.mobileprovision | pbcopy
-# base64 -i AuthKey_XXXXX.p8 | pbcopy
+# ── CARA GENERATE BASE64 ──
+# Mac  : base64 -i Certificates.p12 | pbcopy
+# Linux: base64 -w 0 Certificates.p12 | tr -d '\n' > out.txt   (lalu copy isi out.txt)
+#
+# ── CATATAN VERSI (PENTING) ──
+# App Store Connect sudah punya versi approved sebelumnya. CFBundleShortVersionString
+# WAJIB lebih tinggi dari versi approved terakhir, atau upload akan ditolak dengan
+# error "Invalid Version" / "Invalid Pre-Release Train". Update APP_MARKETING_VERSION
+# di bawah setiap kali mau rilis versi baru.
 
 name: iOS Build & Deploy to App Store
 
@@ -36,14 +41,14 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-14
+    runs-on: macos-26
     timeout-minutes: 60
-
     env:
-      APP_NAME: "orthoceph"                    # sesuaikan nama app kamu
-      XCODE_SCHEME: "orthoceph"                 # sesuaikan nama scheme
+      APP_NAME: "orthoceph"                        # sesuaikan nama app kamu
+      XCODE_SCHEME: "orthoceph"                     # sesuaikan nama scheme
       XCODE_WORKSPACE: "ios/orthoceph.xcworkspace"  # sesuaikan path workspace
       EXPORT_METHOD: "app-store"
+      APP_MARKETING_VERSION: "1.6"                  # naikkan setiap release baru, harus > versi approved terakhir
 
     steps:
       - name: Checkout kode
@@ -57,13 +62,13 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies JS
-        run: | 
-              rm -rf ios/Pods ios/Podfile.lock
-              rm -rf ios/build
-              rm -rf node_modules
-              rm -rf ~/Library/Developer/Xcode/DerivedData
-              rm -rf $TMPDIR/react-native-packager-cache-*
-              npm install --force
+        run: |
+          rm -rf ios/Pods ios/Podfile.lock
+          rm -rf ios/build
+          rm -rf node_modules
+          rm -rf ~/Library/Developer/Xcode/DerivedData
+          rm -rf $TMPDIR/react-native-packager-cache-*
+          npm install --force
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -71,23 +76,28 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-
       - name: Bersihkan generated codegen lama
         run: rm -rf ios/build/generated
-  
+
       # ── Install CocoaPods ──
       - name: Install Pods
         working-directory: ios
         run: pod install --repo-update
 
       # ── Set Xcode version yang dipakai ──
+      # macos-26 runner sudah include Xcode 26+ (SDK iOS 26), wajib sejak Apple
+      # menutup submission dengan SDK di bawah iOS 26.
       - name: Select Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.4.1"
+
+      - name: Show Xcode version
+        run: xcodebuild -version
 
       - name: Run Xcode first launch
         run: sudo xcodebuild -runFirstLaunch
-        
-        
+
       # ── Import certificate & provisioning profile ke keychain sementara ──
       - name: Import Code Signing Identity
         env:
@@ -118,54 +128,62 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      # # ── Bump build number otomatis pakai run number CI ──
-      # - name: Set build number
-      #   working-directory: ios
-      #   run: |
-      #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
+      # ── Bump marketing version & build number sebelum archive ──
+      - name: Set app version
+        working-directory: ios
+        run: |
+          echo "=== Versi sebelum diubah ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_NAME/Info.plist" || true
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_NAME/Info.plist" || true
+
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_MARKETING_VERSION" "$APP_NAME/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$APP_NAME/Info.plist"
+
+          echo "=== Versi setelah diubah ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_NAME/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_NAME/Info.plist"
 
       # - name: Fix deployment target
       #   run: |
       #     sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 9.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.1;/g' ios/orthoceph.xcodeproj/project.pbxproj
+
       - name: List installed provisioning profiles
         run: |
-            ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-            for file in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
-              echo "=== $file ==="
-              security cms -D -i "$file" | plutil -extract Name xml1 -o - -
-            done
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          for file in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
+            echo "=== $file ==="
+            security cms -D -i "$file" | plutil -extract Name xml1 -o - -
+          done
 
-            
-   # ── Buat ExportOptions.plist secara dinamis ──
+      # ── Buat ExportOptions.plist secara dinamis ──
       - name: Create ExportOptions.plist
         env:
           APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-         cat > ios/ExportOptions.plist << EOF
+          cat > ios/ExportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>teamID</key>
-              <string>$APPLE_TEAM_ID</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>$APP_IDENTIFIER</key>
-                  <string>profile_orthoceph</string>
-              </dict>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>compileBitcode</key>
-              <false/>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$APP_IDENTIFIER</key>
+              <string>profile_orthoceph</string>
+            </dict>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <false/>
           </dict>
           </plist>
           EOF
-      
           echo "=== Isi ExportOptions.plist yang di-generate ==="
           cat ios/ExportOptions.plist
 
@@ -175,56 +193,49 @@ jobs:
         run: |
           echo "=== PRODUCT_BUNDLE_IDENTIFIER di project.pbxproj ==="
           grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/orthoceph.xcodeproj/project.pbxproj
-      
           echo ""
           echo "=== Isi ExportOptions.plist ==="
           cat ios/ExportOptions.plist
-      
           echo ""
           echo "=== APP_IDENTIFIER dari secret ==="
           echo "Panjang: $(echo -n "$APP_IDENTIFIER" | wc -c)"
           echo "Isi: $APP_IDENTIFIER"
-      
+
       - name: Debug Bundle ID
         run: |
           xcodebuild -showBuildSettings \
-          -workspace "$XCODE_WORKSPACE" \
-          -scheme "$XCODE_SCHEME" \
-          -configuration Release \
-          -destination "generic/platform=iOS" | grep -i "PRODUCT_BUNDLE_IDENTIFIER\|CFBundleIdentifier"
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -destination "generic/platform=iOS" | grep -i "PRODUCT_BUNDLE_IDENTIFIER\|CFBundleIdentifier"
 
-   
-    
-                  
       # ── Archive app ──
       - name: Build Archive
         env:
-            APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-            APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
         run: |
-               mkdir -p "$RUNNER_TEMP/build"
-               xcodebuild archive \
-               -workspace "$XCODE_WORKSPACE" \
-               -scheme "$XCODE_SCHEME" \
-               -configuration Release \
-               -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-               -destination "generic/platform=iOS" \
-               CODE_SIGN_STYLE=Manual \
-               DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-               PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
-               CODE_SIGN_IDENTITY="iPhone Distribution" \
-               PRODUCT_BUNDLE_IDENTIFIER=$APP_IDENTIFIER 
+          mkdir -p "$RUNNER_TEMP/build"
+          xcodebuild archive \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="profile_orthoceph" \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            PRODUCT_BUNDLE_IDENTIFIER=$APP_IDENTIFIER
 
-     
-
-       # ── Export .ipa dari archive ──
+      # ── Export .ipa dari archive ──
       - name: Export IPA
         run: |
-           xcodebuild -exportArchive \
-           -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
-           -exportOptionsPlist "ios/ExportOptions.plist" \
-           -exportPath "$RUNNER_TEMP/build" \
-           -allowProvisioningUpdates
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/build/$APP_NAME.xcarchive" \
+            -exportOptionsPlist "ios/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/build" \
+            -allowProvisioningUpdates
 
       # ── Tulis App Store Connect API key ke file ──
       - name: Setup App Store Connect API Key
@@ -233,7 +244,10 @@ jobs:
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
         run: |
           mkdir -p ~/private_keys
-          echo "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > ~/private_keys/AuthKey_${APPSTORE_API_KEY_ID}.p8
+          printf '%s' "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > ~/private_keys/AuthKey_${APPSTORE_API_KEY_ID}.p8
+          echo "=== Validasi .p8 key ==="
+          file ~/private_keys/AuthKey_${APPSTORE_API_KEY_ID}.p8
+          grep -q "BEGIN PRIVATE KEY" ~/private_keys/AuthKey_${APPSTORE_API_KEY_ID}.p8 || (echo "❌ Decoded file bukan PEM key valid — cek secret APPSTORE_API_PRIVATE_KEY" && exit 1)
 
       # ── Upload ke App Store Connect (masuk TestFlight, status processing) ──
       - name: Upload to App Store Connect
@@ -255,7 +269,7 @@ jobs:
           rm -f ~/private_keys/AuthKey_*.p8
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
-     # ── Simpan IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
+      # ── Simpan IPA sebagai artifact GitHub Actions (opsional, untuk debug) ──
       - name: Upload IPA artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -263,4 +277,3 @@ jobs:
           name: ios-build
           path: ${{ runner.temp }}/build/*.ipa
           if-no-files-found: ignore
-
