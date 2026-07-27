@@ -196,12 +196,11 @@ jobs:
             sleep 3
             idb list-targets
 
-
-
-      - name: Dismiss location permission dialog
-        run: |
-             idb ui tap 196 497 --udid "$SIM_UDID"
-             sleep 2
+    
+      # - name: Dismiss location permission dialog
+      #   run: |
+      #        idb ui tap 196 497 --udid "$SIM_UDID"
+      #        sleep 2
 
 
  
@@ -235,6 +234,8 @@ jobs:
      
       - name: Test login flow
         run: |
+            idb ui tap 196 498 --udid "$SIM_UDID"
+            sleep 2
             idb ui tap 197 405 --udid "$SIM_UDID"
             sleep 3
         
