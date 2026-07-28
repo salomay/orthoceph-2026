@@ -72,6 +72,19 @@ target 'orthoceph' do
     config[:reactNativePath],
     :mac_catalyst_enabled => false
   )
+
+# ── Workaround: fmt 11.x consteval error di Xcode 26.4 / Apple Clang 21 ──
+  # Tracking: facebook/react-native#55601, fmtlib/fmt#4740
+  # Hapus workaround ini kalau sudah upgrade ke React Native yang bundle fmt 12.x+
+  fmt_base_h = File.join(installer.sandbox.root, "fmt", "include", "fmt", "base.h")
+  if File.exist?(fmt_base_h)
+    contents = File.read(fmt_base_h)
+    patched = contents.gsub(
+      /#\s*define\s+FMT_USE_CONSTEVAL\s+1/,
+      "#define FMT_USE_CONSTEVAL 0"
+    )
+    File.write(fmt_base_h, patched) if patched != contents
+  end
 end
   
 
