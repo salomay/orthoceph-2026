@@ -84,5 +84,9 @@
 		<!-- <string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string> -->
 	</array>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to your photo library to upload dental X-ray/orthoceph images for patients.</string>
+<key>NSAppleMusicUsageDescription</key>
+<string>Access to your media library may be used to select custom notification or alert sounds within the app.</string>
 </dict>
 </plist>
