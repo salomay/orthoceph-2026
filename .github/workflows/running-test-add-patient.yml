@@ -18,6 +18,9 @@ jobs:
       SIMULATOR_NAME: "iPhone 15"
 
     steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
