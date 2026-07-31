@@ -552,7 +552,7 @@ class FormProfile extends React.Component {
                   margin: 15,
                   backgroundColor: '#34A853',
                   borderRadius: 10,
-                  zIndex: 1,
+                  zIndex: 2,
                 }}>
                 <ActivityIndicator
                   animating={this.state.loading}
@@ -567,7 +567,8 @@ class FormProfile extends React.Component {
                   margin: wp(4),
                   backgroundColor: '#34A853',
                   borderRadius: 10,
-                  zIndex: -2,
+                  zIndex:1
+   
                 }}
                 onPress={() => this.savePatient()}>
                 <Text
