@@ -19,15 +19,15 @@ const store = configureStore();
 LogBox.ignoreAllLogs(); //Ignore all log notifications
 
 const MakeRedux = () => (
-  <GestureHandlerRootView style={{ flex: 1 }}>  
-  <SafeAreaProvider>  
+ // <GestureHandlerRootView style={{ flex: 1 }}>  
+//  <SafeAreaProvider>  
     <Provider store={store}>
     <PaperProvider>
       <App />
     </PaperProvider>
     </Provider>
- </SafeAreaProvider>
- </GestureHandlerRootView>
+// </SafeAreaProvider>
+// </GestureHandlerRootView>
 );
 
 AppRegistry.registerComponent(appName, () => MakeRedux);
