@@ -428,6 +428,11 @@ jobs:
             idb ui tap 196 310 --udid "$SIM_UDID"
             sleep 8
 
+      - name: Tap add cephalometric
+        run: |
+            idb ui tap 20 169 --udid "$SIM_UDID"
+            sleep 8
+
       - name: Screenshot add patient
         run: |
            mkdir -p "$RUNNER_TEMP/screenshots1"
