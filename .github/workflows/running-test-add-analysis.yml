@@ -153,8 +153,8 @@ jobs:
 
       - name: Ambil screenshot
         run: |
-          mkdir -p "$RUNNER_TEMP/screenshots"
-          xcrun simctl io booted screenshot "$RUNNER_TEMP/screenshots/screenshot-01.png"
+          mkdir -p "$RUNNER_TEMP/screenshots1"
+          xcrun simctl io booted screenshot "$RUNNER_TEMP/screenshots1/screenshot-01.png"
 
       - name: Hentikan capture log
         if: always()
@@ -166,7 +166,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: simulator-screenshot
-          path: ${{ runner.temp }}/screenshots/*.png
+          path: ${{ runner.temp }}/screenshots1/*.png
           if-no-files-found: warn
 
       - name: Upload log simulator sebagai artifact
@@ -269,15 +269,15 @@ jobs:
       
       - name: Screenshot hasil login
         run: |
-          mkdir -p "$RUNNER_TEMP/screenshots"
-          idb screenshot "$RUNNER_TEMP/screenshots/after-login.png" --udid $SIM_UDID  
+          mkdir -p "$RUNNER_TEMP/screenshots1"
+          idb screenshot "$RUNNER_TEMP/screenshots1/after-login.png" --udid $SIM_UDID  
 
       - name: Upload screenshot login sebagai artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: login-screenshot
-          path: ${{ runner.temp }}/screenshots/after-login.png
+          path: ${{ runner.temp }}/screenshots1/after-login.png
           if-no-files-found: warn
 
       - name: Ambil describe Form Registrasi
@@ -430,8 +430,8 @@ jobs:
 
       - name: Screenshot add patient
         run: |
-           mkdir -p "$RUNNER_TEMP/screenshots"
-           idb screenshot "$RUNNER_TEMP/screenshots/add-patient.png" --udid "$SIM_UDID"
+           mkdir -p "$RUNNER_TEMP/screenshots1"
+           idb screenshot "$RUNNER_TEMP/screenshots1/add-patient.png" --udid "$SIM_UDID"
 
       - name: Ambil describe form input patient
         run: |
@@ -449,8 +449,8 @@ jobs:
 
       # - name: Screenshot form sebelum submit
       #   run: |
-      #     mkdir -p "$RUNNER_TEMP/screenshots"
-      #     idb screenshot "$RUNNER_TEMP/screenshots/before-register-submit.png" --udid "$SIM_UDID"
+      #     mkdir -p "$RUNNER_TEMP/screenshots1"
+      #     idb screenshot "$RUNNER_TEMP/screenshots1/before-register-submit.png" --udid "$SIM_UDID"
 
       # - name: Tap tombol Register
       #   run: |
@@ -459,8 +459,8 @@ jobs:
 
       # - name: Screenshot hasil registrasi
       #   run: |
-      #     mkdir -p "$RUNNER_TEMP/screenshots"
-      #     idb screenshot "$RUNNER_TEMP/screenshots/after-register.png" --udid "$SIM_UDID"
+      #     mkdir -p "$RUNNER_TEMP/screenshots1"
+      #     idb screenshot "$RUNNER_TEMP/screenshots1/after-register.png" --udid "$SIM_UDID"
 
       
       - name: Upload screenshot registrasi sebagai artifact
@@ -468,5 +468,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: registration-screenshots
-          path: ${{ runner.temp }}/screenshots/*.png
+          path: ${{ runner.temp }}/screenshots1/*.png
           if-no-files-found: warn
