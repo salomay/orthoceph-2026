@@ -430,7 +430,7 @@ jobs:
 
       - name: Tap add cephalometric
         run: |
-            idb ui tap 20 169 --udid "$SIM_UDID"
+            idb ui tap 36 292 --udid "$SIM_UDID"
             sleep 8
 
       - name: Screenshot add patient
