@@ -311,8 +311,8 @@ jobs:
           import json, subprocess, sys, time
 
           UDID = sys.argv[1]
-          X = int(sys.argv[2])
-          Y = int(sys.argv[3])
+          X = float(sys.argv[2])
+          Y = float(sys.argv[3])
           TARGET = sys.argv[4]
           LABEL_HINT = sys.argv[5]
           IS_SECURE = (len(sys.argv) > 6 and sys.argv[6] == "secure")
