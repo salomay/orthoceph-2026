@@ -345,6 +345,7 @@ jobs:
 
           def tap(x, y):
               subprocess.run(["idb", "ui", "tap", str(x), str(y), "--udid", UDID])
+              time.sleep(0.8)
 
           def key(code, times=1):
               for _ in range(times):
@@ -444,10 +445,10 @@ jobs:
           echo "Script type_reliably.py berhasil dibuat"
 
       - name: Isi Full Name
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196.5 285 "Pasien Budi" "Full Name"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 285 "Pasien Budi" "Full Name"
 
       - name: Isi Age
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196.5 431 "40" "Age"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 431 "40" "Age"
       
       - name: Tap save patient
         run: |
