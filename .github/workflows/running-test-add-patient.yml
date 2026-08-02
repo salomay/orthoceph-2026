@@ -479,14 +479,24 @@ jobs:
           echo "Script type_reliably.py berhasil dibuat"
 
       - name: Isi Full Name
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 285 "Pasien Budi" "Full Name"
+        run: | 
+            idb ui tap 196 285 --udid "$SIM_UDID"
+            sleep 3
+            idb ui text "pasiennya" --udid "$SIM_UDID"
+            sleep 2 
+        # python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 285 "Pasien Budi" "Full Name"
 
       - name: Isi Age
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 431 "40" "Age"
+        run: |
+            idb ui tap 196 431 --udid "$SIM_UDID"
+            sleep 3
+            idb ui text "30" --udid "$SIM_UDID"
+            sleep 2 
+        # python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 431 "40" "Age"
       
       - name: Tap save patient
         run: |
-            idb ui tap 196.5 479.33 --udid "$SIM_UDID"
+            idb ui tap 196 480 --udid "$SIM_UDID"
             sleep 10
 
       - name: Screenshot hasil add patient
