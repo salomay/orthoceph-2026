@@ -451,7 +451,7 @@ jobs:
       
       - name: Tap save patient
         run: |
-            idb ui tap 15.7 462 --udid "$SIM_UDID"
+            idb ui tap 196.5 479.33 --udid "$SIM_UDID"
             sleep 10
 
       - name: Screenshot hasil add patient
