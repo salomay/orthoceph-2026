@@ -431,7 +431,7 @@ jobs:
       - name: Tap cephalometric analysis
         run: |
             idb ui tap 196 292 --udid "$SIM_UDID"
-            sleep 8
+            sleep 20
 
       - name: Tap cephalometric one
         run: |
@@ -441,7 +441,7 @@ jobs:
       - name: Screenshot anlysis patient
         run: |
            mkdir -p "$RUNNER_TEMP/screenshots1"
-           idb screenshot "$RUNNER_TEMP/screenshots1/anlysis-patient.png" --udid "$SIM_UDID"
+           idb screenshot "$RUNNER_TEMP/screenshots1/analysis-patient.png" --udid "$SIM_UDID"
 
       - name: Ambil describe form input patient
         run: |
