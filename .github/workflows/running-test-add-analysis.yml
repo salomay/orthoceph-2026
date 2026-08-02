@@ -20,7 +20,13 @@ jobs:
     steps:
       - name: Checkout kode
         uses: actions/checkout@v4
-        
+
+      - name: Bersihkan folder screenshot lama
+        run: |
+          rm -rf "$RUNNER_TEMP/screenshots"
+          mkdir -p "$RUNNER_TEMP/screenshots"
+          echo "Folder screenshot sudah dibersihkan"
+              
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
