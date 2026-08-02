@@ -436,9 +436,9 @@ jobs:
       - name: Tap cephalometric one
         run: |
             idb ui tap 20 256 --udid "$SIM_UDID"
-            sleep 8
+            sleep 20
 
-      - name: Screenshot anlysis patient
+      - name: Screenshot analysis patient
         run: |
            mkdir -p "$RUNNER_TEMP/screenshots1"
            idb screenshot "$RUNNER_TEMP/screenshots1/analysis-patient.png" --udid "$SIM_UDID"
