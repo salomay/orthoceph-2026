@@ -23,8 +23,8 @@ jobs:
 
       - name: Bersihkan folder screenshot lama
         run: |
-          rm -rf "$RUNNER_TEMP/screenshots"
-          mkdir -p "$RUNNER_TEMP/screenshots"
+          rm -rf "$RUNNER_TEMP/screenshots1"
+          mkdir -p "$RUNNER_TEMP/screenshots1"
           echo "Folder screenshot sudah dibersihkan"
               
       - name: Setup Node.js
@@ -441,8 +441,8 @@ jobs:
 
       - name: Tap cephalometric one
         run: |
-            idb ui tap 20 256 --udid "$SIM_UDID"
-            sleep 20
+            idb ui tap 20 257 --udid "$SIM_UDID"
+            sleep 30
 
       - name: Screenshot analysis patient
         run: |
