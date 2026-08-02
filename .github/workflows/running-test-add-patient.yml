@@ -309,88 +309,119 @@ jobs:
         run: |
           cat > "$RUNNER_TEMP/type_reliably.py" << 'PYEOF'
           import json, subprocess, sys, time
-
+      
           UDID = sys.argv[1]
           X = float(sys.argv[2])
           Y = float(sys.argv[3])
           TARGET = sys.argv[4]
           LABEL_HINT = sys.argv[5]
           IS_SECURE = (len(sys.argv) > 6 and sys.argv[6] == "secure")
+      
           CHUNK_SIZE = 3
           MAX_ROUNDS = 15
           ANCHOR = "0"
-
+          EPS = 2.0  # toleransi pembulatan frame (point)
+      
           def describe():
               out = subprocess.run(
                   ["idb", "ui", "describe-all", "--udid", UDID, "--json"],
                   capture_output=True, text=True
               ).stdout
               return json.loads(out)
-
+      
           def find_field(elements):
+              role_candidates = ("AXTextField", "AXSecureTextField", "AXTextArea")
+              best, best_dist = None, None
               for el in elements:
-                  if el.get("role") == "AXTextField":
-                      frame = el.get("frame") or {}
-                      fx = frame.get("x", 0)
-                      fy = frame.get("y", 0)
-                      fw = frame.get("width", 0)
-                      fh = frame.get("height", 0)
-                      if fx <= X <= fx + fw and fy <= Y <= fy + fh:
-                          return el
-              return None
-
+                  role = el.get("role") or el.get("AXRole") or ""
+                  if role not in role_candidates:
+                      continue
+                  frame = el.get("frame") or {}
+                  fx = frame.get("x", 0)
+                  fy = frame.get("y", 0)
+                  fw = frame.get("width", 0)
+                  fh = frame.get("height", 0)
+                  # cocokkan dengan toleransi, bukan perbandingan ketat
+                  if (fx - EPS) <= X <= (fx + fw + EPS) and (fy - EPS) <= Y <= (fy + fh + EPS):
+                      return el
+                  # simpan kandidat terdekat sebagai fallback
+                  cx = fx + fw / 2
+                  cy = fy + fh / 2
+                  dist = (cx - X) ** 2 + (cy - Y) ** 2
+                  if best_dist is None or dist < best_dist:
+                      best, best_dist = el, dist
+              return best
+      
+          def field_center(field):
+              frame = field.get("frame") or {}
+              cx = frame.get("x", 0) + frame.get("width", 0) / 2
+              cy = frame.get("y", 0) + frame.get("height", 0) / 2
+              return cx, cy
+      
           def current_value():
               field = find_field(describe())
               return (field.get("AXValue") or "") if field else ""
-
+      
+          def is_effectively_empty(val):
+              # placeholder kadang muncul sebagai AXValue saat field kosong
+              return val == "" or val.strip().lower() == LABEL_HINT.strip().lower()
+      
           def tap(x, y):
               subprocess.run(["idb", "ui", "tap", str(x), str(y), "--udid", UDID])
               time.sleep(0.8)
-
+      
           def key(code, times=1):
               for _ in range(times):
                   subprocess.run(["idb", "ui", "key", str(code), "--udid", UDID])
-
+      
           def text(s):
               subprocess.run(["idb", "ui", "text", s, "--udid", UDID])
-
+      
           def clear_field():
               tap(X, Y)
               time.sleep(0.3)
               val = current_value()
-              key(42, times=len(val) + 10)
+              if not is_effectively_empty(val):
+                  key(42, times=len(val) + 10)
               time.sleep(0.5)
-
+      
           def is_progressing(expected_full, current):
-              # secure field: hanya bisa cek PANJANG, bukan isi
               if IS_SECURE:
                   return len(current) <= len(expected_full) and all(c == "\u2022" for c in current)
+              if is_effectively_empty(current):
+                  return True
               return expected_full.startswith(current)
-
+      
           def is_complete(expected_full, current):
               if IS_SECURE:
                   return len(current) == len(expected_full)
               return current == expected_full
-
+      
           # === mulai ===
-          tap(X, Y)
+          field = find_field(describe())
+          if field:
+              tx, ty = field_center(field)
+              print(f"Field ditemukan, tap ke tengah frame: ({tx}, {ty})")
+          else:
+              tx, ty = X, Y
+              print(f"Field tidak ditemukan lewat describe, pakai koordinat argumen: ({tx}, {ty})")
+      
+          tap(tx, ty)
           time.sleep(0.5)
           clear_field()
-
+      
           full_with_anchor = ANCHOR + TARGET
           typed_len = 0
           rounds = 0
-
+      
           while typed_len < len(full_with_anchor) and rounds < MAX_ROUNDS:
               rounds += 1
               remaining = full_with_anchor[typed_len:]
               chunk = remaining[:CHUNK_SIZE]
-
               text(chunk)
               time.sleep(0.5)
-
               current_val = current_value()
-
+      
               if IS_SECURE:
                   print(f"Round {rounds}: target_len={len(full_with_anchor)} now_len={len(current_val)}")
                   if is_progressing(full_with_anchor, current_val):
@@ -401,30 +432,33 @@ jobs:
                       typed_len = 0
               else:
                   print(f"Round {rounds}: expect(anchor+target)='{full_with_anchor}' now='{current_val}'")
-                  if full_with_anchor.startswith(current_val):
+                  if is_effectively_empty(current_val):
+                      # field masih dianggap kosong (baru placeholder), belum ada progres
+                      print("Field masih kosong/placeholder, coba lagi tanpa clear...")
+                      typed_len = 0
+                  elif full_with_anchor.startswith(current_val):
                       typed_len = len(current_val)
                   else:
                       print("Karakter salah terdeteksi, clear ulang...")
                       clear_field()
                       typed_len = 0
-
+      
           reached_full = (typed_len == len(full_with_anchor))
-
+      
           if not reached_full:
               print(f"GAGAL mengetik teks lengkap setelah {MAX_ROUNDS} percobaan")
               sys.exit(1)
-
+      
           print("Teks lengkap (dengan anchor) berhasil masuk. Menghapus anchor...")
-
           key(80, times=len(full_with_anchor) + 3)
           time.sleep(0.3)
           key(76, times=1)
           time.sleep(0.5)
-
+      
           final_val = current_value()
           final_len = len(final_val)
           expected_len = len(TARGET)
-
+      
           if IS_SECURE:
               print(f"Panjang akhir: {final_len}, diharapkan: {expected_len}")
               if final_len == expected_len:
