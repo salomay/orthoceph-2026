@@ -444,10 +444,10 @@ jobs:
           echo "Script type_reliably.py berhasil dibuat"
 
       - name: Isi Full Name
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 30 269 "Pasien Budi" "Full Name"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 30 269.33 "Pasien Budi" "Full Name"
 
       - name: Isi Age
-        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 30 415 "40" "Age"
+        run: python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 30 415.33 "40" "Age"
       
       - name: Tap save patient
         run: |
