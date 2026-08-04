@@ -488,15 +488,15 @@ jobs:
       - name: Isi Gender
         run: | 
             idb ui tap 196 334 --udid "$SIM_UDID"
-            sleep 10
-            idb ui tap 196 344 --udid "$SIM_UDID"
+            sleep 30
+            idb ui tap 196 340 --udid "$SIM_UDID"
             sleep 10
 
       - name: Isi Race
         run: | 
             idb ui tap 196 383 --udid "$SIM_UDID"
-            sleep 10
-            idb ui tap 196 394 --udid "$SIM_UDID"
+            sleep 30
+            idb ui tap 196 389 --udid "$SIM_UDID"
             sleep 10
         # python3 "$RUNNER_TEMP/type_reliably.py" "$SIM_UDID" 196 285 "Pasien Budi" "Full Name"
 
