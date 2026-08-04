@@ -290,7 +290,7 @@ jobs:
       - name: Tap add patient
         run: |
             idb ui tap 343 76 --udid "$SIM_UDID"
-            sleep 10
+            sleep 30
 
       - name: Screenshot add patient
         run: |
