@@ -35,17 +35,24 @@ jobs:
       - name: Fix permission hermesc binary
         run: chmod +x node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
         
-      - name: Build Release APK
-        working-directory: android
-        run: ./gradlew assembleRelease
+      # - name: Build Release APK
+      #   working-directory: android
+      #   run: ./gradlew assembleRelease -Preact.hermesCommand=../node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
 
       - name: Build Release APK
         working-directory: android
-        run: ./gradlew assembleRelease -Preact.hermesCommand=../node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
+        run: ./gradlew bundleRelease -Preact.hermesCommand=../node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
  
+      # - name: Upload APK sebagai artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: app-release
+      #     path: android/app/build/outputs/apk/release/*.apk
+      #     if-no-files-found: error
+
       - name: Upload APK sebagai artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/bundle/release/*.apk
           if-no-files-found: error
