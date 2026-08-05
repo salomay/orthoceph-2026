@@ -118,8 +118,8 @@ android {
         applicationId "com.orthoceph"
          minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 60
-        versionName "28.1.23"
+        versionCode 61
+        versionName "28.1.24"
         multiDexEnabled true
 
         externalNativeBuild {
