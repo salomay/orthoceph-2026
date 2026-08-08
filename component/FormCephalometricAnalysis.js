@@ -190,8 +190,7 @@ import {
   WendellWylie,
   distanceBetween,
 } from './common/Utils';
-import {scale, moderateScale, verticalScale} from './Scaling';
-import { runAutoDetect } from './autoDetect';
+
 
 const key = 'Yzg1MDhmNDYzZjRlMWExOGJkNTk5MmVmNzFkOGQyNzk=';
 
