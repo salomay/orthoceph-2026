@@ -24,6 +24,28 @@ const _loginAuth = async (params) => {
   }
 };
 
+const _predict = async (params) => {
+  try {
+    let respon = null;
+
+    if (params) {
+      respon = await fetch(apiurl + 'predict', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+    }
+
+    let responJson = await respon.json();
+    return responJson.values;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const _loginAuthSosmed = async (params) => {
   try {
     let respon = null;
@@ -441,4 +463,5 @@ export {
   _viewExistingAnalysis,
   _viewResultAnalysis,
   _addAnalysisPatientExistingImage,
+  _predict
 };
