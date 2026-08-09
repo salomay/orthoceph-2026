@@ -343,7 +343,7 @@ class FormPatientList extends React.Component {
 
           _delPatient(data)
             .then((result) => {
-              console.log(result);
+              console.log('Result Del Patient '+result);
               if (result == 200) {
                 Toast.show({
                   type: 'success',

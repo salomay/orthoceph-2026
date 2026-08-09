@@ -171,6 +171,7 @@ import {
   _addAnalysisPatientExistingImage,
   _addPdfReport,
   _addImageAnalysis,
+  _predict,
 } from './networking/server';
 import {
   SNA,
@@ -189,7 +190,7 @@ import {
   WendellWylie,
   distanceBetween,
 } from './common/Utils';
-import {scale, moderateScale, verticalScale} from './Scaling';
+
 
 const key = 'Yzg1MDhmNDYzZjRlMWExOGJkNTk5MmVmNzFkOGQyNzk=';
 
@@ -201,7 +202,7 @@ var touch_count = 0;
 var point_speed = 0.3;
 var marker = [21];
 var bantuClick = true;
-
+let isMoving = false;
 
 
 
@@ -776,27 +777,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
       });
   };
 
-  function load_correction_X_Y(x_y_point) {
-    let data = null;
-
-    data = {
-      x: x_y_point.x,
-      y: x_y_point.y,
-    };
-
-    return data;
-  }
-
-  function load_correction_X_Y_new(x_y_point) {
-    let data = null;
-
-    data = {
-      x: scale(x_y_point.x, widthLastDevice),
-      y: scale(x_y_point.y, widthLastDevice),
-    };
-
-    return data;
-  }
+ 
 
   function loadExistingMarker(point) {
     if (point.x && point.y) {
@@ -2146,6 +2127,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     console.log('Masuk New Analysis');
     set_headerText_handler('Cephalometric Analysis');
     set_bantuMarker_handler(0);
+    // set_loading_global_handler(true);
     set_loading_handler(true);
     navigation.closeDrawer();
 
@@ -2155,6 +2137,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
       title: 'Choose Your Image',
       takePhotoButtonTitle: 'Take photo with your camera',
       chooseFromLibraryButtonTitle: 'Choose photo from library',
+       includeBase64: true,
       // maxWidth: 500,
       // maxHeight: 500,
       quality: 1,
@@ -2188,11 +2171,23 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
         set_width_last_device_handler(width_image.uri);
         set_height_last_device_handler(height_image.uri);
-
-        set_tempgambar_handler(source);
+        
         set_imageuri_handler(response.assets[0].uri);
         set_imagetype_handler(response.assets[0].type);
         set_imagefilename_handler(response.assets[0].fileName);
+        set_tempgambar_handler(source);
+        set_bantuMarker_handler(1);
+       
+       
+        set_select_id_handler(null);
+        set_markingdot_handler(true);
+        set_detailresult_handler(false);
+        set_resultanalysis_handler(false);
+        set_press_save_analysis_handler(false);
+        set_press_analysis_handler(false);
+        set_press_new_analysis_handler(false);
+      
+       
         // navigation.closeDrawer();
 
         marker = [];
@@ -2234,15 +2229,13 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
         remove_upper_lip_handler([]);
         remove_lower_lip_handler([]);
         remove_wendellwylie_handler([]);
-        set_bantuMarker_handler(1);
         set_loading_handler(false);
-        set_select_id_handler(null);
-        set_markingdot_handler(true);
-        set_detailresult_handler(false);
-        set_resultanalysis_handler(false);
-        set_press_save_analysis_handler(false);
-        set_press_analysis_handler(false);
-        set_press_new_analysis_handler(false);
+
+        AI_Analysis(response.assets[0].base64);
+        
+
+
+       
       }
     });
       
@@ -2250,6 +2243,71 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
     
   };
+
+
+  const AI_Analysis = async (uri) =>{
+
+    console.log('masuk AI');
+
+     set_loading_global_handler(true);
+
+     try {
+        // react-native-view-shot caputures component
+    
+
+                var data = {
+                  image_base64:uri,
+                };
+
+             
+              _predict(data)
+                .then((result) => {
+                  
+                  if (result) {
+                    console.log('### Hasil ', JSON.stringify(result));
+                
+                
+                    set_sella_handler(result.points_canvas.sella);
+                    set_nasion_handler(result.points_canvas.nasion);
+                    set_pointa_handler(result.points_canvas.pointA);
+                    set_pointb_handler(result.points_canvas.pointB);   
+                    set_u6_handler(result.points_canvas.u6);
+                    set_u4_handler(result.points_canvas.u4);
+                    set_gonion_handler(result.points_canvas.gonion);
+                    set_gnathion_handler(result.points_canvas.gnathion);
+                    set_isa_handler(result.points_canvas.isa);
+                    set_isi_handler(result.points_canvas.isi);
+                    set_iia_handler(result.points_canvas.iia);
+                    set_iii_handler(result.points_canvas.iii);
+                    set_ms_handler(result.points_canvas.ms);
+                    set_pogs_handler(result.points_canvas.pogs);
+                    set_ls_handler(result.points_canvas.ls);
+                    set_li_handler(result.points_canvas.li);
+                    set_pog_handler(result.points_canvas.pog);
+                    set_ans_handler(result.points_canvas.ans);
+                    set_menton_handler(result.points_canvas.menton);
+                    set_loading_global_handler(false);
+
+                      navigation.openDrawer();
+                  } else {
+                    console.log('points_canvas tidak ada di result. Struktur result:', Object.keys(result || {}));
+                  }
+
+             
+                                
+              })
+              .catch((errornya) => {
+                console.log('ERROR ### 1 :' + errornya);
+                                
+                set_loading_global_handler(false);
+              });
+        
+        }catch (error) {
+        console.log('error', error);
+        
+            set_loading_global_handler(false);
+      }
+  }
 
   // ==========
   // === Save Data Analysis
@@ -3110,6 +3168,9 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     );
   }
 
+
+
+
   return (
     <>
    
@@ -3174,10 +3235,10 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
               activeUnderlineColor="transparent"
               underlineColorAndroid={'transparent'}
               onSubmitEditing={() => navigation.openDrawer()}
-             textAlignVertical="center"
-               verticalAlign='middle'
+              textAlignVertical="center"
+              verticalAlign='middle'
               mode='flat'
- contentStyle={{paddingVertical:0}}
+              contentStyle={{paddingVertical:0}}
               style={{
                 flex:1,
             height:50,
@@ -3329,6 +3390,9 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                       changeDotMarking(e);
                       // touch_count = 3;
                     }}
+                    onClick={(e) => {                         // ⬅️ TAMBAHKAN INI
+                      _clickImage(e, false, false, false, false);
+                    }}
                     // onMoveShouldSetPanResponder={(e) => true}
                     // centerOn={scaleScreen}
                   >
@@ -3345,34 +3409,43 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                           height: '100%',
                           // backgroundColor: 'grey',
                         }}
-                        onTouchMove={(e) => {
-                          setTimeout(() => {
-                            touch_count = 3;
-                          }, 150);
-                        }}
-                        onTouchEnd={(e) => {
-                          if (touch_count === 0 && Platform.OS == 'android') {
-                            _clickImage(
-                              e.nativeEvent,
-                              false,
-                              false,
-                              false,
-                              false,
-                            );
-                          }
-                          if (touch_count === 1 && Platform.OS == 'ios') {
-                            _clickImage(
-                              e.nativeEvent,
-                              false,
-                              false,
-                              false,
-                              false,
-                            );
-                          }
-                        }}
-                        onTouchStart={(e) => {
-                          touch_count = e.nativeEvent.identifier;
-                        }}>
+                        // onTouchMove={(e) => {
+                        //   setTimeout(() => {
+                        //     touch_count = 3;
+                        //   }, 150);
+                        // }}
+                        // onTouchEnd={(e) => {
+                        //   if (touch_count === 0 && Platform.OS == 'android') {
+                        //     _clickImage(
+                        //       e.nativeEvent,
+                        //       false,
+                        //       false,
+                        //       false,
+                        //       false,
+                        //     );
+                        //   }
+                        //   if (touch_count === 1 && Platform.OS == 'ios') {
+                        //     _clickImage(
+                        //       e.nativeEvent,
+                        //       false,
+                        //       false,
+                        //       false,
+                        //       false,
+                        //     );
+                        //   }
+                        // }}
+
+                          onTouchStart={() => { isMoving = false; }}
+                          onTouchMove={() => { isMoving = true; }}
+                          onTouchEnd={(e) => {
+                            if (!isMoving) {
+                              _clickImage(e.nativeEvent, false, false, false, false);
+                            }
+                          }}
+                        // onTouchStart={(e) => {
+                        //   touch_count = e.nativeEvent.identifier;
+                        // }}
+                        >
                         <Svg
                           style={{
                             position: 'absolute',
