@@ -600,37 +600,38 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     return allPointsFilled && calibrationFilled;
   }
 
-  // useEffect(() => {
-  //   if (isAllMarkerFilled()) {
-  //     console.log('### Semua marker sudah terisi, update title ke Cephalometric ' + step);
-  //     set_headerText_handler('Cephalometric ' + step);
-  //     set_subHeaderText_handler('');
-  //   }
-  // }, [
-  //   startingPoint,
-  //   endPoint,
-  //   calibrationDistance,
-  //   sella,
-  //   nasion,
-  //   pointa,
-  //   pointb,
-  //   u6,
-  //   u4,
-  //   gonion,
-  //   gnathion,
-  //   isa,
-  //   isi,
-  //   iia,
-  //   iii,
-  //   ms,
-  //   pogs,
-  //   ls,
-  //   li,
-  //   pog,
-  //   ans,
-  //   menton,
-  //   step,
-  // ]);
+  useEffect(() => {
+    if (isAllMarkerFilled()) {
+      console.log('### Semua marker sudah terisi, update title ke Cephalometric ' + step);
+      navigation.openDrawer();
+      set_headerText_handler('Cephalometric ' + step);
+      set_subHeaderText_handler('');
+    }
+  }, [
+    startingPoint,
+    endPoint,
+    calibrationDistance,
+    sella,
+    nasion,
+    pointa,
+    pointb,
+    u6,
+    u4,
+    gonion,
+    gnathion,
+    isa,
+    isi,
+    iia,
+    iii,
+    ms,
+    pogs,
+    ls,
+    li,
+    pog,
+    ans,
+    menton,
+    step,
+  ]);
   
   //existing load all data after loading
   useEffect(() => {
@@ -882,9 +883,8 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
         edit: true,
       };
       console.log('#### Marker Point ###' + JSON.stringify(newMarker));
-    }
 
-    //  Starting Point
+       //  Starting Point
     if (bantuMarker == 1) {
       console.log('Added Starting Point');
 
@@ -1719,6 +1719,10 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
       set_menton_handler(newMarker);
     }
+
+
+    }
+   
   }
 
   function _prevClick() {
