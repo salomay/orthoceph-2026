@@ -5730,7 +5730,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                   />
                 </>
               ) : (
-                <View style={{justifyContent:''}}>
+                <View style={{justifyContent:'center',alignItems:'center'}}>
                 <TouchableOpacity
                   style={{
                     justifyContent: 'center',
