@@ -2202,7 +2202,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     }
   }
 
-  const newAnalysis__ = () => {
+  const newAnalysis__ = (AI) => {
     console.log('Masuk New Analysis');
     set_headerText_handler('Cephalometric Analysis');
     set_bantuMarker_handler(0);
@@ -2309,8 +2309,12 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
         remove_lower_lip_handler([]);
         remove_wendellwylie_handler([]);
         set_loading_handler(false);
+        
 
-        AI_Analysis(response.assets[0].base64);
+        if(!AI){
+          AI_Analysis(response.assets[0].base64);
+        }
+        
         
 
 
@@ -5726,6 +5730,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                   />
                 </>
               ) : (
+                <View style={{justifyContent:''}}>
                 <TouchableOpacity
                   style={{
                     justifyContent: 'center',
@@ -5734,7 +5739,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     marginHorizontal: wp(10),
                     marginTop: wp(-50),
                   }}
-                  onPress={() => newAnalysis__()}>
+                  onPress={() => newAnalysis__(false)}>
                   <Text
                     style={{
                       color: 'white',
@@ -5742,9 +5747,29 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                       textAlign: 'center',
                       paddingVertical: wp(2),
                     }}>
-                    Create New Worksheet
+                    Create New Worksheet Manual
                   </Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    justifyContent: 'center',
+                    backgroundColor: '#34A853',
+                    borderRadius: 10,
+                    marginHorizontal: wp(10),
+                    marginTop: wp(-50),
+                  }}
+                  onPress={() => newAnalysis__(true)}>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontSize: 16,
+                      textAlign: 'center',
+                      paddingVertical: wp(2),
+                    }}>
+                    Create New Worksheet Using AI
+                  </Text>
+                </TouchableOpacity>
+                </View>
               )}
             </>
           )}
