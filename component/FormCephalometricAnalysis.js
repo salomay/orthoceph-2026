@@ -5746,6 +5746,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                       fontSize: 16,
                       textAlign: 'center',
                       paddingVertical: wp(2),
+                      paddingHorizontal:wp(2)
                     }}>
                     Create New Worksheet Manual
                   </Text>
@@ -5765,8 +5766,9 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                       fontSize: 16,
                       textAlign: 'center',
                       paddingVertical: wp(2),
+                      paddingHorizontal:wp(2)
                     }}>
-                    Create New Worksheet Using AI
+                    Create New Worksheet Using AI (Beta)
                   </Text>
                 </TouchableOpacity>
                 </View>
