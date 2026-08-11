@@ -5730,14 +5730,14 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                   />
                 </>
               ) : (
-                <View style={{justifyContent:'center',alignItems:'center'}}>
+                <View style={{marginTop: wp(-50), justifyContent:'center',alignItems:'center'}}>
                 <TouchableOpacity
                   style={{
                     justifyContent: 'center',
                     backgroundColor: '#34A853',
                     borderRadius: 10,
                     marginHorizontal: wp(10),
-                    marginTop: wp(-50),
+                    
                   }}
                   onPress={() => newAnalysis__(true)}>
                   <Text
@@ -5757,7 +5757,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     backgroundColor: '#34A853',
                     borderRadius: 10,
                     marginHorizontal: wp(10),
-                    marginTop: wp(-50),
+                   
                   }}
                   onPress={() => newAnalysis__(false)}>
                   <Text
