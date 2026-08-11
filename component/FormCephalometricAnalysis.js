@@ -5739,7 +5739,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     marginHorizontal: wp(10),
                     marginTop: wp(-50),
                   }}
-                  onPress={() => newAnalysis__(false)}>
+                  onPress={() => newAnalysis__(true)}>
                   <Text
                     style={{
                       color: 'white',
@@ -5759,7 +5759,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     marginHorizontal: wp(10),
                     marginTop: wp(-50),
                   }}
-                  onPress={() => newAnalysis__(true)}>
+                  onPress={() => newAnalysis__(false)}>
                   <Text
                     style={{
                       color: 'white',
