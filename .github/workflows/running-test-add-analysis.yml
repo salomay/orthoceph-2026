@@ -431,7 +431,7 @@ jobs:
 
       - name: Tap view worksheet
         run: |
-            idb ui tap 36 292 --udid "$SIM_UDID"
+            idb ui tap 197, 508 --udid "$SIM_UDID"
             sleep 8
 
       - name: Tap cephalometric analysis
