@@ -5736,8 +5736,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     justifyContent: 'center',
                     backgroundColor: '#34A853',
                     borderRadius: 10,
-                    marginHorizontal: wp(10),
-                    
+                    marginVertical: wp(2)
                   }}
                   onPress={() => newAnalysis__(true)}>
                   <Text
@@ -5756,8 +5755,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     justifyContent: 'center',
                     backgroundColor: '#34A853',
                     borderRadius: 10,
-                    marginHorizontal: wp(10),
-                   
+                    marginVertical: wp(2)
                   }}
                   onPress={() => newAnalysis__(false)}>
                   <Text
