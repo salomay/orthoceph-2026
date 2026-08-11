@@ -39,7 +39,7 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease -Preact.hermesCommand=../node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
 
-      - name: Build Release APK
+      - name: Build Release Bundle
         working-directory: android
         run: ./gradlew bundleRelease -Preact.hermesCommand=../node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
  
