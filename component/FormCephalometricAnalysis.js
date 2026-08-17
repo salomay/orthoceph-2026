@@ -44,7 +44,7 @@ import {
 import Modal from 'react-native-modal';
 import ViewShot, {captureRef} from 'react-native-view-shot';
 import {launchImageLibrary} from 'react-native-image-picker';
-import {generatePDF} from 'react-native-html-to-pdf';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import Svg, {
   Circle,
   Line,
@@ -535,7 +535,8 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
       // set_resultanalysis_handler(false);
       // set_detailresult_handler(false);
     } else if (bantuMarker === 24) {
-      set_disable_pointer_handler('none');
+      // Mode edit hasil AI tetap mengizinkan tombol navigasi landmark.
+      set_disable_pointer_handler('auto');
       set_opacity_pointer_handler(0.5);
       set_enablesave_handler(false);
       set_detailresult_handler(false);
@@ -856,7 +857,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
  
 
   function loadExistingMarker(point) {
-    if (point.x && point.y) {
+    if (point && Number.isFinite(Number(point.x)) && Number.isFinite(Number(point.y))) {
       let newMarker = {
         x: point.x,
         y: point.y,
@@ -867,6 +868,9 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     }
   }
 
+  // Index landmark yang sedang dipilih saat mode edit hasil AI (bantuMarker === 24)
+  let selectedMarkerIndex = 0;
+
   function _clickImage(
     event = null,
     up = false,
@@ -874,857 +878,214 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     left = false,
     right = false,
   ) {
-    let newMarker = null;
+    try {
+      // Mode edit hasil AI: tap landmark untuk memilihnya, lalu gunakan
+      // tombol Up/Down/Left/Right untuk menggeser landmark tersebut.
+      if (bantuMarker === 24) {
+        if (event && marker && marker.length > 0) {
+          const touchX = Number(event.locationX);
+          const touchY = Number(event.locationY);
+          let nearestIndex = -1;
+          let nearestDistance = Infinity;
 
-    if (event) {
+          marker.forEach((value, index) => {
+            if (
+              value &&
+              Number.isFinite(Number(value.x)) &&
+              Number.isFinite(Number(value.y))
+            ) {
+              const dx = Number(value.x) - touchX;
+              const dy = Number(value.y) - touchY;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestIndex = index;
+              }
+            }
+          });
+
+          // Hanya pilih marker yang cukup dekat dengan sentuhan.
+          if (nearestIndex >= 0 && nearestDistance <= 35) {
+            selectedMarkerIndex = nearestIndex;
+            console.log('Selected landmark index:', selectedMarkerIndex);
+          }
+        }
+
+        // Jika tidak ada arah, event hanya digunakan untuk memilih marker.
+        if (!up && !down && !left && !right) {
+          return;
+        }
+
+        const current = marker?.[selectedMarkerIndex];
+        if (
+          !current ||
+          !Number.isFinite(Number(current.x)) ||
+          !Number.isFinite(Number(current.y))
+        ) {
+          console.warn(
+            'Navigation ignored: selected landmark coordinate is null/invalid',
+            selectedMarkerIndex,
+            current,
+          );
+          return;
+        }
+
+        const dx = right ? point_speed : left ? -point_speed : 0;
+        const dy = down ? point_speed : up ? -point_speed : 0;
+
+        const newMarker = {
+          x: Number(current.x) + dx,
+          y: Number(current.y) + dy,
+          edit: true,
+        };
+
+        marker[selectedMarkerIndex] = newMarker;
+        updateMarkerState(selectedMarkerIndex, newMarker);
+        return;
+      }
+
+      let newMarker = null;
+
+      // Klik gambar pada mode marking biasa.
+      if (event) {
+        const x = Number(event.locationX);
+        const y = Number(event.locationY);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          console.warn('Invalid touch coordinate:', event);
+          return;
+        }
+        newMarker = {x, y, edit: true};
+      }
+
+      // Mapping index marker -> state/setter.
+      const states = {
+        1: startingPoint,
+        2: endPoint,
+        4: sella,
+        5: nasion,
+        6: pointa,
+        7: pointb,
+        8: u6,
+        9: u4,
+        10: gonion,
+        11: gnathion,
+        12: isa,
+        13: isi,
+        14: iia,
+        15: iii,
+        16: ms,
+        17: pogs,
+        18: ls,
+        19: li,
+        20: pog,
+        21: ans,
+        22: menton,
+      };
+
+      const setters = {
+        1: set_startingPoint_handler,
+        2: set_endPoint_handler,
+        4: set_sella_handler,
+        5: set_nasion_handler,
+        6: set_pointa_handler,
+        7: set_pointb_handler,
+        8: set_u6_handler,
+        9: set_u4_handler,
+        10: set_gonion_handler,
+        11: set_gnathion_handler,
+        12: set_isa_handler,
+        13: set_isi_handler,
+        14: set_iia_handler,
+        15: set_iii_handler,
+        16: set_ms_handler,
+        17: set_pogs_handler,
+        18: set_ls_handler,
+        19: set_li_handler,
+        20: set_pog_handler,
+        21: set_ans_handler,
+        22: set_menton_handler,
+      };
+
+      const markerIndex = bantuMarker === 3 ? null : bantuMarker;
+      const currentState = markerIndex ? states[markerIndex] : null;
+      const setter = markerIndex ? setters[markerIndex] : null;
+
+      // Klik untuk membuat/mengganti titik.
+      if (event && markerIndex && setter) {
+        marker[markerIndex - 1] = newMarker;
+        setter(newMarker);
+        return;
+      }
+
+      // Tidak ada koordinat aktif -> jangan pernah akses [0].x / [0].y.
+      if (!setter || !currentState || !currentState[0]) {
+        console.warn(
+          'Navigation ignored: landmark coordinate is null/empty',
+          bantuMarker,
+          currentState,
+        );
+        return;
+      }
+
+      const current = currentState[0];
+      const x = Number(current.x);
+      const y = Number(current.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        console.warn('Navigation ignored: invalid landmark coordinate', current);
+        return;
+      }
+
+      const dx = right ? point_speed : left ? -point_speed : 0;
+      const dy = down ? point_speed : up ? -point_speed : 0;
+      if (dx === 0 && dy === 0) return;
+
       newMarker = {
-        x: event.locationX,
-        y: event.locationY,
+        x: x + dx,
+        y: y + dy,
         edit: true,
       };
-      console.log('#### Marker Point ###' + JSON.stringify(newMarker));
+
+      marker[markerIndex - 1] = newMarker;
+      setter(newMarker);
+    } catch (error) {
+      // Jangan biarkan error koordinat membuat React Native menutup aplikasi.
+      console.error('Navigation landmark error:', error);
     }
+  }
 
-    if (event || up || down || left || right) {
-       //  Starting Point
-    if (bantuMarker == 1) {
-      console.log('Added Starting Point');
+  // Update state landmark berdasarkan index marker (0-based).
+  function updateMarkerState(index, value) {
+    const setters = [
+      set_startingPoint_handler,
+      set_endPoint_handler,
+      null, // calibration distance bukan landmark
+      set_sella_handler,
+      set_nasion_handler,
+      set_pointa_handler,
+      set_pointb_handler,
+      set_u6_handler,
+      set_u4_handler,
+      set_gonion_handler,
+      set_gnathion_handler,
+      set_isa_handler,
+      set_isi_handler,
+      set_iia_handler,
+      set_iii_handler,
+      set_ms_handler,
+      set_pogs_handler,
+      set_ls_handler,
+      set_li_handler,
+      set_pog_handler,
+      set_ans_handler,
+      set_menton_handler,
+    ];
 
-      if (up == true) {
-        newMarker = {
-          x: startingPoint[0].x,
-          y:
-            startingPoint[0].y - point_speed < 0
-              ? 0
-              : startingPoint[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: startingPoint[0].x,
-          y: startingPoint[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: startingPoint[0].x + point_speed,
-          y: startingPoint[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: startingPoint[0].x - point_speed,
-          y: startingPoint[0].y,
-          edit: true,
-        };
-      }
-
-      console.log(newMarker);
-      marker[0] = newMarker;
-
-      set_startingPoint_handler(newMarker);
+    const setter = setters[index];
+    if (typeof setter === 'function') {
+      setter(value);
+    } else {
+      console.warn('No setter for landmark index:', index);
     }
-    //  End Point
-    if (bantuMarker == 2) {
-      console.log('Added End Point');
-
-      if (up == true) {
-        newMarker = {
-          x: endPoint[0].x,
-          y: endPoint[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: endPoint[0].x,
-          y: endPoint[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: endPoint[0].x + point_speed,
-          y: endPoint[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: endPoint[0].x - point_speed,
-          y: endPoint[0].y,
-          edit: true,
-        };
-      }
-
-      marker[1] = newMarker;
-
-      set_endPoint_handler(newMarker);
-    }
-
-    //  Calibration Distance
-    if (bantuMarker == 3) {
-      console.log('Added Calibration Distance');
-    }
-
-    //  Sella
-    if (bantuMarker == 4) {
-      console.log('Added Sella');
-
-      if (up == true) {
-        newMarker = {
-          x: sella[0].x,
-          y: sella[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: sella[0].x,
-          y: sella[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: sella[0].x + point_speed,
-          y: sella[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: sella[0].x - point_speed,
-          y: sella[0].y,
-          edit: true,
-        };
-      }
-
-      marker[2] = newMarker;
-
-      set_sella_handler(newMarker);
-    }
-    //  Nasion
-    if (bantuMarker == 5) {
-      console.log('Added Nasion');
-
-      if (up == true) {
-        newMarker = {
-          x: nasion[0].x,
-          y: nasion[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: nasion[0].x,
-          y: nasion[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: nasion[0].x + point_speed,
-          y: nasion[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: nasion[0].x - point_speed,
-          y: nasion[0].y,
-          edit: true,
-        };
-      }
-
-      marker[3] = newMarker;
-      set_nasion_handler(newMarker);
-    }
-    //  POINTA
-    if (bantuMarker == 6) {
-      console.log('Added Point A');
-
-      if (up == true) {
-        newMarker = {
-          x: pointa[0].x,
-          y: pointa[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: pointa[0].x,
-          y: pointa[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: pointa[0].x + point_speed,
-          y: pointa[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: pointa[0].x - point_speed,
-          y: pointa[0].y,
-          edit: true,
-        };
-      }
-
-      marker[4] = newMarker;
-      set_pointa_handler(newMarker);
-    }
-    //  POINTB
-    if (bantuMarker == 7) {
-      console.log('Added Point B');
-
-      if (up == true) {
-        newMarker = {
-          x: pointb[0].x,
-          y: pointb[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: pointb[0].x,
-          y: pointb[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: pointb[0].x + point_speed,
-          y: pointb[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: pointb[0].x - point_speed,
-          y: pointb[0].y,
-          edit: true,
-        };
-      }
-
-      marker[5] = newMarker;
-      set_pointb_handler(newMarker);
-    }
-    //  U6
-    if (bantuMarker == 8) {
-      console.log('Added U6');
-
-      if (up == true) {
-        newMarker = {
-          x: u6[0].x,
-          y: u6[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: u6[0].x,
-          y: u6[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: u6[0].x + point_speed,
-          y: u6[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: u6[0].x - point_speed,
-          y: u6[0].y,
-          edit: true,
-        };
-      }
-
-      marker[6] = newMarker;
-      set_u6_handler(newMarker);
-    }
-    //  U4
-    if (bantuMarker == 9) {
-      console.log('Added U4');
-
-      if (up == true) {
-        newMarker = {
-          x: u4[0].x,
-          y: u4[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: u4[0].x,
-          y: u4[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: u4[0].x + point_speed,
-          y: u4[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: u4[0].x - point_speed,
-          y: u4[0].y,
-          edit: true,
-        };
-      }
-
-      marker[7] = newMarker;
-      set_u4_handler(newMarker);
-    }
-    //  GONION
-    if (bantuMarker == 10) {
-      console.log('Added Gonion');
-
-      if (up == true) {
-        newMarker = {
-          x: gonion[0].x,
-          y: gonion[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: gonion[0].x,
-          y: gonion[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: gonion[0].x + point_speed,
-          y: gonion[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: gonion[0].x - point_speed,
-          y: gonion[0].y,
-          edit: true,
-        };
-      }
-
-      marker[8] = newMarker;
-      set_gonion_handler(newMarker);
-    }
-    //  GNATHION
-    if (bantuMarker == 11) {
-      console.log('Added Gnathion');
-
-      if (up == true) {
-        newMarker = {
-          x: gnathion[0].x,
-          y: gnathion[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: gnathion[0].x,
-          y: gnathion[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: gnathion[0].x + point_speed,
-          y: gnathion[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: gnathion[0].x - point_speed,
-          y: gnathion[0].y,
-          edit: true,
-        };
-      }
-
-      marker[9] = newMarker;
-      set_gnathion_handler(newMarker);
-    }
-    //  ISA
-    if (bantuMarker == 12) {
-      console.log('Added ISA');
-
-      if (up == true) {
-        newMarker = {
-          x: isa[0].x,
-          y: isa[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: isa[0].x,
-          y: isa[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: isa[0].x + point_speed,
-          y: isa[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: isa[0].x - point_speed,
-          y: isa[0].y,
-          edit: true,
-        };
-      }
-      marker[10] = newMarker;
-      set_isa_handler(newMarker);
-    }
-    //  ISI
-    if (bantuMarker == 13) {
-      console.log('Added ISI');
-
-      if (up == true) {
-        newMarker = {
-          x: isi[0].x,
-          y: isi[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: isi[0].x,
-          y: isi[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: isi[0].x + point_speed,
-          y: isi[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: isi[0].x - point_speed,
-          y: isi[0].y,
-          edit: true,
-        };
-      }
-
-      marker[11] = newMarker;
-      set_isi_handler(newMarker);
-    }
-    //  IIA
-    if (bantuMarker == 14) {
-      console.log('Added IIA');
-
-      if (up == true) {
-        newMarker = {
-          x: iia[0].x,
-          y: iia[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: iia[0].x,
-          y: iia[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: iia[0].x + point_speed,
-          y: iia[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: iia[0].x - point_speed,
-          y: iia[0].y,
-          edit: true,
-        };
-      }
-
-      marker[12] = newMarker;
-      set_iia_handler(newMarker);
-    }
-    //  III
-    if (bantuMarker == 15) {
-      console.log('Added III');
-
-      if (up == true) {
-        newMarker = {
-          x: iii[0].x,
-          y: iii[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: iii[0].x,
-          y: iii[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: iii[0].x + point_speed,
-          y: iii[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: iii[0].x - point_speed,
-          y: iii[0].y,
-          edit: true,
-        };
-      }
-
-      marker[13] = newMarker;
-      set_iii_handler(newMarker);
-    }
-    //  MS
-    if (bantuMarker == 16) {
-      console.log('Added MS');
-
-      if (up == true) {
-        newMarker = {
-          x: ms[0].x,
-          y: ms[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: ms[0].x,
-          y: ms[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: ms[0].x + point_speed,
-          y: ms[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: ms[0].x - point_speed,
-          y: ms[0].y,
-          edit: true,
-        };
-      }
-
-      marker[14] = newMarker;
-      set_ms_handler(newMarker);
-    }
-    //  POGS
-    if (bantuMarker == 17) {
-      console.log('Added Pogs');
-
-      if (up == true) {
-        newMarker = {
-          x: pogs[0].x,
-          y: pogs[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: pogs[0].x,
-          y: pogs[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: pogs[0].x + point_speed,
-          y: pogs[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: pogs[0].x - point_speed,
-          y: pogs[0].y,
-          edit: true,
-        };
-      }
-
-      marker[15] = newMarker;
-
-      set_pogs_handler(newMarker);
-    }
-    //  LS
-    if (bantuMarker == 18) {
-      console.log('Added LS');
-
-      if (up == true) {
-        newMarker = {
-          x: ls[0].x,
-          y: ls[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: ls[0].x,
-          y: ls[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: ls[0].x + point_speed,
-          y: ls[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: ls[0].x - point_speed,
-          y: ls[0].y,
-          edit: true,
-        };
-      }
-
-      marker[16] = newMarker;
-      set_ls_handler(newMarker);
-    }
-    //  LI
-    if (bantuMarker == 19) {
-      console.log('Added LI');
-
-      if (up == true) {
-        newMarker = {
-          x: li[0].x,
-          y: li[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: li[0].x,
-          y: li[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: li[0].x + point_speed,
-          y: li[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: li[0].x - point_speed,
-          y: li[0].y,
-          edit: true,
-        };
-      }
-
-      marker[17] = newMarker;
-      set_li_handler(newMarker);
-    }
-    //  POG
-    if (bantuMarker == 20) {
-      console.log('Added Pog');
-
-      if (up == true) {
-        newMarker = {
-          x: pog[0].x,
-          y: pog[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: pog[0].x,
-          y: pog[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: pog[0].x + point_speed,
-          y: pog[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: pog[0].x - point_speed,
-          y: pog[0].y,
-          edit: true,
-        };
-      }
-
-      marker[18] = newMarker;
-
-      set_pog_handler(newMarker);
-    }
-    //  ANS
-    if (bantuMarker == 21) {
-      console.log('Added ANS');
-
-      if (up == true) {
-        newMarker = {
-          x: ans[0].x,
-          y: ans[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: ans[0].x,
-          y: ans[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: ans[0].x + point_speed,
-          y: ans[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: ans[0].x - point_speed,
-          y: ans[0].y,
-          edit: true,
-        };
-      }
-
-      marker[19] = newMarker;
-
-      set_ans_handler(newMarker);
-    }
-    //  MENTON
-    if (bantuMarker == 22) {
-      console.log('Added Menton');
-
-      if (up == true) {
-        newMarker = {
-          x: menton[0].x,
-          y: menton[0].y - point_speed,
-          edit: true,
-        };
-      }
-
-      if (down == true) {
-        newMarker = {
-          x: menton[0].x,
-          y: menton[0].y + point_speed,
-          edit: true,
-        };
-      }
-
-      if (right == true) {
-        newMarker = {
-          x: menton[0].x + point_speed,
-          y: menton[0].y,
-          edit: true,
-        };
-      }
-
-      if (left == true) {
-        newMarker = {
-          x: menton[0].x - point_speed,
-          y: menton[0].y,
-          edit: true,
-        };
-      }
-
-      marker[20] = newMarker;
-
-      set_menton_handler(newMarker);
-    }
-
-
-    }
-   
   }
 
   function _prevClick() {
@@ -2189,7 +1550,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
             height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
-          let file = await generatePDF(options);
+          let file = await RNHTMLtoPDF.convert(options);
 
           navigation.navigate('FormPdfPreview', {
             fileName: fullname,
@@ -2490,7 +1851,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                 height: 612,
               };
 
-              let file = await generatePDF(options);
+              let file = await RNHTMLtoPDF.convert(options);
 
               if (
                 imageUri !== null &&
