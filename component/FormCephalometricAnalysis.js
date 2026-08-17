@@ -2189,7 +2189,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
             height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
-          let file = await generatePDF.convert(options);
+          let file = await generatePDF(options);
 
           navigation.navigate('FormPdfPreview', {
             fileName: fullname,
@@ -2490,7 +2490,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                 height: 612,
               };
 
-              let file = await generatePDF.convert(options);
+              let file = await generatePDF(options);
 
               if (
                 imageUri !== null &&
