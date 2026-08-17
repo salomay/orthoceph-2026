@@ -44,7 +44,7 @@ import {
 import Modal from 'react-native-modal';
 import ViewShot, {captureRef} from 'react-native-view-shot';
 import {launchImageLibrary} from 'react-native-image-picker';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import {generatePDF} from 'react-native-html-to-pdf';
 import Svg, {
   Circle,
   Line,
@@ -2189,7 +2189,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
             height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
-          let file = await RNHTMLtoPDF.convert(options);
+          let file = await generatePDF.convert(options);
 
           navigation.navigate('FormPdfPreview', {
             fileName: fullname,
@@ -2490,7 +2490,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                 height: 612,
               };
 
-              let file = await RNHTMLtoPDF.convert(options);
+              let file = await generatePDF.convert(options);
 
               if (
                 imageUri !== null &&
