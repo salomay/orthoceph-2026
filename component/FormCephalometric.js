@@ -4,7 +4,7 @@ import * as React from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Appbar} from 'react-native-paper';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import {RNHTMLtoPDF} from 'react-native-html-to-pdf';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
