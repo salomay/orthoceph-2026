@@ -4,7 +4,7 @@ import * as React from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Appbar} from 'react-native-paper';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {RNHTMLtoPDF} from 'react-native-html-to-pdf';
+import {generatePDF } from 'react-native-html-to-pdf';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -464,7 +464,7 @@ class FormCephalometric extends React.Component {
             height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
-          let file = await RNHTMLtoPDF.convert(options);
+          let file = await generatePDF .convert(options);
 
           this.props.navigation.navigate('FormCompareResult', {
             fileName: this.props.fullname,
