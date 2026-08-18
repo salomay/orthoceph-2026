@@ -464,7 +464,7 @@ class FormCephalometric extends React.Component {
             height: Platform.OS == 'ios' ? wp(100) : wp(100),
           };
 
-          let file = await generatePDF .convert(options);
+          let file = await generatePDF(options);
 
           this.props.navigation.navigate('FormCompareResult', {
             fileName: this.props.fullname,
