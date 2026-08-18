@@ -13,7 +13,11 @@
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
 -keep public class com.horcrux.svg.** {*;}
-
+-keep class com.gemalto.** { *; }
+-dontwarn com.gemalto.jp2.JP2Decoder
+-dontwarn com.gemalto.jp2.JP2Encode
+-dontwarn com.gemalto.jp2.**
+-dontwarn com.tom_roush.pdfbox.filter.JPXFilter
 
 -keep @com.facebook.jni.annotations.DoNotStrip class *
 -keep class * {
