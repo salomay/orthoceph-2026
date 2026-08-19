@@ -1142,6 +1142,9 @@ export async function generateCephHtml(
   const _font = COMMON_TEXT_STYLE.fontFamily;
 
   return `
+    <style>
+      * { print-color-adjust:exact !important; }
+    </style>
     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 29cm; height: 18cm;">
 
     <div style="display: flex; flex-direction: row; width: 25cm; height: 1.5cm; margin-top: 0.5cm; justify-content: center; align-items: center; background-color: ${
@@ -1875,6 +1878,9 @@ export async function generateTableCompHtml(
   const _font = COMMON_TEXT_STYLE.fontFamily;
 
   return `
+   <style>
+      * { print-color-adjust:exact !important; }
+    </style>
     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 29cm; height: 18cm;">
 
     <div style="display: flex; flex-direction: row; width: 25cm; height: 1.5cm; margin-top: 0.5cm; justify-content: center; align-items: center; background-color: ${
