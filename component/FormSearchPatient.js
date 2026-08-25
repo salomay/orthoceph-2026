@@ -393,7 +393,7 @@ class FormSearchPatient extends React.Component {
           <Appbar.Header
             style={{
               backgroundColor: '#637363',
-              borderRadius: 10,
+              borderRadius: 0,
               justifyContent: 'center',
               alignContent: 'center',
               marginTop: 5,
