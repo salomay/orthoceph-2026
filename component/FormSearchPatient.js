@@ -398,6 +398,7 @@ class FormSearchPatient extends React.Component {
               alignContent: 'center',
               marginTop: 5,
             }}>
+            <Appbar.BackAction  color='white' onPress={() => this.props.navigation.goBack()} />
             <TextInput
               maxLength={50}
               value={this.state.txtSearch}
