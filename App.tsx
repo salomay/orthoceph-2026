@@ -704,10 +704,12 @@ const CustomDrawerContent =({navigation,route}) => {
     
 
     if (_WendellWylie.LOWERFACE.value) {
-        set_enablesave_handler(true);
-        set_loading_handler(false);
-        set_loading_global_handler(false);
-        navigation.openDrawer();
+
+       set_press_save_analysis_handler(true);
+        // set_enablesave_handler(true);
+        // set_loading_handler(false);
+        // set_loading_global_handler(false);
+        // navigation.openDrawer();
     }
 
     

@@ -1690,6 +1690,11 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     
   };
 
+  const setIfValid = (value, setter) => {
+                        if (value !== null && value !== undefined && value !== "") {
+                            setter(value);
+                        }
+                    };
 
   const AI_Analysis = async (uri) =>{
 
@@ -1713,25 +1718,31 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                     console.log('### Hasil ', JSON.stringify(result));
                 
                 
-                    set_sella_handler(result.points_canvas.sella);
-                    set_nasion_handler(result.points_canvas.nasion);
-                    set_pointa_handler(result.points_canvas.pointA);
-                    set_pointb_handler(result.points_canvas.pointB);   
-                    set_u6_handler(result.points_canvas.u6);
-                    set_u4_handler(result.points_canvas.u4);
-                    set_gonion_handler(result.points_canvas.gonion);
-                    set_gnathion_handler(result.points_canvas.gnathion);
-                    set_isa_handler(result.points_canvas.isa);
-                    set_isi_handler(result.points_canvas.isi);
-                    set_iia_handler(result.points_canvas.iia);
-                    set_iii_handler(result.points_canvas.iii);
-                    set_ms_handler(result.points_canvas.ms);
-                    set_pogs_handler(result.points_canvas.pogs);
-                    set_ls_handler(result.points_canvas.ls);
-                    set_li_handler(result.points_canvas.li);
-                    set_pog_handler(result.points_canvas.pog);
-                    set_ans_handler(result.points_canvas.ans);
-                    set_menton_handler(result.points_canvas.menton);
+     
+                  
+
+                    const points = result?.points_canvas;
+
+                    setIfValid(points?.sella, set_sella_handler);
+                    setIfValid(points?.nasion, set_nasion_handler);
+                    setIfValid(points?.pointA, set_pointa_handler);
+                    setIfValid(points?.pointB, set_pointb_handler);
+                    setIfValid(points?.u6, set_u6_handler);
+                    setIfValid(points?.u4, set_u4_handler);
+                    setIfValid(points?.gonion, set_gonion_handler);
+                    setIfValid(points?.gnathion, set_gnathion_handler);
+                    setIfValid(points?.isa, set_isa_handler);
+                    setIfValid(points?.isi, set_isi_handler);
+                    setIfValid(points?.iia, set_iia_handler);
+                    setIfValid(points?.iii, set_iii_handler);
+                    setIfValid(points?.ms, set_ms_handler);
+                    setIfValid(points?.pogs, set_pogs_handler);
+                    setIfValid(points?.ls, set_ls_handler);
+                    setIfValid(points?.li, set_li_handler);
+                    setIfValid(points?.pog, set_pog_handler);
+                    setIfValid(points?.ans, set_ans_handler);
+                    setIfValid(points?.menton, set_menton_handler);
+
                     set_loading_global_handler(false);
 
                       navigation.openDrawer();
@@ -2005,9 +2016,12 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
                                   });
                                   set_loading_global_handler(false);
                                   set_press_save_analysis_handler(false);
-                                  setTimeout(() => {
-                                    navigation.goBack();
-                                  }, 1000);
+                                  set_enablesave_handler(true);
+                                  set_loading_handler(false);
+                                  navigation.openDrawer();
+                                  // setTimeout(() => {
+                                  //   navigation.goBack();
+                                  // }, 1000);
                                 } else {
                                   Toast.show({
                                     type: 'error',
@@ -2152,9 +2166,13 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
                                   set_loading_global_handler(false);
                                   set_press_save_analysis_handler(false);
-                                  setTimeout(() => {
-                                    navigation.goBack();
-                                  }, 1000);
+                                  set_enablesave_handler(true);
+                                  set_loading_handler(false);
+                                  navigation.openDrawer();
+                                  // set_press_save_analysis_handler(false);
+                                  // setTimeout(() => {
+                                  //   navigation.goBack();
+                                  // }, 1000);
                                 } else {
                                   Toast.show({
                                     type: 'info',
