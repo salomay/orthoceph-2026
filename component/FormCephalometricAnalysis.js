@@ -763,7 +763,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     };
   }, []);
 
-  clearVaribleGlobal = () => {
+  const clearVaribleGlobal = () => {
     set_loading_handler(true);
 
     checkData();
@@ -781,7 +781,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
     }
   }, [widthLastDevice, heightLastDevice]);
 
-  checkData = async () => {
+  const checkData = async () => {
     marker = [];
 
     var data = {
@@ -823,7 +823,7 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
       });
   };
 
-  load_point = () => {
+  const load_point = () => {
     var data = {
       patientid: patientid,
       step: step,
