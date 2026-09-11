@@ -9,6 +9,7 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   createDrawerNavigator,
   DrawerItem,
@@ -230,6 +231,7 @@ function SideBarNavigation ()  {
 
 const CustomDrawerContent =({navigation,route}) => {
 
+  const insets = useSafeAreaInsets();
  const bantuMarker = useSelector((state) => state.variabelReducer.bantuMarker);
        const pressSaveAnalysis = useSelector((state) => state.variabelReducer.pressSaveAnalysis);
        const pressAnalysis = useSelector((state) => state.variabelReducer.pressAnalysis);
@@ -1067,7 +1069,7 @@ const CustomDrawerContent =({navigation,route}) => {
                   position: 'absolute',
                   left: 0,
                   right: 0,
-                  bottom: 0,
+                  bottom: insets.bottom,
                   backgroundColor: '#637363',
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -1265,7 +1267,7 @@ const CustomDrawerContent =({navigation,route}) => {
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: insets.bottom,
             }}>
             <TouchableOpacity
               onPress={() => _goBack()}
@@ -1340,7 +1342,7 @@ const CustomDrawerContent =({navigation,route}) => {
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: insets.bottom,
             }}>
             <TouchableOpacity
               onPress={() => _markAgain()}
@@ -1641,7 +1643,7 @@ const ResultContent = ({pressDetailAnalysis}) => {
   }
 
   return (
-    <ScrollView bounces={false} style={{marginBottom: wp(12.5)}}>
+    <ScrollView bounces={false} style={{marginBottom: wp(12.5) + insets.bottom}}>
       <View
         style={{
           flexDirection: 'row',
@@ -2440,7 +2442,7 @@ const CephalometricLandMarkContent =({navigation,route}) => {
         </Text>
       </View>
 
-      <ScrollView bounces={false} style={{marginBottom: wp(12)}}>
+      <ScrollView bounces={false} style={{marginBottom: wp(12) + insets.bottom}}>
         {MARK_DETAILS.map((item, index) => {
           index = parseInt(index) + 4;
 
@@ -2773,7 +2775,7 @@ class App extends React.Component {
     } else {
       return (
         //  <SafeAreaView><Text>aaaa</Text></SafeAreaView> )
-        <>
+         <SafeAreaProvider>
           <NavigationContainer>
             {this.state.isLogin === true ? (
               <Stack.Navigator
@@ -3113,7 +3115,7 @@ class App extends React.Component {
             )}
           </NavigationContainer>
           <Toast />
-        </>
+        </SafeAreaProvider>
       );
     }
   }
