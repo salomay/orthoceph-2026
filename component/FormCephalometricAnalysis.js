@@ -1869,13 +1869,20 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
     navigation.closeDrawer();
 
-    // iOS butuh jeda lebih panjang dari Android supaya reset scale/posisi
-    // gambar benar-benar selesai dirender sebelum di-capture untuk laporan.
-    // Sebelumnya delay 500ms sama untuk kedua platform sehingga di iOS
-    // screenshot kadang terambil saat scale belum sepenuhnya balik ke default.
-    const captureDelay = Platform.OS === 'ios' ? 900 : 500;
-
-    setTimeout(async () => {
+    // resetScale()/centerOn() di atas jalan lewat native driver (useNativeDriver
+    // pada ImageZoom), artinya commit posisi/scale final-nya dikirim balik ke JS
+    // thread secara async lewat native bridge - bukan langsung di frame yang sama.
+    // react-native-image-pan-zoom tidak menyediakan callback "animasi selesai"
+    // untuk centerOn, jadi kita tidak bisa await ini secara langsung.
+    //
+    // Daripada menebak-nebak angka ms (sebelumnya: delay statis 500/900ms yang
+    // kadang tetap kurang di device lambat, kadang kebuang percuma di device
+    // cepat), kita tunggu 2 siklus requestAnimationFrame dulu - ini menjamin
+    // capture jalan setelah JS thread sudah render ulang minimal 2x sejak
+    // resetScale()/centerOn() dipanggil, baru sisa jeda kecil sebagai jaring
+    // pengaman untuk native bridge commit di iOS yang cenderung butuh 1-2 frame
+    // ekstra dibanding Android (Choreographer vs CADisplayLink).
+    const runCapture = async () => {
       try {
         // react-native-view-shot caputures component
         const uri = await captureRef(ref_capture.current, {
@@ -2293,7 +2300,18 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
             });
             set_loading_global_handler(false);
       }
-    }, captureDelay);
+    };
+
+    // Tunggu 2 frame JS thread (menjamin native driver sudah commit posisi
+    // final resetScale()/centerOn()), baru tambahkan buffer kecil - jauh lebih
+    // kecil dari delay statis sebelumnya karena sebagian besar "tunggu" sudah
+    // dijamin oleh rAF, bukan ditebak.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const safetyBuffer = Platform.OS === 'ios' ? 250 : 50;
+        setTimeout(runCapture, safetyBuffer);
+      });
+    });
   }
 
   async function _analysis() {
