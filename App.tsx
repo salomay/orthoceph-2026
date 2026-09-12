@@ -1456,7 +1456,7 @@ const HeaderResult = ({headerText, headerIcon}) => {
 
 
 const CalibrationContent = ({navigation,route}) => {
-
+const insets = useSafeAreaInsets();
      const dispatch = useDispatch();
      const set_bantuMarker_handler = (val) => dispatch(set_bantuMarker(val));
      const set_headerText_handler = (val) => dispatch(set_headerText(val));
@@ -1603,7 +1603,7 @@ const CalibrationContent = ({navigation,route}) => {
 };
 
 const ResultContent = ({pressDetailAnalysis}) => {
-
+const insets = useSafeAreaInsets();
 
     const sna = useSelector((state) => state.resultReducer.sna);
        const snb = useSelector((state) => state.resultReducer.snb);
@@ -2382,7 +2382,7 @@ const ResultContent = ({pressDetailAnalysis}) => {
 
 const CephalometricLandMarkContent =({navigation,route}) => {
   let number = 3;
-
+const insets = useSafeAreaInsets();
    const dispatch = useDispatch();
      const set_bantuMarker_handler = (val) => dispatch(set_bantuMarker(val));
      const set_headerText_handler = (val) => dispatch(set_headerText(val));
