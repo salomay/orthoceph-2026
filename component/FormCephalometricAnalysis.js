@@ -1550,59 +1550,83 @@ const FormCephalometricAnalysis = ({navigation,route}) => {
 
   // download image
   async function exportToPdf() {
+    // Reset dulu posisi/scale gambar sebelum capture, sama seperti saveAnalysis() -
+    // supaya PDF hasil export selalu menangkap gambar dari posisi default
+    // (bukan posisi zoom/pan terakhir yang mungkin sedang dilihat user).
+    refImageZoom.current.resetScale();
+    refImageZoom.current.centerOn({
+      x: 0,
+      y: 0,
+      scale: 1,
+      duration: 0,
+    });
+
     set_loading_global_handler(true);
     navigation.closeDrawer();
 
-    try {
-      // react-native-view-shot caputures component
-      const uri = await captureRef(ref_capture, {
-        format: 'png',
-        quality: 0.0,
-        result: 'base64',
-      }).then(
-        async (uri) => {
-          // const res = await AesGcmCrypto.encrypt(uri, true, key);
+    const runCapture = async () => {
+      try {
+        // react-native-view-shot caputures component
+        const uri = await captureRef(ref_capture.current, {
+          format: 'png',
+          quality: 0.0,
+          result: 'base64',
+        }).then(
+          async (uri) => {
+            // const res = await AesGcmCrypto.encrypt(uri, true, key);
 
-          let patient = {
-            fullname: fullname,
-            gender: gender,
-            birthdate: birthdate,
-            ageInYears: ageInYears,
-            race: race,
-          };
+            let patient = {
+              fullname: fullname,
+              gender: gender,
+              birthdate: birthdate,
+              ageInYears: ageInYears,
+              race: race,
+            };
 
-          var htmlnya = await generateCephHtml(
-            'Cephalometric',
-            patient,
-            'data:image/png;base64,' + uri + '',
-            new Date(),
-            sna,snb,anb,pogNB,snop,snmp,uina_angular,uina_linear,linb_angular,linb_linear,_iia,upper_lip,lower_lip,wendellWylie
-          );
+            var htmlnya = await generateCephHtml(
+              'Cephalometric',
+              patient,
+              'data:image/png;base64,' + uri + '',
+              new Date(),
+              sna,snb,anb,pogNB,snop,snmp,uina_angular,uina_linear,linb_angular,linb_linear,_iia,upper_lip,lower_lip,wendellWylie
+            );
 
-          console.log('####' + 'Masuk Report Viewer Ceph PDF');
-          let options = {
-            html: htmlnya,
-            fileName: 'test',
-            base64: true,
-            // directory: 'Orthoceph',
-            width:
-              Platform.OS == 'ios' && widthScreen > 700 ? wp(140) : wp(150),
-            height: Platform.OS == 'ios' ? wp(100) : wp(100),
-          };
+            console.log('####' + 'Masuk Report Viewer Ceph PDF');
+            let options = {
+              html: htmlnya,
+              fileName: 'test',
+              base64: true,
+              // directory: 'Orthoceph',
+              width:
+                Platform.OS == 'ios' && widthScreen > 700 ? wp(140) : wp(150),
+              height: Platform.OS == 'ios' ? wp(100) : wp(100),
+            };
 
-          let file = await generatePDF(options);
+            let file = await generatePDF(options);
 
-          navigation.navigate('FormPdfPreview', {
-            fileName: fullname,
-            fileBase64: file.base64,
-          });
-          set_loading_global_handler(false);
-        },
-        (error) => console.error('Oops, snapshot failed', error),
-      );
-    } catch (error) {
-      console.log('error', error);
-    }
+            navigation.navigate('FormPdfPreview', {
+              fileName: fullname,
+              fileBase64: file.base64,
+            });
+            set_loading_global_handler(false);
+          },
+          (error) => console.error('Oops, snapshot failed', error),
+        );
+      } catch (error) {
+        console.log('error', error);
+      }
+    };
+
+    // Sama seperti saveAnalysis(): tunggu 2 frame JS thread supaya native
+    // driver sudah commit posisi/scale hasil reset, baru capture - lebih
+    // reliable daripada capture langsung tanpa jeda sama sekali (perilaku
+    // sebelumnya di fungsi ini).
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const safetyBuffer = Platform.OS === 'ios' ? 250 : 50;
+        setTimeout(runCapture, safetyBuffer);
+      });
+    });
   }
 
   const newAnalysis__ = (AI) => {
